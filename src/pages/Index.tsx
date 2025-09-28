@@ -188,6 +188,18 @@ const Index = () => {
       <CourseHeader />
       
       <div className="container mx-auto px-6 py-8">
+        {/* Course Title */}
+        <div className="mb-8 text-center">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Shield className="h-8 w-8 text-primary" />
+            <h1 className="text-4xl font-bold">Level 3 Security Officer Certification Course</h1>
+          </div>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            Comprehensive training program designed to prepare security professionals for advanced security operations. 
+            Complete all 9 sections and pass the final exam to earn your certification.
+          </p>
+        </div>
+
         {/* Video Presentation Placeholder */}
         <VideoPresentationPlaceholder />
         
@@ -196,12 +208,11 @@ const Index = () => {
           <Card className="border-l-4 border-l-primary">
             <CardHeader>
               <CardTitle className="flex items-center gap-3">
-                <Shield className="h-6 w-6 text-primary" />
-                Level 3 Security Officer Certification Course
+                <BookOpen className="h-6 w-6 text-primary" />
+                Course Overview
               </CardTitle>
               <CardDescription className="text-base">
-                Comprehensive training program designed to prepare security professionals for advanced security operations. 
-                Complete all 9 sections and pass the final exam to earn your certification.
+                Get familiar with the course structure and certification requirements.
               </CardDescription>
             </CardHeader>
             <CardContent>
