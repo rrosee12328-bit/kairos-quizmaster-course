@@ -4,6 +4,7 @@ import CourseSection from "@/components/CourseSection";
 import VideoPlayer from "@/components/VideoPlayer";
 import Quiz from "@/components/Quiz";
 import ProgressTracker from "@/components/ProgressTracker";
+import VideoPresentationPlaceholder from "@/components/VideoPresentationPlaceholder";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, Award, Shield } from "lucide-react";
@@ -187,6 +188,9 @@ const Index = () => {
       <CourseHeader />
       
       <div className="container mx-auto px-6 py-8">
+        {/* Video Presentation Placeholder */}
+        <VideoPresentationPlaceholder />
+        
         {/* Course Introduction */}
         <div className="mb-8">
           <Card className="border-l-4 border-l-primary">
