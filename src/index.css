@@ -8,20 +8,39 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
+    /* Kairos Security Academy Brand Colors */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 0 91% 13%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 0 91% 13%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 0 91% 13%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 0 91% 13%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 0 0% 98%;
+    --secondary-foreground: 0 91% 13%;
+
+    /* Academy specific colors */
+    --academy-red: 0 91% 13%;
+    --academy-red-light: 0 91% 20%;
+    --academy-red-dark: 0 91% 8%;
+    --academy-white: 0 0% 100%;
+    --academy-gray: 0 0% 95%;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--academy-red)), hsl(var(--academy-red-light)));
+    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(var(--academy-gray)));
+    
+    /* Shadows */
+    --shadow-academy: 0 10px 30px -10px hsl(var(--academy-red) / 0.3);
+    --shadow-card: 0 4px 20px -4px hsl(var(--academy-red) / 0.1);
+    
+    /* Transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
