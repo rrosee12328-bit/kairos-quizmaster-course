@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Play, BookOpen, User, Star, Clock, Award } from "lucide-react";
 import { Link } from "react-router-dom";
+import kairosLogo from "@/assets/kairos-logo.png";
 
 const Landing = () => {
   return (
@@ -11,7 +12,7 @@ const Landing = () => {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Shield className="h-8 w-8 text-primary" />
+              <img src={kairosLogo} alt="Kairos Security Academy" className="h-8 w-8" />
               <h1 className="text-2xl font-bold">Kairos Security Academy</h1>
             </div>
             <div className="flex items-center gap-4">
@@ -30,7 +31,7 @@ const Landing = () => {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <div className="flex items-center justify-center gap-3 mb-6">
-            <Shield className="h-12 w-12 text-primary" />
+            <img src={kairosLogo} alt="Kairos Security Academy" className="h-12 w-12" />
             <h1 className="text-5xl font-bold">Professional Security Training</h1>
           </div>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">

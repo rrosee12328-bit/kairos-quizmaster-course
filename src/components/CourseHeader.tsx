@@ -1,4 +1,5 @@
 import { Shield, BookOpen, Users } from "lucide-react";
+import kairosLogo from "@/assets/kairos-logo.png";
 
 const CourseHeader = () => {
   return (
@@ -6,7 +7,7 @@ const CourseHeader = () => {
       <div className="container mx-auto px-6 py-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Shield className="h-12 w-12" />
+            <img src={kairosLogo} alt="Kairos Security Academy" className="h-12 w-12" />
             <div>
               <h1 className="text-3xl font-bold">Kairos Security Academy</h1>
               <p className="text-primary-foreground/80 text-lg">Professional Security Training</p>
