@@ -4,7 +4,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landing";
-import Course from "./pages/Course";
+import Courses from "./pages/Courses";
+import Level2Course from "./pages/Level2Course";
+import Level3Course from "./pages/Level3Course";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -18,7 +20,9 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
-          <Route path="/course" element={<Course />} />
+          <Route path="/courses" element={<Courses />} />
+          <Route path="/course/level2" element={<Level2Course />} />
+          <Route path="/course/level3" element={<Level3Course />} />
           <Route path="/auth" element={<Auth />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

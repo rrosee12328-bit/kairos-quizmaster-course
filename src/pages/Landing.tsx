@@ -16,7 +16,7 @@ const Landing = () => {
             </div>
             <div className="flex items-center gap-4">
               <Button variant="ghost" asChild>
-                <Link to="/course">Browse Courses</Link>
+                <Link to="/courses">Browse Courses</Link>
               </Button>
               <Button asChild>
                 <Link to="/auth">Sign In</Link>
@@ -73,7 +73,11 @@ const Landing = () => {
               <div className="space-y-4 mb-6">
                 <div className="flex items-center gap-3">
                   <Shield className="h-5 w-5 text-primary" />
-                  <span>Level 3 Security Officer Certification</span>
+                  <span>Level 2 Security Officer (Unarmed)</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Shield className="h-5 w-5 text-primary" />
+                  <span>Level 3 Security Officer (Armed)</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Award className="h-5 w-5 text-primary" />
@@ -85,7 +89,7 @@ const Landing = () => {
                 </div>
               </div>
               <Button className="w-full" asChild>
-                <Link to="/course">View All Courses</Link>
+                <Link to="/courses">View All Courses</Link>
               </Button>
             </CardContent>
           </Card>
