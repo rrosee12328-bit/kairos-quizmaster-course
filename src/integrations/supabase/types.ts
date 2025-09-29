@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      enrollments: {
+        Row: {
+          course_type: string
+          created_at: string
+          email: string
+          enrollment_status: string
+          first_name: string
+          id: string
+          identification_type: string
+          last_name: string
+          last_six_digits: string
+          phone_number: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          course_type: string
+          created_at?: string
+          email: string
+          enrollment_status?: string
+          first_name: string
+          id?: string
+          identification_type: string
+          last_name: string
+          last_six_digits: string
+          phone_number: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          course_type?: string
+          created_at?: string
+          email?: string
+          enrollment_status?: string
+          first_name?: string
+          id?: string
+          identification_type?: string
+          last_name?: string
+          last_six_digits?: string
+          phone_number?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       "Level 3 Security Officer": {
         Row: {
           created_at: string
