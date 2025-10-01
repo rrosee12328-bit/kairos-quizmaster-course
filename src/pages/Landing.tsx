@@ -40,19 +40,17 @@ const Landing = () => {
           </p>
         </div>
 
-        {/* VSL Placeholder */}
+        {/* Welcome Video */}
         <div className="mb-16">
           <Card className="overflow-hidden max-w-4xl mx-auto">
-            <div className="relative aspect-video bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center">
-              <div className="text-center">
-                <div className="bg-primary/20 rounded-full p-6 mb-4 inline-block">
-                  <Play className="h-12 w-12 text-primary" />
-                </div>
-                <h3 className="text-2xl font-semibold mb-2">Watch Our Introduction Video</h3>
-                <p className="text-muted-foreground">
-                  Discover how our training programs can transform your security career
-                </p>
-              </div>
+            <div className="relative aspect-video">
+              <iframe
+                className="w-full h-full"
+                src="https://www.youtube.com/embed/4OnhSz9bDzY"
+                title="Kairos Security Academy Welcome Video"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
             </div>
           </Card>
         </div>
