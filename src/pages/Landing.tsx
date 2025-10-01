@@ -46,7 +46,7 @@ const Landing = () => {
             <div className="relative aspect-video">
               <iframe
                 className="w-full h-full"
-                src="https://www.youtube.com/embed/4OnhSz9bDzY"
+                src="https://www.youtube.com/embed/4OnhSz9bDzY?modestbranding=1&showinfo=0&rel=0&controls=0"
                 title="Kairos Security Academy Welcome Video"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
