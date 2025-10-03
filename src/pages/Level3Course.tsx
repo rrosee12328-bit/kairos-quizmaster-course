@@ -15,6 +15,19 @@ const Course = () => {
   const courseSections = [
     {
       id: 1,
+      title: "Introduction",
+      description: "Welcome to the Level 3 Security Officer Certification Course",
+      duration: "15 minutes",
+      videoUrl: "https://www.youtube.com/embed/SungCb3PZXc",
+      content: [
+        "Course overview and objectives",
+        "What to expect from the training",
+        "Certification requirements",
+        "Getting started"
+      ]
+    },
+    {
+      id: 2,
       title: "Introduction to Security Operations",
       description: "Overview of security principles and basic operational procedures",
       duration: "45 minutes",
@@ -27,7 +40,7 @@ const Course = () => {
       ]
     },
     {
-      id: 2,
+      id: 3,
       title: "Risk Assessment and Management",
       description: "Identifying, analyzing, and mitigating security risks",
       duration: "60 minutes",
@@ -39,7 +52,7 @@ const Course = () => {
       ]
     },
     {
-      id: 3,
+      id: 4,
       title: "Access Control Systems",
       description: "Managing and monitoring access to secured areas",
       duration: "50 minutes",
@@ -51,7 +64,7 @@ const Course = () => {
       ]
     },
     {
-      id: 4,
+      id: 5,
       title: "CCTV and Surveillance",
       description: "Operating and monitoring surveillance equipment",
       duration: "55 minutes",
@@ -63,7 +76,7 @@ const Course = () => {
       ]
     },
     {
-      id: 5,
+      id: 6,
       title: "Emergency Response Procedures",
       description: "Handling various emergency situations effectively",
       duration: "70 minutes",
@@ -75,7 +88,7 @@ const Course = () => {
       ]
     },
     {
-      id: 6,
+      id: 7,
       title: "Incident Reporting and Documentation",
       description: "Proper documentation and reporting of security incidents",
       duration: "40 minutes",
@@ -87,7 +100,7 @@ const Course = () => {
       ]
     },
     {
-      id: 7,
+      id: 8,
       title: "Communication and Interpersonal Skills",
       description: "Effective communication in security contexts",
       duration: "45 minutes",
@@ -99,7 +112,7 @@ const Course = () => {
       ]
     },
     {
-      id: 8,
+      id: 9,
       title: "Physical Security Measures",
       description: "Understanding and implementing physical security controls",
       duration: "50 minutes",
@@ -111,7 +124,7 @@ const Course = () => {
       ]
     },
     {
-      id: 9,
+      id: 10,
       title: "Legal and Regulatory Framework",
       description: "Understanding the legal context of security operations",
       duration: "55 minutes",
@@ -147,7 +160,7 @@ const Course = () => {
           </div>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Comprehensive training program designed to prepare security professionals for advanced security operations. 
-            Complete all 9 sections and pass the final exam to earn your certification.
+            Complete all 10 sections and pass the final exam to earn your certification.
           </p>
         </div>
 
@@ -169,7 +182,7 @@ const Course = () => {
             <CardContent>
               <div className="grid md:grid-cols-3 gap-4 text-sm">
                 <div className="flex flex-col items-center p-4 bg-muted/50 rounded-lg">
-                  <span className="text-2xl font-bold text-primary">9</span>
+                  <span className="text-2xl font-bold text-primary">10</span>
                   <span className="text-muted-foreground">Sections</span>
                 </div>
                 <div className="flex flex-col items-center p-4 bg-muted/50 rounded-lg">
