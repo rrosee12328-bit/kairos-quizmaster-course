@@ -31,7 +31,7 @@ const Course = () => {
       title: "Introduction to Security Operations",
       description: "Overview of security principles and basic operational procedures",
       duration: "45 minutes",
-      videoUrl: "https://www.youtube.com/embed/g31RmrhCIlc",
+      videoUrl: "https://www.youtube.com/embed/Sn2CQrMxxg4",
       content: [
         "Understanding the role of a Level 3 Security Officer",
         "Basic security terminology and concepts",
