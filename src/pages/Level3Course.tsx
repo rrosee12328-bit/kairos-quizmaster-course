@@ -44,6 +44,7 @@ const Course = () => {
       title: "Risk Assessment and Management",
       description: "Identifying, analyzing, and mitigating security risks",
       duration: "60 minutes",
+      videoUrl: "https://www.youtube.com/embed/5pHAbDa0XLs",
       content: [
         "Risk identification techniques",
         "Threat assessment methodologies",
