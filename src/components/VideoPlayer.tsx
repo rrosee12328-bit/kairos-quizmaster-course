@@ -22,6 +22,7 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
   const maxWatchedRef = useRef(0);
   const isCompleteRef = useRef(false);
   const onCompleteRef = useRef(onComplete);
+  const onNextRef = useRef(onNext);
 
   // Extract Bunny.net video ID from URL
   const getBunnyVideoId = (url: string) => {
@@ -36,6 +37,10 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
   useEffect(() => {
     onCompleteRef.current = onComplete;
   }, [onComplete]);
+
+  useEffect(() => {
+    onNextRef.current = onNext;
+  }, [onNext]);
 
   useEffect(() => {
     let isMounted = true;
@@ -110,6 +115,8 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
             isCompleteRef.current = true;
             setIsComplete(true);
             onCompleteRef.current?.();
+            // Auto-advance to next section after marking complete
+            setTimeout(() => onNextRef.current?.(), 300);
           }
         }
       });
@@ -130,6 +137,7 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
           isCompleteRef.current = true;
           setIsComplete(true);
           onCompleteRef.current?.();
+          setTimeout(() => onNextRef.current?.(), 300);
         }
       });
     };
