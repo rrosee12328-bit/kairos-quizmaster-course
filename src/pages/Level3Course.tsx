@@ -17,9 +17,9 @@ const Course = () => {
   const courseSections = [
     {
       id: 1,
-      title: "Introduction",
+      title: "Welcome",
       description: "Welcome to the Level 3 Security Officer Certification Course",
-      duration: "15 minutes",
+      duration: "1 minute",
       videoUrl: "https://iframe.mediadelivery.net/embed/506173/571ebbaa-2ffc-4050-8670-a3e9d0c1c4f5",
       content: [
         "Course overview and objectives",
@@ -30,9 +30,9 @@ const Course = () => {
     },
     {
       id: 2,
-      title: "Introduction to Security Operations",
+      title: "Introduction",
       description: "Overview of security principles and basic operational procedures",
-      duration: "45 minutes",
+      duration: "2 minutes",
       videoUrl: "https://iframe.mediadelivery.net/embed/506173/db2f0bdb-2977-47ea-ae37-38d776952152",
       content: [
         "Understanding the role of a Level 3 Security Officer",
@@ -43,9 +43,9 @@ const Course = () => {
     },
     {
       id: 3,
-      title: "Risk Assessment and Management",
+      title: "Applicable Rules and State Laws",
       description: "Identifying, analyzing, and mitigating security risks",
-      duration: "60 minutes",
+      duration: "45 minutes",
       videoUrl: "https://iframe.mediadelivery.net/embed/506173/3a213a0e-1632-4600-89d6-b710eeac71be",
       content: [
         "Risk identification techniques",
@@ -56,9 +56,9 @@ const Course = () => {
     },
     {
       id: 4,
-      title: "Access Control Systems",
+      title: "Verbal and Written Communication Best Practices",
       description: "Managing and monitoring access to secured areas",
-      duration: "50 minutes",
+      duration: "33 minutes",
       videoUrl: "https://iframe.mediadelivery.net/embed/506173/7d719c17-74cb-4c9a-b8b4-c98a065c4bcf",
       content: [
         "Types of access control systems",
@@ -69,9 +69,9 @@ const Course = () => {
     },
     {
       id: 5,
-      title: "CCTV and Surveillance",
+      title: "Incident Scene Security",
       description: "Operating and monitoring surveillance equipment",
-      duration: "55 minutes",
+      duration: "17 minutes",
       videoUrl: "https://iframe.mediadelivery.net/embed/506173/6350df04-1780-4e87-8ae7-a37b54c0050a",
       content: [
         "Camera types and positioning",
@@ -82,9 +82,9 @@ const Course = () => {
     },
     {
       id: 6,
-      title: "Emergency Response Procedures",
+      title: "Situational Awareness",
       description: "Handling various emergency situations effectively",
-      duration: "70 minutes",
+      duration: "11 minutes",
       videoUrl: "https://iframe.mediadelivery.net/embed/506173/bb96462b-13f9-4197-b131-1ffa0e789772",
       content: [
         "Fire emergency procedures",
@@ -95,9 +95,9 @@ const Course = () => {
     },
     {
       id: 7,
-      title: "Incident Reporting and Documentation",
+      title: "Use of Force",
       description: "Proper documentation and reporting of security incidents",
-      duration: "40 minutes",
+      duration: "48 minutes",
       videoUrl: "https://iframe.mediadelivery.net/embed/506173/987a687c-03fa-4e28-b07a-dc42c722c5f4",
       content: [
         "Incident report writing",
@@ -108,9 +108,9 @@ const Course = () => {
     },
     {
       id: 8,
-      title: "Communication and Interpersonal Skills",
+      title: "Conflict Resolution",
       description: "Effective communication in security contexts",
-      duration: "45 minutes",
+      duration: "13 minutes",
       videoUrl: "https://iframe.mediadelivery.net/embed/506173/b94ee663-382f-4cfb-8b1d-73343b745638",
       content: [
         "Professional communication",
@@ -121,9 +121,9 @@ const Course = () => {
     },
     {
       id: 9,
-      title: "Physical Security Measures",
+      title: "Defensive Tactics",
       description: "Understanding and implementing physical security controls",
-      duration: "50 minutes",
+      duration: "26 minutes",
       videoUrl: "https://iframe.mediadelivery.net/embed/506173/12fb0f82-c9ae-4d57-9577-a3328632d3c7",
       content: [
         "Perimeter security",
