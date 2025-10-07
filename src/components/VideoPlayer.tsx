@@ -15,8 +15,11 @@ interface VideoPlayerProps {
 }
 
 const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
-  const [showNext, setShowNext] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const playerRef = useRef<any>(null);
+  const maxWatchedRef = useRef(0);
 
   // Extract Bunny.net video ID from URL
   const getBunnyVideoId = (url: string) => {
@@ -29,14 +32,75 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
   const libraryId = '506173';
 
   useEffect(() => {
-    // Show Next button after 3 seconds to allow watching
-    const timer = setTimeout(() => {
-      setShowNext(true);
-      onComplete();
-    }, 3000);
+    let isMounted = true;
 
-    return () => clearTimeout(timer);
-  }, [onComplete]);
+    const ensurePlayerJs = () =>
+      new Promise<void>((resolve) => {
+        if ((window as any).playerjs) return resolve();
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/player.js@1.0.4/dist/player.min.js';
+        s.async = true;
+        s.onload = () => resolve();
+        document.head.appendChild(s);
+      });
+
+    const setup = async () => {
+      await ensurePlayerJs();
+      if (!isMounted || !iframeRef.current) return;
+
+      const p = new (window as any).playerjs.Player(iframeRef.current);
+      playerRef.current = p;
+
+      let duration = 0;
+
+      p.on('ready', () => {
+        // Reset on new section
+        setProgress(0);
+        setIsComplete(false);
+        maxWatchedRef.current = 0;
+
+        p.getDuration((d: number) => {
+          duration = d || 0;
+        });
+      });
+
+      p.on('timeupdate', (data: any) => {
+        const current = data?.seconds ?? 0;
+        const dur = data?.duration ?? duration ?? 0;
+
+        // Prevent forward seeking beyond watched + 2s
+        if (current > maxWatchedRef.current + 2) {
+          p.setCurrentTime(maxWatchedRef.current);
+          return;
+        }
+        if (current > maxWatchedRef.current) {
+          maxWatchedRef.current = current;
+        }
+
+        if (dur > 0) {
+          const pct = Math.min(100, Math.round((current / dur) * 100));
+          setProgress(pct);
+          if (pct >= 90 && !isComplete) {
+            setIsComplete(true);
+            onComplete();
+          }
+        }
+      });
+
+      p.on('ended', () => {
+        if (!isComplete) {
+          setIsComplete(true);
+          onComplete();
+        }
+      });
+    };
+
+    setup();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [section.videoUrl, onComplete, isComplete]);
 
   return (
     <div className="space-y-6">
@@ -77,10 +141,13 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
             </div>
           )}
           
-          {/* Actions */}
-          <div className="flex items-center justify-end">
+          {/* Progress and Actions */}
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-muted-foreground">
+              {progress > 0 ? `Progress: ${progress}% complete` : 'Ready to watch'}
+            </div>
             <div className="flex gap-2">
-              {showNext && (
+              {isComplete && (
                 <Button onClick={onNext} size="sm">
                   <SkipForward className="h-4 w-4 mr-2" />
                   Next Section
