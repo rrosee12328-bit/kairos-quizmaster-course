@@ -217,15 +217,17 @@ const Course = () => {
         </div>
 
         {/* Progress Tracker */}
-        <ProgressTracker 
-          completedSections={completedSections} 
-          currentSection={Math.max(...completedSections, 0) + 1}
-          totalSections={totalSections}
-        />
+        <div className="mb-8">
+          <ProgressTracker 
+            completedSections={completedSections} 
+            currentSection={activeSection || Math.max(...completedSections, 0) + 1}
+            totalSections={totalSections}
+          />
+        </div>
 
-        {/* Active Video Player */}
-        {activeSection && (
-          <div className="mb-8">
+        {/* Active Video Player - Full Focus */}
+        {activeSection ? (
+          <div className="mb-8 animate-fade-in">
             <VideoPlayer
               key={activeSection}
               section={{
@@ -240,34 +242,52 @@ const Course = () => {
                 const nextSection = activeSection + 1;
                 if (nextSection <= totalSections) {
                   setActiveSection(nextSection);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else {
                   setActiveSection(null);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
               }}
             />
-          </div>
-        )}
-
-        {/* Course Sections */}
-        <div className="space-y-6 mb-8">
-          {courseSections.map((section) => {
-            const isCompleted = completedSections.includes(section.id);
-            const isLocked = section.id > Math.max(...completedSections, 0) + 1;
-            
-            return (
-              <CourseSection
-                key={section.id}
-                section={{
-                  ...section,
-                  videoUrl: section.videoUrl || "",
-                  completed: isCompleted,
-                  locked: isLocked
+            <div className="text-center mt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setActiveSection(null);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                onStartSection={() => handleStartSection(section.id)}
-              />
-            );
-          })}
-        </div>
+              >
+                View All Sections
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Course Sections - Show when no video is active */}
+            <div className="space-y-6 mb-8 animate-fade-in">
+              {courseSections.map((section) => {
+                const isCompleted = completedSections.includes(section.id);
+                const isLocked = section.id > Math.max(...completedSections, 0) + 1;
+                
+                return (
+                  <CourseSection
+                    key={section.id}
+                    section={{
+                      ...section,
+                      videoUrl: section.videoUrl || "",
+                      completed: isCompleted,
+                      locked: isLocked
+                    }}
+                    onStartSection={() => {
+                      handleStartSection(section.id);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                  />
+                );
+              })}
+            </div>
+          </>
+        )}
 
         {/* Final Quiz */}
         {allSectionsComplete && !showQuiz && (
