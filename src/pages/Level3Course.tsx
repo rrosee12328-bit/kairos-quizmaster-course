@@ -18,7 +18,7 @@ const Course = () => {
       title: "Introduction",
       description: "Welcome to the Level 3 Security Officer Certification Course",
       duration: "15 minutes",
-      videoUrl: "https://www.youtube.com/embed/SungCb3PZXc",
+      videoUrl: "https://iframe.mediadelivery.net/embed/506173/571ebbaa-2ffc-4050-8670-a3e9d0c1c4f5",
       content: [
         "Course overview and objectives",
         "What to expect from the training",
