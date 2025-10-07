@@ -7,10 +7,12 @@ import ProgressTracker from "@/components/ProgressTracker";
 import Quiz from "@/components/Quiz";
 import VideoPresentationPlaceholder from "@/components/VideoPresentationPlaceholder";
 import CourseHeader from "@/components/CourseHeader";
+import VideoPlayer from "@/components/VideoPlayer";
 
 const Course = () => {
   const [completedSections, setCompletedSections] = useState<number[]>([]);
   const [showQuiz, setShowQuiz] = useState(false);
+  const [activeSection, setActiveSection] = useState<number | null>(null);
 
   const courseSections = [
     {
@@ -142,6 +144,11 @@ const Course = () => {
     if (!completedSections.includes(sectionId)) {
       setCompletedSections([...completedSections, sectionId]);
     }
+    setActiveSection(null);
+  };
+
+  const handleStartSection = (sectionId: number) => {
+    setActiveSection(sectionId);
   };
 
   const totalSections = courseSections.length;
@@ -206,6 +213,29 @@ const Course = () => {
           totalSections={totalSections}
         />
 
+        {/* Active Video Player */}
+        {activeSection && (
+          <div className="mb-8">
+            <VideoPlayer
+              section={{
+                id: courseSections[activeSection - 1].id,
+                title: courseSections[activeSection - 1].title,
+                videoUrl: courseSections[activeSection - 1].videoUrl || "",
+                duration: courseSections[activeSection - 1].duration,
+              }}
+              onComplete={() => handleSectionComplete(activeSection)}
+              onNext={() => {
+                const nextSection = activeSection + 1;
+                if (nextSection <= totalSections) {
+                  setActiveSection(nextSection);
+                } else {
+                  setActiveSection(null);
+                }
+              }}
+            />
+          </div>
+        )}
+
         {/* Course Sections */}
         <div className="space-y-6 mb-8">
           {courseSections.map((section) => {
@@ -221,7 +251,7 @@ const Course = () => {
                   completed: isCompleted,
                   locked: isLocked
                 }}
-                onStartSection={() => handleSectionComplete(section.id)}
+                onStartSection={() => handleStartSection(section.id)}
               />
             );
           })}
