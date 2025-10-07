@@ -148,9 +148,7 @@ const Course = () => {
   ];
 
   const handleSectionComplete = (sectionId: number) => {
-    if (!completedSections.includes(sectionId)) {
-      setCompletedSections([...completedSections, sectionId]);
-    }
+    setCompletedSections((prev) => (prev.includes(sectionId) ? prev : [...prev, sectionId]));
   };
 
   const handleStartSection = (sectionId: number) => {

@@ -67,10 +67,18 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
         isCompleteRef.current = false;
         maxWatchedRef.current = 0;
 
-        p.getDuration((d: number) => {
-          duration = d || 0;
-          console.log('[Bunny] duration', duration);
-        });
+        const updateDuration = () => {
+          p.getDuration((d: number) => {
+            if (d && d > 0) {
+              duration = d;
+              console.log('[Bunny] duration', duration);
+              try { clearInterval((updateDuration as any)._i); } catch {}
+            }
+          });
+        };
+        // Poll until duration is known
+        (updateDuration as any)._i = window.setInterval(updateDuration, 500);
+        updateDuration();
       });
 
       p.on('timeupdate', (data: any) => {
