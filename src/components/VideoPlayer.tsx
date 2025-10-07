@@ -69,6 +69,7 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
       p.on('timeupdate', (data: any) => {
         const current = data?.seconds ?? 0;
         const dur = data?.duration ?? duration ?? 0;
+        const percentFromEvent = typeof data?.percent === 'number' ? Math.max(0, Math.min(100, Math.round(data.percent * 100))) : null;
 
         // Prevent forward seeking beyond watched + 2s
         if (current > maxWatchedRef.current + 2) {
@@ -79,8 +80,11 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
           maxWatchedRef.current = current;
         }
 
-        if (dur > 0) {
-          const pct = Math.min(100, Math.round((current / dur) * 100));
+        let pct = percentFromEvent;
+        if (pct === null && dur > 0) {
+          pct = Math.min(100, Math.round((current / dur) * 100));
+        }
+        if (pct !== null) {
           setProgress(pct);
           if (pct >= 90 && !isCompleteRef.current) {
             isCompleteRef.current = true;
