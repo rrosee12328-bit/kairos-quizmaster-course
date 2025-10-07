@@ -222,6 +222,7 @@ const Course = () => {
         {activeSection && (
           <div className="mb-8">
             <VideoPlayer
+              key={activeSection}
               section={{
                 id: courseSections[activeSection - 1].id,
                 title: courseSections[activeSection - 1].title,
