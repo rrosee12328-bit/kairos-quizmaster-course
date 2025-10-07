@@ -150,7 +150,6 @@ const Course = () => {
     if (!completedSections.includes(sectionId)) {
       setCompletedSections([...completedSections, sectionId]);
     }
-    setActiveSection(null);
   };
 
   const handleStartSection = (sectionId: number) => {
@@ -231,6 +230,7 @@ const Course = () => {
               }}
               onComplete={() => handleSectionComplete(activeSection)}
               onNext={() => {
+                handleSectionComplete(activeSection);
                 const nextSection = activeSection + 1;
                 if (nextSection <= totalSections) {
                   setActiveSection(nextSection);
