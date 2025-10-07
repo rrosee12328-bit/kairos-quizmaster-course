@@ -161,7 +161,7 @@ const Course = () => {
   const allSectionsComplete = completedSections.length === totalSections;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <CourseHeader />
       
       <div className="container mx-auto px-6 py-8">

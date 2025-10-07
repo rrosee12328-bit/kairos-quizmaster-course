@@ -47,11 +47,11 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
         <CardContent>
           {/* Bunny.net Video Player */}
           {videoId ? (
-            <div className="relative rounded-lg overflow-hidden aspect-video mb-4">
+            <div className="relative rounded-lg overflow-hidden aspect-video mb-4 overscroll-none touch-none" onWheel={(e) => e.preventDefault()}>
               <iframe
                 ref={iframeRef}
                 src={`https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?autoplay=false&preload=true`}
-                loading="lazy"
+                loading="lazy" scrolling="no"
                 style={{
                   border: 0,
                   position: 'absolute',
@@ -65,7 +65,7 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
               />
             </div>
           ) : (
-            <div className="relative bg-black rounded-lg overflow-hidden aspect-video mb-4">
+            <div className="relative bg-black rounded-lg overflow-hidden aspect-video mb-4 overscroll-none touch-none" onWheel={(e) => e.preventDefault()}>
               <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/40">
                 <div className="text-center text-white">
                   <div className="text-6xl mb-4">🎥</div>
