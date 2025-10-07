@@ -15,8 +15,7 @@ interface VideoPlayerProps {
 }
 
 const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
-  const [progress, setProgress] = useState(0);
-  const [isComplete, setIsComplete] = useState(false);
+  const [showNext, setShowNext] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // Extract Bunny.net video ID from URL
@@ -30,22 +29,14 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
   const libraryId = '506173';
 
   useEffect(() => {
-    // Listen for video progress events from Bunny.net iframe
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'bunny_video_progress') {
-        const newProgress = Math.round(event.data.progress * 100);
-        setProgress(newProgress);
-        
-        if (newProgress >= 90 && !isComplete) {
-          setIsComplete(true);
-          onComplete();
-        }
-      }
-    };
+    // Show Next button after 3 seconds to allow watching
+    const timer = setTimeout(() => {
+      setShowNext(true);
+      onComplete();
+    }, 3000);
 
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [isComplete, onComplete]);
+    return () => clearTimeout(timer);
+  }, [onComplete]);
 
   return (
     <div className="space-y-6">
@@ -86,13 +77,10 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
             </div>
           )}
           
-          {/* Progress and Actions */}
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">
-              {progress > 0 ? `Progress: ${progress}% complete` : 'Ready to watch'}
-            </div>
+          {/* Actions */}
+          <div className="flex items-center justify-end">
             <div className="flex gap-2">
-              {isComplete && (
+              {showNext && (
                 <Button onClick={onNext} size="sm">
                   <SkipForward className="h-4 w-4 mr-2" />
                   Next Section
