@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Shield } from "lucide-react";
+import { BookOpen, Shield, ChevronLeft, ChevronRight } from "lucide-react";
 import CourseSection from "@/components/CourseSection";
 import ProgressTracker from "@/components/ProgressTracker";
 import Quiz from "@/components/Quiz";
@@ -9,11 +9,19 @@ import VideoPresentationPlaceholder from "@/components/VideoPresentationPlacehol
 import CourseHeader from "@/components/CourseHeader";
 import VideoPlayer from "@/components/VideoPlayer";
 import securityHero from "@/assets/security-training-hero.jpg";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from "@/components/ui/carousel";
 
 const Course = () => {
   const [completedSections, setCompletedSections] = useState<number[]>([]);
   const [showQuiz, setShowQuiz] = useState(false);
-  const [activeSection, setActiveSection] = useState<number | null>(null);
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [inCourseMode, setInCourseMode] = useState(false);
 
   const courseSections = [
     {
@@ -151,13 +159,29 @@ const Course = () => {
     setCompletedSections((prev) => (prev.includes(sectionId) ? prev : [...prev, sectionId]));
   };
 
-  const handleStartSection = (sectionId: number) => {
-    setActiveSection(sectionId);
+  const handleStartCourse = () => {
+    setInCourseMode(true);
+    setCurrentSlide(0);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNextSlide = () => {
+    if (carouselApi && currentSlide < totalSections - 1) {
+      carouselApi.scrollTo(currentSlide + 1);
+    }
+  };
+
+  const handlePrevSlide = () => {
+    if (carouselApi && currentSlide > 0) {
+      carouselApi.scrollTo(currentSlide - 1);
+    }
   };
 
   const totalSections = courseSections.length;
   const progressPercentage = (completedSections.length / totalSections) * 100;
   const allSectionsComplete = completedSections.length === totalSections;
+  const currentSectionId = courseSections[currentSlide]?.id;
+  const isCurrentSectionComplete = currentSectionId ? completedSections.includes(currentSectionId) : false;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
@@ -217,54 +241,101 @@ const Course = () => {
         </div>
 
         {/* Progress Tracker */}
-        <div className="mb-8">
-          <ProgressTracker 
-            completedSections={completedSections} 
-            currentSection={activeSection || Math.max(...completedSections, 0) + 1}
-            totalSections={totalSections}
-          />
-        </div>
+        {inCourseMode && (
+          <div className="mb-8">
+            <ProgressTracker 
+              completedSections={completedSections} 
+              currentSection={currentSlide + 1}
+              totalSections={totalSections}
+            />
+          </div>
+        )}
 
-        {/* Active Video Player - Full Focus */}
-        {activeSection ? (
+        {/* Course Carousel - Kajabi Style */}
+        {inCourseMode ? (
           <div className="mb-8 animate-fade-in">
-            <VideoPlayer
-              key={activeSection}
-              section={{
-                id: courseSections[activeSection - 1].id,
-                title: courseSections[activeSection - 1].title,
-                videoUrl: courseSections[activeSection - 1].videoUrl || "",
-                duration: courseSections[activeSection - 1].duration,
-              }}
-              onComplete={() => handleSectionComplete(activeSection)}
-              onNext={() => {
-                handleSectionComplete(activeSection);
-                const nextSection = activeSection + 1;
-                if (nextSection <= totalSections) {
-                  setActiveSection(nextSection);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                } else {
-                  setActiveSection(null);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+            <Carousel 
+              setApi={setCarouselApi}
+              opts={{ watchDrag: false }}
+              onSelect={() => {
+                if (carouselApi) {
+                  setCurrentSlide(carouselApi.selectedScrollSnap());
                 }
               }}
-            />
-            <div className="text-center mt-4">
+            >
+              <CarouselContent>
+                {courseSections.map((section) => (
+                  <CarouselItem key={section.id}>
+                    <VideoPlayer
+                      section={{
+                        id: section.id,
+                        title: section.title,
+                        videoUrl: section.videoUrl || "",
+                        duration: section.duration,
+                      }}
+                      onComplete={() => handleSectionComplete(section.id)}
+                      onNext={handleNextSlide}
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+
+            {/* Navigation Controls */}
+            <div className="flex items-center justify-between mt-6">
               <Button
                 variant="outline"
+                onClick={handlePrevSlide}
+                disabled={currentSlide === 0}
+              >
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                Previous
+              </Button>
+              
+              <div className="text-sm text-muted-foreground">
+                Section {currentSlide + 1} of {totalSections}
+              </div>
+
+              <Button
+                onClick={handleNextSlide}
+                disabled={currentSlide === totalSections - 1 || !isCurrentSectionComplete}
+              >
+                Next
+                <ChevronRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+
+            <div className="text-center mt-4">
+              <Button
+                variant="ghost"
                 onClick={() => {
-                  setActiveSection(null);
+                  setInCourseMode(false);
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
               >
-                View All Sections
+                Exit Course View
               </Button>
             </div>
           </div>
         ) : (
           <>
-            {/* Course Sections - Show when no video is active */}
+            {/* Course Overview - Show when not in course mode */}
             <div className="space-y-6 mb-8 animate-fade-in">
+              <Card className="border-l-4 border-l-primary">
+                <CardHeader>
+                  <CardTitle>Start Your Training</CardTitle>
+                  <CardDescription>
+                    Begin the course and progress through each section with our interactive video player.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button onClick={handleStartCourse} size="lg" className="w-full">
+                    <BookOpen className="h-5 w-5 mr-2" />
+                    Start Course
+                  </Button>
+                </CardContent>
+              </Card>
+
               {courseSections.map((section) => {
                 const isCompleted = completedSections.includes(section.id);
                 const isLocked = section.id > Math.max(...completedSections, 0) + 1;
@@ -279,8 +350,8 @@ const Course = () => {
                       locked: isLocked
                     }}
                     onStartSection={() => {
-                      handleStartSection(section.id);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                      handleStartCourse();
+                      setTimeout(() => carouselApi?.scrollTo(section.id - 1), 100);
                     }}
                   />
                 );
