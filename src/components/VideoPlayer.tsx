@@ -60,6 +60,7 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
       let duration = 0;
 
       p.on('ready', () => {
+        console.log('[Bunny] ready', { videoId });
         // Reset on new section
         setProgress(0);
         setIsComplete(false);
@@ -68,6 +69,7 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
 
         p.getDuration((d: number) => {
           duration = d || 0;
+          console.log('[Bunny] duration', duration);
         });
       });
 
@@ -78,6 +80,7 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
 
         // Prevent forward seeking beyond watched + 10s
         if (current > maxWatchedRef.current + 10) {
+          console.log('[Bunny] prevent seek forward', { current, max: maxWatchedRef.current });
           try { p.setCurrentTime(maxWatchedRef.current); } catch {}
           return;
         }
@@ -95,6 +98,7 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
         if (pct !== null) {
           setProgress(pct);
           if (pct >= 90 && !isCompleteRef.current) {
+            console.log('[Bunny] reached 90%', pct);
             isCompleteRef.current = true;
             setIsComplete(true);
             onCompleteRef.current?.();
@@ -102,7 +106,18 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
         }
       });
 
+      p.on('seeked', () => {
+        // If user tries to seek forward, snap back
+        p.getCurrentTime((t: number) => {
+          if (t > maxWatchedRef.current + 0.5) {
+            console.log('[Bunny] seeked forward, snapping back', { t, max: maxWatchedRef.current });
+            try { p.setCurrentTime(maxWatchedRef.current); } catch {}
+          }
+        });
+      });
+
       p.on('ended', () => {
+        console.log('[Bunny] ended');
         if (!isCompleteRef.current) {
           isCompleteRef.current = true;
           setIsComplete(true);
