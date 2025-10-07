@@ -152,8 +152,9 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
           {videoId ? (
             <div className="relative rounded-lg overflow-hidden aspect-video mb-4 overscroll-none touch-none" onWheel={(e) => e.preventDefault()}>
               <iframe
+                key={videoId || undefined}
                 ref={iframeRef}
-                src={`https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?autoplay=false&preload=true&showSpeed=false&rememberPosition=false`}
+                src={`https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?autoplay=false&preload=true&playsinline=true&showSpeed=false&rememberPosition=false&playerjs=1&ts=${Date.now()}`}
                 loading="lazy" scrolling="no"
                 style={{
                   border: 0,
