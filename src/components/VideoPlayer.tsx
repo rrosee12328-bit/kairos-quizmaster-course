@@ -21,6 +21,7 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
   const playerRef = useRef<any>(null);
   const maxWatchedRef = useRef(0);
   const isCompleteRef = useRef(false);
+  const onCompleteRef = useRef(onComplete);
 
   // Extract Bunny.net video ID from URL
   const getBunnyVideoId = (url: string) => {
@@ -31,6 +32,10 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
 
   const videoId = getBunnyVideoId(section.videoUrl);
   const libraryId = '506173';
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   useEffect(() => {
     let isMounted = true;
@@ -69,27 +74,30 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
       p.on('timeupdate', (data: any) => {
         const current = data?.seconds ?? 0;
         const dur = data?.duration ?? duration ?? 0;
-        const percentFromEvent = typeof data?.percent === 'number' ? Math.max(0, Math.min(100, Math.round(data.percent * 100))) : null;
+        const percentRaw = typeof data?.percent === 'number' ? data.percent : null;
 
-        // Prevent forward seeking beyond watched + 2s
-        if (current > maxWatchedRef.current + 2) {
-          p.setCurrentTime(maxWatchedRef.current);
+        // Prevent forward seeking beyond watched + 10s
+        if (current > maxWatchedRef.current + 10) {
+          try { p.setCurrentTime(maxWatchedRef.current); } catch {}
           return;
         }
         if (current > maxWatchedRef.current) {
           maxWatchedRef.current = current;
         }
 
-        let pct = percentFromEvent;
-        if (pct === null && dur > 0) {
+        let pct: number | null = null;
+        if (percentRaw !== null) {
+          pct = percentRaw <= 1 ? Math.round(percentRaw * 100) : Math.round(percentRaw);
+        } else if (dur > 0) {
           pct = Math.min(100, Math.round((current / dur) * 100));
         }
+
         if (pct !== null) {
           setProgress(pct);
           if (pct >= 90 && !isCompleteRef.current) {
             isCompleteRef.current = true;
             setIsComplete(true);
-            onComplete();
+            onCompleteRef.current?.();
           }
         }
       });
@@ -98,7 +106,7 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
         if (!isCompleteRef.current) {
           isCompleteRef.current = true;
           setIsComplete(true);
-          onComplete();
+          onCompleteRef.current?.();
         }
       });
     };
@@ -108,7 +116,7 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
     return () => {
       isMounted = false;
     };
-  }, [section.videoUrl, onComplete]);
+  }, [section.videoUrl]);
 
   return (
     <div className="space-y-6">
