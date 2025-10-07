@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Shield, ChevronLeft, ChevronRight } from "lucide-react";
@@ -176,6 +176,25 @@ const Course = () => {
       carouselApi.scrollTo(currentSlide - 1);
     }
   };
+
+  // Keep currentSlide in sync with Embla selections
+  useEffect(() => {
+    if (!carouselApi) return;
+    const update = () => setCurrentSlide(carouselApi.selectedScrollSnap());
+    update();
+    try {
+      carouselApi.on("select", update);
+      carouselApi.on("reInit", update);
+    } catch {}
+    return () => {
+      try {
+        // @ts-ignore - Embla may expose off()
+        carouselApi.off?.("select", update);
+        // @ts-ignore
+        carouselApi.off?.("reInit", update);
+      } catch {}
+    };
+  }, [carouselApi]);
 
   const totalSections = courseSections.length;
   const progressPercentage = (completedSections.length / totalSections) * 100;
