@@ -8,6 +8,7 @@ import Quiz from "@/components/Quiz";
 import VideoPresentationPlaceholder from "@/components/VideoPresentationPlaceholder";
 import CourseHeader from "@/components/CourseHeader";
 import VideoPlayer from "@/components/VideoPlayer";
+import securityHero from "@/assets/security-training-hero.jpg";
 
 const Course = () => {
   const [completedSections, setCompletedSections] = useState<number[]>([]);
@@ -177,8 +178,14 @@ const Course = () => {
           </p>
         </div>
 
-        {/* Video Presentation Placeholder */}
-        <VideoPresentationPlaceholder />
+        {/* Hero Image */}
+        <div className="mb-8 rounded-lg overflow-hidden shadow-xl">
+          <img 
+            src={securityHero} 
+            alt="Professional security operations center with officers monitoring surveillance systems"
+            className="w-full h-[400px] object-cover"
+          />
+        </div>
         
         {/* Course Overview */}
         <div className="mb-8">
