@@ -166,8 +166,16 @@ const Course = () => {
   };
 
   const handleNextSlide = () => {
-    if (carouselApi && currentSlide < totalSections - 1) {
-      carouselApi.scrollTo(currentSlide + 1);
+    if (!carouselApi) return;
+    try {
+      if (carouselApi.canScrollNext()) {
+        carouselApi.scrollNext();
+      } else if (currentSlide < totalSections - 1) {
+        carouselApi.scrollTo(currentSlide + 1);
+      }
+    } catch (e) {
+      console.warn('Carousel next failed, retrying with scrollTo', e);
+      try { carouselApi.scrollTo(currentSlide + 1); } catch {}
     }
   };
 
@@ -275,12 +283,6 @@ const Course = () => {
           <div className="mb-8 animate-fade-in">
             <Carousel 
               setApi={setCarouselApi}
-              opts={{ watchDrag: false }}
-              onSelect={() => {
-                if (carouselApi) {
-                  setCurrentSlide(carouselApi.selectedScrollSnap());
-                }
-              }}
             >
               <CarouselContent>
                 {courseSections.map((section) => (
