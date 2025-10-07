@@ -20,6 +20,7 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const playerRef = useRef<any>(null);
   const maxWatchedRef = useRef(0);
+  const isCompleteRef = useRef(false);
 
   // Extract Bunny.net video ID from URL
   const getBunnyVideoId = (url: string) => {
@@ -57,6 +58,7 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
         // Reset on new section
         setProgress(0);
         setIsComplete(false);
+        isCompleteRef.current = false;
         maxWatchedRef.current = 0;
 
         p.getDuration((d: number) => {
@@ -80,7 +82,8 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
         if (dur > 0) {
           const pct = Math.min(100, Math.round((current / dur) * 100));
           setProgress(pct);
-          if (pct >= 90 && !isComplete) {
+          if (pct >= 90 && !isCompleteRef.current) {
+            isCompleteRef.current = true;
             setIsComplete(true);
             onComplete();
           }
@@ -88,7 +91,8 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
       });
 
       p.on('ended', () => {
-        if (!isComplete) {
+        if (!isCompleteRef.current) {
+          isCompleteRef.current = true;
           setIsComplete(true);
           onComplete();
         }
@@ -100,7 +104,7 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
     return () => {
       isMounted = false;
     };
-  }, [section.videoUrl, onComplete, isComplete]);
+  }, [section.videoUrl, onComplete]);
 
   return (
     <div className="space-y-6">
