@@ -394,18 +394,26 @@ const Course = () => {
 
         {/* Final Quiz */}
         {allSectionsComplete && !showQuiz && (
-          <Card className="border-l-4 border-l-green-500">
+          <Card className="border-l-4 border-l-green-500 animate-fade-in">
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-green-600">
                 <Shield className="h-6 w-6" />
                 Ready for Final Exam
               </CardTitle>
               <CardDescription>
-                Congratulations! You've completed all course sections. Take the final exam to earn your certification.
+                Congratulations! You've completed all {totalSections} course sections. Take the final exam to earn your certification.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button onClick={() => setShowQuiz(true)} size="lg" className="w-full">
+              <div className="mb-4 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                <p className="text-sm text-green-800 dark:text-green-200">
+                  ✓ All sections completed ({completedSections.length}/{totalSections})
+                </p>
+              </div>
+              <Button onClick={() => {
+                setShowQuiz(true);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }} size="lg" className="w-full">
                 Start Final Exam (100 Questions)
               </Button>
             </CardContent>

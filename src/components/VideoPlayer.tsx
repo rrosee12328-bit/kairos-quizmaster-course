@@ -251,6 +251,17 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
               {progress > 0 ? `Progress: ${progress}% complete` : 'Ready to watch'}
             </div>
             <div className="flex gap-2">
+              {!isComplete && progress > 80 && (
+                <Button onClick={() => {
+                  if (!isCompleteRef.current) {
+                    isCompleteRef.current = true;
+                    setIsComplete(true);
+                    onCompleteRef.current?.();
+                  }
+                }} size="sm" variant="outline">
+                  Mark Complete
+                </Button>
+              )}
               {isComplete && (
                 <Button onClick={onNext} size="sm">
                   <SkipForward className="h-4 w-4 mr-2" />
