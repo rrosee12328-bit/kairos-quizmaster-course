@@ -31,13 +31,13 @@ const Quiz = () => {
   
   // Certificate fields with default values
   const certificateData = {
-    schoolName: "Kairos Training Academy",
-    schoolApprovalNumber: "KTA-2025",
-    classroomInstructor: "John Smith",
-    classroomInstructorApprovalNumber: "CI-12345",
-    firearmInstructor: "Sarah Johnson",
-    firearmInstructorApprovalNumber: "FI-67890",
-    schoolManager: "Michael Davis",
+    schoolName: "Kairos Security",
+    schoolApprovalNumber: "F28623301",
+    classroomInstructor: "Stephen Taylor",
+    classroomInstructorApprovalNumber: "F28623301",
+    firearmInstructor: "Stephen Taylor",
+    firearmInstructorApprovalNumber: "F28623301",
+    schoolManager: "Stephen Taylor",
     courseCompletionDate: new Date().toLocaleDateString('en-US', { 
       year: 'numeric', 
       month: '2-digit', 
