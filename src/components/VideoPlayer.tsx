@@ -10,11 +10,12 @@ interface VideoPlayerProps {
     videoUrl: string;
     duration: string;
   };
+  isActive?: boolean;
   onComplete: () => void;
   onNext: () => void;
 }
 
-const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
+const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlayerProps) => {
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -44,6 +45,7 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
 
   useEffect(() => {
     let isMounted = true;
+    if (!isActive) return;
 
     const ensurePlayerJs = () =>
       new Promise<void>((resolve) => {
@@ -201,7 +203,7 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
     return () => {
       isMounted = false;
     };
-  }, [section.videoUrl]);
+  }, [section.videoUrl, isActive]);
 
   return (
     <div className="space-y-6">
@@ -211,7 +213,7 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
         </CardHeader>
         <CardContent>
           {/* Bunny.net Video Player */}
-          {videoId ? (
+          {isActive && videoId ? (
             <div className="relative rounded-lg overflow-hidden aspect-video mb-4 overscroll-none touch-none" onWheel={(e) => e.preventDefault()}>
               <iframe
                 key={videoId || undefined}

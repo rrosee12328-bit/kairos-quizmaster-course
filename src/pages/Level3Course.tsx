@@ -288,7 +288,7 @@ const Course = () => {
               setApi={setCarouselApi}
             >
               <CarouselContent>
-                {courseSections.map((section) => (
+                {courseSections.map((section, idx) => (
                   <CarouselItem key={section.id}>
                     <VideoPlayer
                       section={{
@@ -297,6 +297,7 @@ const Course = () => {
                         videoUrl: section.videoUrl || "",
                         duration: section.duration,
                       }}
+                      isActive={currentSlide === idx}
                       onComplete={() => handleSectionComplete(section.id)}
                       onNext={handleNextSlide}
                     />
