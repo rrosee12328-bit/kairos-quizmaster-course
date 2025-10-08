@@ -23,6 +23,30 @@ const Quiz = () => {
   const [userEmail, setUserEmail] = useState<string>("");
   const [isDownloading, setIsDownloading] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  
+  // Certificate fields with default values
+  const certificateData = {
+    registrationNumber: "",
+    schoolName: "Kairos Training Academy",
+    schoolApprovalNumber: "KTA-2025",
+    classroomInstructor: "John Smith",
+    classroomInstructorApprovalNumber: "CI-12345",
+    firearmInstructor: "Sarah Johnson",
+    firearmInstructorApprovalNumber: "FI-67890",
+    schoolManager: "Michael Davis",
+    courseCompletionDate: new Date().toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: '2-digit', 
+      day: '2-digit' 
+    }),
+    firearmQualificationDate: new Date().toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: '2-digit', 
+      day: '2-digit' 
+    }),
+    firearmCategory: "Handgun",
+    firearmCaliber: ".38 Special"
+  };
 
   const handleAnswerSelect = (value: string) => {
     setSelectedAnswer(value);
@@ -249,12 +273,8 @@ const Quiz = () => {
         {passed && (
           <div className="hidden">
             <Certificate 
-              userName={userName || "Security Officer"} 
-              date={new Date().toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-              })} 
+              userName={userName || "Security Officer"}
+              {...certificateData}
             />
           </div>
         )}
