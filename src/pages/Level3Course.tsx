@@ -156,9 +156,12 @@ const Course = () => {
   ];
 
   const handleSectionComplete = (sectionId: number) => {
-    setCompletedSections((prev) => (prev.includes(sectionId) ? prev : [...prev, sectionId]));
+    setCompletedSections((prev) => {
+      const next = prev.includes(sectionId) ? prev : [...prev, sectionId];
+      console.log('[Course] Section complete', { sectionId, next });
+      return next;
+    });
   };
-
   const handleStartCourse = () => {
     setInCourseMode(true);
     setCurrentSlide(0);
@@ -317,13 +320,24 @@ const Course = () => {
                 Section {currentSlide + 1} of {totalSections}
               </div>
 
-              <Button
-                onClick={handleNextSlide}
-                disabled={currentSlide === totalSections - 1 || !isCurrentSectionComplete}
-              >
-                Next
-                <ChevronRight className="h-4 w-4 ml-2" />
-              </Button>
+              <div className="flex items-center gap-2">
+                {!isCurrentSectionComplete && currentSlide !== totalSections - 1 && (
+                  <Button
+                    variant="secondary"
+                    onClick={() => currentSectionId && handleSectionComplete(currentSectionId)}
+                    title="Temporarily mark this section complete to unlock Next"
+                  >
+                    Unlock Next
+                  </Button>
+                )}
+                <Button
+                  onClick={handleNextSlide}
+                  disabled={currentSlide === totalSections - 1 || !isCurrentSectionComplete}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
+              </div>
             </div>
 
             <div className="text-center mt-4">
