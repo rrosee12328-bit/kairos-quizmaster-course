@@ -19,6 +19,9 @@ const Landing = () => {
               <Button variant="ghost" asChild>
                 <Link to="/courses">Browse Courses</Link>
               </Button>
+              <Button variant="ghost" asChild>
+                <Link to="/admin">Admin</Link>
+              </Button>
               <Button asChild>
                 <Link to="/auth">Sign In</Link>
               </Button>

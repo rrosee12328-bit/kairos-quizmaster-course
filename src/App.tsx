@@ -9,6 +9,7 @@ import Level2Course from "./pages/Level2Course";
 import Level3Course from "./pages/Level3Course";
 import Auth from "./pages/Auth";
 import VideoMetadata from "./pages/VideoMetadata";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/course/level2" element={<Level2Course />} />
           <Route path="/course/level3" element={<Level3Course />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="/video-metadata" element={<VideoMetadata />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
