@@ -1,10 +1,39 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Clock, Award, Users, BookOpen, ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Shield, Clock, Award, Users, BookOpen, ArrowRight, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { User } from "@supabase/supabase-js";
+import { toast } from "sonner";
 
 const Courses = () => {
+  const [user, setUser] = useState<User | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error("Failed to sign out");
+    } else {
+      toast.success("Signed out successfully");
+      navigate("/auth");
+    }
+  };
+
   const courses = [
     {
       id: "level2",
@@ -60,9 +89,16 @@ const Courses = () => {
               <Button variant="ghost" asChild>
                 <Link to="/">Home</Link>
               </Button>
-              <Button variant="outline" asChild>
-                <Link to="/auth">Sign In</Link>
-              </Button>
+              {user ? (
+                <Button variant="outline" onClick={handleSignOut}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
+              ) : (
+                <Button variant="outline" asChild>
+                  <Link to="/auth">Sign In</Link>
+                </Button>
+              )}
             </div>
           </div>
         </div>

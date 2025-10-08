@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Award, BookOpen, Users, ArrowLeft, CheckCircle, XCircle } from "lucide-react";
+import { Award, BookOpen, Users, ArrowLeft, CheckCircle, XCircle, LogOut } from "lucide-react";
 import { format } from "date-fns";
+import { toast as sonnerToast } from "sonner";
 
 const Admin = () => {
   const { toast } = useToast();
@@ -51,6 +52,16 @@ const Admin = () => {
 
     setIsAdmin(true);
     await fetchAllData();
+  };
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      sonnerToast.error("Failed to sign out");
+    } else {
+      sonnerToast.success("Signed out successfully");
+      navigate("/auth");
+    }
   };
 
   const fetchAllData = async () => {
@@ -122,6 +133,10 @@ const Admin = () => {
               </Button>
               <h1 className="text-2xl font-bold">Admin Panel</h1>
             </div>
+            <Button variant="outline" size="sm" onClick={handleSignOut}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
           </div>
         </div>
       </header>
