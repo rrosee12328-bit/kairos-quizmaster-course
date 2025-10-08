@@ -5,43 +5,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle, XCircle } from "lucide-react";
-
-interface QuizQuestion {
-  id: number;
-  question: string;
-  options: string[];
-  correctAnswer: number;
-}
-
-const generateQuizQuestions = (): QuizQuestion[] => {
-  const securityTopics = [
-    "Physical Security", "Cybersecurity", "Risk Assessment", "Emergency Response",
-    "Access Control", "Surveillance Systems", "Threat Detection", "Security Protocols",
-    "Incident Management"
-  ];
-  
-  const questions: QuizQuestion[] = [];
-  
-  for (let i = 1; i <= 100; i++) {
-    const topic = securityTopics[Math.floor(Math.random() * securityTopics.length)];
-    questions.push({
-      id: i,
-      question: `${topic} Question ${i}: What is the most important aspect of ${topic.toLowerCase()} in a security environment?`,
-      options: [
-        `Standard ${topic} protocol implementation`,
-        `Advanced ${topic} monitoring systems`,
-        `Comprehensive ${topic} assessment procedures`,
-        `Emergency ${topic} response protocols`
-      ],
-      correctAnswer: Math.floor(Math.random() * 4)
-    });
-  }
-  
-  return questions;
-};
+import { level3ExamQuestions } from "@/data/level3ExamQuestions";
 
 const Quiz = () => {
-  const [questions] = useState(generateQuizQuestions());
+  const [questions] = useState(level3ExamQuestions);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
   const [showResults, setShowResults] = useState(false);
@@ -89,16 +56,19 @@ const Quiz = () => {
   const percentage = Math.round((score / questions.length) * 100);
 
   if (showResults) {
+    const passingScore = 75;
+    const passed = percentage >= passingScore;
+    
     return (
       <div className="max-w-4xl mx-auto space-y-6">
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Quiz Complete!</CardTitle>
+            <CardTitle className="text-2xl">Level 3 Security Officer Exam Complete!</CardTitle>
             <CardDescription>Here are your results</CardDescription>
           </CardHeader>
           <CardContent className="text-center space-y-6">
             <div className="text-6xl">
-              {percentage >= 70 ? "🎉" : "📚"}
+              {passed ? "🎉" : "📚"}
             </div>
             <div>
               <div className="text-4xl font-bold text-primary mb-2">
@@ -108,11 +78,20 @@ const Quiz = () => {
                 {percentage}% Score
               </div>
             </div>
-            <div className={`text-lg font-semibold ${percentage >= 70 ? 'text-green-600' : 'text-orange-600'}`}>
-              {percentage >= 70 ? 'Congratulations! You passed!' : 'Keep studying and try again!'}
+            <div className={`text-lg font-semibold ${passed ? 'text-green-600' : 'text-orange-600'}`}>
+              {passed 
+                ? 'Congratulations! You passed the Level 3 Security Officer Certification Exam!' 
+                : `You need ${passingScore}% to pass. Keep studying and try again!`}
             </div>
+            {passed && (
+              <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                <p className="text-sm text-green-800 dark:text-green-200">
+                  You have successfully completed the Level 3 Security Officer Certification Course and passed the final examination.
+                </p>
+              </div>
+            )}
             <Button onClick={() => window.location.reload()} size="lg">
-              Retake Quiz
+              Retake Exam
             </Button>
           </CardContent>
         </Card>
@@ -128,9 +107,9 @@ const Quiz = () => {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Security Academy Final Exam</CardTitle>
+              <CardTitle>Level 3 Security Officer Final Exam</CardTitle>
               <CardDescription>
-                Question {currentQuestion + 1} of {questions.length}
+                Question {currentQuestion + 1} of {questions.length} - Passing score: 75%
               </CardDescription>
             </div>
             <div className="text-sm text-muted-foreground">
