@@ -10,19 +10,35 @@ import { toast } from "sonner";
 
 const Courses = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
+      if (user) {
+        checkAdminStatus(user.id);
+      }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        checkAdminStatus(session.user.id);
+      } else {
+        setIsAdmin(false);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const checkAdminStatus = async (userId: string) => {
+    const { data, error } = await supabase.rpc('is_admin', { _user_id: userId });
+    if (!error && data) {
+      setIsAdmin(true);
+    }
+  };
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -90,10 +106,17 @@ const Courses = () => {
                 <Link to="/">Home</Link>
               </Button>
               {user ? (
-                <Button variant="outline" onClick={handleSignOut}>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
-                </Button>
+                <>
+                  {isAdmin && (
+                    <Button variant="ghost" asChild>
+                      <Link to="/admin">Admin</Link>
+                    </Button>
+                  )}
+                  <Button variant="outline" onClick={handleSignOut}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </>
               ) : (
                 <Button variant="outline" asChild>
                   <Link to="/auth">Sign In</Link>

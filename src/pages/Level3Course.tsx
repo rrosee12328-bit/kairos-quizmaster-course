@@ -9,6 +9,7 @@ import VideoPresentationPlaceholder from "@/components/VideoPresentationPlacehol
 import CourseHeader from "@/components/CourseHeader";
 import VideoPlayer from "@/components/VideoPlayer";
 import securityHero from "@/assets/security-training-hero.jpg";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Carousel,
   CarouselContent,
@@ -22,6 +23,36 @@ const Course = () => {
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [inCourseMode, setInCourseMode] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setIsAuthenticated(true);
+        checkAdminStatus(user.id);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setIsAuthenticated(true);
+        checkAdminStatus(session.user.id);
+      } else {
+        setIsAuthenticated(false);
+        setIsAdmin(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const checkAdminStatus = async (userId: string) => {
+    const { data, error } = await supabase.rpc('is_admin', { _user_id: userId });
+    if (!error && data) {
+      setIsAdmin(true);
+    }
+  };
 
   const courseSections = [
     {
@@ -223,7 +254,7 @@ const Course = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      <CourseHeader />
+      <CourseHeader isAdmin={isAdmin} showAuthButtons={isAuthenticated} />
       
       <div className="container mx-auto px-6 py-8">
         {/* Course Title */}

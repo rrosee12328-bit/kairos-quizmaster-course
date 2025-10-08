@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Shield, AlertTriangle } from "lucide-react";
@@ -7,10 +7,41 @@ import ProgressTracker from "@/components/ProgressTracker";
 import Quiz from "@/components/Quiz";
 import VideoPresentationPlaceholder from "@/components/VideoPresentationPlaceholder";
 import CourseHeader from "@/components/CourseHeader";
+import { supabase } from "@/integrations/supabase/client";
 
 const Level2Course = () => {
   const [completedSections, setCompletedSections] = useState<number[]>([]);
   const [showQuiz, setShowQuiz] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setIsAuthenticated(true);
+        checkAdminStatus(user.id);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setIsAuthenticated(true);
+        checkAdminStatus(session.user.id);
+      } else {
+        setIsAuthenticated(false);
+        setIsAdmin(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const checkAdminStatus = async (userId: string) => {
+    const { data, error } = await supabase.rpc('is_admin', { _user_id: userId });
+    if (!error && data) {
+      setIsAdmin(true);
+    }
+  };
 
   const courseSections = [
     {
@@ -123,7 +154,7 @@ const Level2Course = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      <CourseHeader />
+      <CourseHeader isAdmin={isAdmin} showAuthButtons={isAuthenticated} />
       
       <div className="container mx-auto px-6 py-8">
         {/* Course Title */}
