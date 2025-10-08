@@ -95,6 +95,29 @@ const EnrollmentForm = ({ onSuccess }: EnrollmentFormProps) => {
     }
   };
 
+  const handleResend = async () => {
+    const email = form.getValues('email')?.trim();
+    if (!email) {
+      toast.error('Please enter your email above first.');
+      return;
+    }
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+        options: { emailRedirectTo: `${window.location.origin}/auth` }
+      });
+      if (error) {
+        toast.error(`Could not resend: ${error.message}`);
+        return;
+      }
+      toast.success('Confirmation email sent. Please check your inbox or spam folder.');
+    } catch (e) {
+      console.error('Resend error:', e);
+      toast.error('Failed to resend confirmation email.');
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -249,6 +272,9 @@ const EnrollmentForm = ({ onSuccess }: EnrollmentFormProps) => {
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? "Enrolling..." : "Complete Enrollment"}
+            </Button>
+            <Button type="button" variant="link" className="w-full" onClick={handleResend}>
+              Resend confirmation email
             </Button>
           </form>
         </Form>
