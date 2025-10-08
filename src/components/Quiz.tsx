@@ -95,6 +95,51 @@ const Quiz = () => {
             </Button>
           </CardContent>
         </Card>
+
+        {/* Review Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Review Your Answers</CardTitle>
+            <CardDescription>Questions marked incorrect require further study</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {questions.map((q, index) => {
+              const userAnswer = selectedAnswers[index];
+              const isCorrect = userAnswer === q.correctAnswer;
+              
+              return (
+                <div 
+                  key={index}
+                  className={`p-4 rounded-lg border-2 ${
+                    isCorrect 
+                      ? 'border-green-500 bg-green-50 dark:bg-green-950/20' 
+                      : 'border-red-500 bg-red-50 dark:bg-red-950/20'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    {isCorrect ? (
+                      <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
+                    ) : (
+                      <XCircle className="h-6 w-6 text-red-600 flex-shrink-0 mt-1" />
+                    )}
+                    <div className="flex-1 space-y-2">
+                      <div className="font-semibold">
+                        Question {index + 1}: {isCorrect ? 'Correct' : 'Incorrect'}
+                      </div>
+                      <div className="text-sm">{q.question}</div>
+                      <div className="text-sm">
+                        <span className="font-medium">Your answer: </span>
+                        <span className={isCorrect ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}>
+                          {q.options[userAnswer]}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
       </div>
     );
   }
