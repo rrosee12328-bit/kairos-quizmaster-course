@@ -13,12 +13,39 @@ const Auth = () => {
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
 
+  const processPendingEnrollment = async (sessionUser: User) => {
+    try {
+      const raw = localStorage.getItem('pendingEnrollment');
+      if (!raw) return;
+      const pending = JSON.parse(raw);
+
+      const payload = {
+        ...pending,
+        user_id: sessionUser.id,
+        email: sessionUser.email?.toLowerCase() ?? pending.email,
+      };
+
+      const { error } = await supabase.from('enrollments').insert(payload);
+      if (error) {
+        console.error('Finalize enrollment error:', error);
+        toast.error('We could not finalize your enrollment after sign-in.');
+        return;
+      }
+
+      localStorage.removeItem('pendingEnrollment');
+      toast.success('Enrollment completed! Welcome.');
+    } catch (e) {
+      console.error('Finalize enrollment unexpected error:', e);
+    }
+  };
+
   useEffect(() => {
     // Check if user is already logged in
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
       if (session?.user) {
+        await processPendingEnrollment(session.user);
         navigate('/courses');
       }
     };
@@ -30,7 +57,10 @@ const Auth = () => {
       (event, session) => {
         setUser(session?.user ?? null);
         if (event === 'SIGNED_IN' && session?.user) {
-          navigate('/courses');
+          setTimeout(async () => {
+            await processPendingEnrollment(session.user!);
+            navigate('/courses');
+          }, 0);
         }
       }
     );

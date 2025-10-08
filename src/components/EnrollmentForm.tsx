@@ -71,29 +71,21 @@ const EnrollmentForm = ({ onSuccess }: EnrollmentFormProps) => {
       }
 
       if (authData.user) {
-        // Insert enrollment immediately with the new user ID
-        const { error: enrollmentError } = await supabase
-          .from('enrollments')
-          .insert({
-            user_id: authData.user.id,
-            email: data.email,
-            first_name: data.firstName,
-            last_name: data.lastName,
-            phone_number: data.phoneNumber,
-            identification_type: data.identificationType,
-            last_six_digits: data.lastSixDigits,
-            course_type: data.courseType,
-            enrollment_status: 'enrolled',
-          });
+        // Save pending enrollment to complete after email confirmation/sign-in
+        const pending = {
+          email: data.email,
+          first_name: data.firstName,
+          last_name: data.lastName,
+          phone_number: data.phoneNumber,
+          identification_type: data.identificationType,
+          last_six_digits: data.lastSixDigits,
+          course_type: data.courseType,
+          enrollment_status: 'enrolled',
+        };
 
-        if (enrollmentError) {
-          console.error('Enrollment error:', enrollmentError);
-          toast.error("Account created but enrollment failed. Please contact support.");
-          return;
-        }
-
-        toast.success("Enrollment successful! Please check your email to verify your account before accessing courses.");
-        onSuccess?.();
+        localStorage.setItem('pendingEnrollment', JSON.stringify(pending));
+        toast.success("Account created! Check your email to confirm, then sign in to finalize your enrollment automatically.");
+        // No navigation here; finalize after sign-in
       }
     } catch (error) {
       console.error('Enrollment error:', error);
