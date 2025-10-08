@@ -4,15 +4,23 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle, XCircle, Download } from "lucide-react";
 import { level3ExamQuestions } from "@/data/level3ExamQuestions";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import Certificate from "./Certificate";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 const Quiz = () => {
+  const { toast } = useToast();
   const [questions] = useState(level3ExamQuestions);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
   const [showResults, setShowResults] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState<string>("");
+  const [userName, setUserName] = useState<string>("");
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const handleAnswerSelect = (value: string) => {
     setSelectedAnswer(value);
@@ -51,6 +59,63 @@ const Quiz = () => {
     return correct;
   };
 
+  const getUserInfo = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .single();
+      
+      if (profile) {
+        setUserName(profile.full_name || 'Security Officer');
+      }
+    }
+  };
+
+  const downloadCertificate = async () => {
+    setIsDownloading(true);
+    try {
+      await getUserInfo();
+      
+      // Wait a bit for the certificate to render
+      setTimeout(async () => {
+        const certificateElement = document.getElementById('certificate');
+        if (certificateElement) {
+          const canvas = await html2canvas(certificateElement, {
+            scale: 2,
+            backgroundColor: '#ffffff'
+          });
+          
+          const imgData = canvas.toDataURL('image/png');
+          const pdf = new jsPDF({
+            orientation: 'landscape',
+            unit: 'px',
+            format: [canvas.width, canvas.height]
+          });
+          
+          pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+          pdf.save(`Level-3-Certificate-${userName.replace(/\s+/g, '-')}.pdf`);
+          
+          toast({
+            title: "Certificate Downloaded",
+            description: "Your certificate has been downloaded successfully.",
+          });
+        }
+        setIsDownloading(false);
+      }, 500);
+    } catch (error) {
+      console.error('Error downloading certificate:', error);
+      toast({
+        title: "Download Failed",
+        description: "Failed to download certificate. Please try again.",
+        variant: "destructive",
+      });
+      setIsDownloading(false);
+    }
+  };
+
   const progress = ((currentQuestion + 1) / questions.length) * 100;
   const score = calculateScore();
   const percentage = Math.round((score / questions.length) * 100);
@@ -84,17 +149,43 @@ const Quiz = () => {
                 : `You need ${passingScore}% to pass. Keep studying and try again!`}
             </div>
             {passed && (
-              <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                <p className="text-sm text-green-800 dark:text-green-200">
-                  You have successfully completed the Level 3 Security Officer Certification Course and passed the final examination.
-                </p>
-              </div>
+              <>
+                <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                  <p className="text-sm text-green-800 dark:text-green-200">
+                    You have successfully completed the Level 3 Security Officer Certification Course and passed the final examination.
+                  </p>
+                </div>
+                <div className="flex gap-4 justify-center">
+                  <Button 
+                    onClick={downloadCertificate} 
+                    size="lg"
+                    disabled={isDownloading}
+                  >
+                    <Download className="mr-2 h-5 w-5" />
+                    {isDownloading ? "Generating..." : "Download Certificate"}
+                  </Button>
+                </div>
+              </>
             )}
-            <Button onClick={() => window.location.reload()} size="lg">
+            <Button onClick={() => window.location.reload()} size="lg" variant="secondary">
               Retake Exam
             </Button>
           </CardContent>
         </Card>
+
+        {/* Hidden Certificate for Generation */}
+        {passed && (
+          <div className="hidden">
+            <Certificate 
+              userName={userName || "Security Officer"} 
+              date={new Date().toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              })} 
+            />
+          </div>
+        )}
 
         {/* Review Section */}
         <Card>
