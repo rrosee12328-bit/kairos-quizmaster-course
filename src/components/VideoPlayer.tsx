@@ -64,6 +64,32 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
 
       let duration = 0;
 
+      // Bootstrap completion poll (runs even if 'ready' never fires')
+      const bootstrapStart = Date.now();
+      const bootstrapPoll = window.setInterval(() => {
+        if (isCompleteRef.current) { try { window.clearInterval(bootstrapPoll); } catch {} return; }
+        try {
+          p.getDuration((d: number) => {
+            if (d && d > 0) duration = d;
+            p.getCurrentTime((t: number) => {
+              const dSafe = duration || 0;
+              const epsilon = Math.max(0.25, dSafe * 0.01);
+              if (dSafe > 0 && t >= dSafe - epsilon) {
+                console.log('[Bunny] bootstrap poll reached end', { t, d: dSafe });
+                isCompleteRef.current = true;
+                setIsComplete(true);
+                onCompleteRef.current?.();
+                setTimeout(() => onNextRef.current?.(), 300);
+                try { window.clearInterval(bootstrapPoll); } catch {}
+              }
+            });
+          });
+        } catch {}
+        if (Date.now() - bootstrapStart > 15000) {
+          try { window.clearInterval(bootstrapPoll); } catch {}
+        }
+      }, 500);
+
       p.on('ready', () => {
         console.log('[Bunny] ready', { videoId });
         // Reset on new section
