@@ -80,6 +80,27 @@ const SignInForm = ({ onSuccess }: SignInFormProps) => {
     }
   };
 
+  const handleForgotPassword = async () => {
+    const email = form.getValues('email')?.trim();
+    if (!email) {
+      toast.error('Please enter your email above first.');
+      return;
+    }
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+      if (error) {
+        toast.error(`Could not send reset email: ${error.message}`);
+        return;
+      }
+      toast.success('Password reset email sent. Please check your inbox.');
+    } catch (e) {
+      console.error('Password reset error:', e);
+      toast.error('Failed to send password reset email.');
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -122,9 +143,14 @@ const SignInForm = ({ onSuccess }: SignInFormProps) => {
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? "Signing In..." : "Sign In"}
             </Button>
-            <Button type="button" variant="link" className="w-full" onClick={handleResend}>
-              Resend confirmation email
-            </Button>
+            <div className="flex gap-2 w-full">
+              <Button type="button" variant="link" className="flex-1" onClick={handleForgotPassword}>
+                Forgot password?
+              </Button>
+              <Button type="button" variant="link" className="flex-1" onClick={handleResend}>
+                Resend confirmation
+              </Button>
+            </div>
           </form>
         </Form>
       </CardContent>
