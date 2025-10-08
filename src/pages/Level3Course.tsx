@@ -143,14 +143,15 @@ const Course = () => {
     },
     {
       id: 10,
-      title: "Legal and Regulatory Framework",
-      description: "Understanding the legal context of security operations",
-      duration: "55 minutes",
+      title: "Handcuffing",
+      description: "Proper handcuffing techniques and procedures for security operations",
+      duration: "5 minutes",
+      videoUrl: "https://iframe.mediadelivery.net/embed/506173/8c142b15-c591-4f2b-9d09-1b39fca4fe38",
       content: [
-        "Security legislation",
-        "Data protection laws",
-        "Use of force regulations",
-        "Court procedures and testimony"
+        "Handcuffing fundamentals",
+        "Safety protocols",
+        "Legal considerations",
+        "Practical techniques"
       ]
     }
   ];
