@@ -110,7 +110,17 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
 
         if (pct !== null) {
           setProgress(pct);
-          // Completion is only triggered when the video ends
+          // Fallback completion detection for very short videos if 'ended' doesn't fire
+          const durSafe = dur || 0;
+          const epsilon = Math.max(0.25, durSafe * 0.01); // 0.25s or 1% of duration
+          if (!isCompleteRef.current && durSafe > 0 && (current >= durSafe - epsilon || pct >= 99)) {
+            console.log('[Bunny] near-end fallback completion', { current, dur: durSafe, pct });
+            isCompleteRef.current = true;
+            setIsComplete(true);
+            onCompleteRef.current?.();
+            // Auto-advance to next section after marking complete
+            setTimeout(() => onNextRef.current?.(), 300);
+          }
         }
       });
 
