@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, XCircle, Download } from "lucide-react";
+import { CheckCircle, XCircle, Download, Mail } from "lucide-react";
 import { level3ExamQuestions } from "@/data/level3ExamQuestions";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,7 +20,9 @@ const Quiz = () => {
   const [showResults, setShowResults] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
+  const [userEmail, setUserEmail] = useState<string>("");
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   const handleAnswerSelect = (value: string) => {
     setSelectedAnswer(value);
@@ -64,12 +66,16 @@ const Quiz = () => {
     if (user) {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('full_name')
+        .select('full_name, email')
         .eq('id', user.id)
         .single();
       
       if (profile) {
         setUserName(profile.full_name || 'Security Officer');
+        setUserEmail(profile.email || user.email || '');
+      } else {
+        setUserName('Security Officer');
+        setUserEmail(user.email || '');
       }
     }
   };
@@ -115,6 +121,63 @@ const Quiz = () => {
       setIsDownloading(false);
     }
   };
+
+  const emailCertificate = async () => {
+    setIsSendingEmail(true);
+    try {
+      await getUserInfo();
+      
+      setTimeout(async () => {
+        const certificateElement = document.getElementById('certificate');
+        if (certificateElement) {
+          const canvas = await html2canvas(certificateElement, {
+            scale: 2,
+            backgroundColor: '#ffffff'
+          });
+          
+          const imgData = canvas.toDataURL('image/png');
+          const pdf = new jsPDF({
+            orientation: 'landscape',
+            unit: 'px',
+            format: [canvas.width, canvas.height]
+          });
+          
+          pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+          const pdfBase64 = pdf.output('datauristring').split(',')[1];
+          
+          const { error } = await supabase.functions.invoke('send-certificate', {
+            body: {
+              name: userName || 'Security Officer',
+              email: userEmail,
+              certificatePdf: pdfBase64,
+              date: new Date().toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              })
+            }
+          });
+
+          if (error) throw error;
+
+          toast({
+            title: "Certificate Sent",
+            description: userEmail ? `Your certificate has been sent to ${userEmail}` : 'Your certificate email was sent.',
+          });
+        }
+        setIsSendingEmail(false);
+      }, 500);
+    } catch (error) {
+      console.error('Error sending certificate:', error);
+      toast({
+        title: "Email Failed",
+        description: "Failed to send certificate. Please try again.",
+        variant: "destructive",
+      });
+      setIsSendingEmail(false);
+    }
+  };
+
 
   const progress = ((currentQuestion + 1) / questions.length) * 100;
   const score = calculateScore();
@@ -163,6 +226,15 @@ const Quiz = () => {
                   >
                     <Download className="mr-2 h-5 w-5" />
                     {isDownloading ? "Generating..." : "Download Certificate"}
+                  </Button>
+                  <Button 
+                    onClick={emailCertificate} 
+                    size="lg"
+                    variant="outline"
+                    disabled={isSendingEmail}
+                  >
+                    <Mail className="mr-2 h-5 w-5" />
+                    {isSendingEmail ? "Sending..." : "Email Certificate"}
                   </Button>
                 </div>
               </>
