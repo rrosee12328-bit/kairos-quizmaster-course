@@ -14,6 +14,101 @@ export type Database = {
   }
   public: {
     Tables: {
+      certificates: {
+        Row: {
+          completion_date: string
+          completion_id: string
+          course_type: string
+          created_at: string
+          firearm_caliber: string | null
+          firearm_category: string | null
+          firearm_qualification_date: string | null
+          id: string
+          identification_type: string
+          issued_at: string
+          last_six_digits: string
+          registration_number: string
+          student_name: string
+          user_id: string
+        }
+        Insert: {
+          completion_date: string
+          completion_id: string
+          course_type: string
+          created_at?: string
+          firearm_caliber?: string | null
+          firearm_category?: string | null
+          firearm_qualification_date?: string | null
+          id?: string
+          identification_type: string
+          issued_at?: string
+          last_six_digits: string
+          registration_number: string
+          student_name: string
+          user_id: string
+        }
+        Update: {
+          completion_date?: string
+          completion_id?: string
+          course_type?: string
+          created_at?: string
+          firearm_caliber?: string | null
+          firearm_category?: string | null
+          firearm_qualification_date?: string | null
+          id?: string
+          identification_type?: string
+          issued_at?: string
+          last_six_digits?: string
+          registration_number?: string
+          student_name?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificates_completion_id_fkey"
+            columns: ["completion_id"]
+            isOneToOne: false
+            referencedRelation: "course_completions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_completions: {
+        Row: {
+          completed_at: string
+          course_type: string
+          created_at: string
+          id: string
+          passed: boolean
+          percentage: number
+          score: number
+          total_questions: number
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          course_type: string
+          created_at?: string
+          id?: string
+          passed: boolean
+          percentage: number
+          score: number
+          total_questions: number
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          course_type?: string
+          created_at?: string
+          id?: string
+          passed?: boolean
+          percentage?: number
+          score?: number
+          total_questions?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       enrollments: {
         Row: {
           course_type: string
@@ -124,6 +219,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_registration_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
