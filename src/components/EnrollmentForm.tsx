@@ -57,7 +57,7 @@ const EnrollmentForm = ({ onSuccess }: EnrollmentFormProps) => {
         email: data.email,
         password: data.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: `${window.location.origin}/auth`,
           data: {
             first_name: data.firstName,
             last_name: data.lastName,
@@ -71,29 +71,21 @@ const EnrollmentForm = ({ onSuccess }: EnrollmentFormProps) => {
       }
 
       if (authData.user) {
-        // Create enrollment record
-        const { error: enrollmentError } = await supabase
-          .from('enrollments')
-          .insert({
-            user_id: authData.user.id,
-            email: data.email,
-            first_name: data.firstName,
-            last_name: data.lastName,
-            phone_number: data.phoneNumber,
-            identification_type: data.identificationType,
-            last_six_digits: data.lastSixDigits,
-            course_type: data.courseType,
-            enrollment_status: 'enrolled',
-          });
+        // Save pending enrollment to complete after email confirmation/sign-in
+        const pending = {
+          email: data.email,
+          first_name: data.firstName,
+          last_name: data.lastName,
+          phone_number: data.phoneNumber,
+          identification_type: data.identificationType,
+          last_six_digits: data.lastSixDigits,
+          course_type: data.courseType,
+          enrollment_status: 'enrolled',
+        };
 
-        if (enrollmentError) {
-          console.error('Enrollment error:', enrollmentError);
-          toast.error("Failed to complete enrollment. Please contact support.");
-          return;
-        }
-
-        toast.success("Enrollment successful! Please check your email to verify your account.");
-        onSuccess?.();
+        localStorage.setItem('pendingEnrollment', JSON.stringify(pending));
+        toast.success("Account created! Check your email to confirm, then we’ll finalize your enrollment automatically.");
+        // Do not navigate yet; enrollment will be completed after sign-in
       }
     } catch (error) {
       console.error('Enrollment error:', error);

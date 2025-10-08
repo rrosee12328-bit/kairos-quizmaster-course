@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
+import { toast } from "sonner";
 import kairosLogo from "@/assets/kairos-logo.png";
 import EnrollmentForm from "@/components/EnrollmentForm";
 import SignInForm from "@/components/SignInForm";
@@ -12,12 +13,40 @@ const Auth = () => {
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
 
+  const processPendingEnrollment = async (sessionUser: User) => {
+    try {
+      const raw = localStorage.getItem('pendingEnrollment');
+      if (!raw) return;
+      const pending = JSON.parse(raw);
+      const sessionEmail = sessionUser.email?.toLowerCase() ?? '';
+      if (pending.email && pending.email.toLowerCase() !== sessionEmail) return;
+
+      const payload = {
+        ...pending,
+        user_id: sessionUser.id,
+        email: sessionEmail,
+      };
+
+      const { error } = await supabase.from('enrollments').insert(payload);
+      if (error) {
+        console.error('Auto-enroll error:', error);
+        toast.error('We could not finalize your enrollment after sign-in.');
+      } else {
+        toast.success('Enrollment completed! Welcome.');
+        localStorage.removeItem('pendingEnrollment');
+      }
+    } catch (e) {
+      console.error('Auto-enroll unexpected error:', e);
+    }
+  };
+
   useEffect(() => {
     // Check if user is already logged in
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
       if (session?.user) {
+        await processPendingEnrollment(session.user);
         navigate('/courses');
       }
     };
@@ -28,6 +57,12 @@ const Auth = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user ?? null);
+        if (event === 'SIGNED_IN' && session?.user) {
+          setTimeout(async () => {
+            await processPendingEnrollment(session.user!);
+            navigate('/courses');
+          }, 0);
+        }
       }
     );
 
