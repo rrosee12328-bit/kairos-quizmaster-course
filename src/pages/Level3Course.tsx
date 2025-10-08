@@ -320,24 +320,13 @@ const Course = () => {
                 Section {currentSlide + 1} of {totalSections}
               </div>
 
-              <div className="flex items-center gap-2">
-                {!isCurrentSectionComplete && currentSlide !== totalSections - 1 && (
-                  <Button
-                    variant="secondary"
-                    onClick={() => currentSectionId && handleSectionComplete(currentSectionId)}
-                    title="Temporarily mark this section complete to unlock Next"
-                  >
-                    Unlock Next
-                  </Button>
-                )}
-                <Button
-                  onClick={handleNextSlide}
-                  disabled={currentSlide === totalSections - 1 || !isCurrentSectionComplete}
-                >
-                  Next
-                  <ChevronRight className="h-4 w-4 ml-2" />
-                </Button>
-              </div>
+              <Button
+                onClick={handleNextSlide}
+                disabled={currentSlide === totalSections - 1 || !isCurrentSectionComplete}
+              >
+                Next
+                <ChevronRight className="h-4 w-4 ml-2" />
+              </Button>
             </div>
 
             <div className="text-center mt-4">

@@ -110,14 +110,7 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
 
         if (pct !== null) {
           setProgress(pct);
-          if (pct >= 90 && !isCompleteRef.current) {
-            console.log('[Bunny] reached 90%', pct);
-            isCompleteRef.current = true;
-            setIsComplete(true);
-            onCompleteRef.current?.();
-            // Auto-advance to next section after marking complete
-            setTimeout(() => onNextRef.current?.(), 300);
-          }
+          // Completion is only triggered when the video ends
         }
       });
 
