@@ -84,6 +84,33 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
         // Poll until duration is known
         (updateDuration as any)._i = window.setInterval(updateDuration, 500);
         updateDuration();
+
+        // Robust completion polling as a fallback for very short videos or missing 'ended'
+        const pollEpsilon = () => Math.max(0.25, (duration || 0) * 0.01);
+        const completionPoll = window.setInterval(() => {
+          if (isCompleteRef.current) return;
+          try {
+            p.getCurrentTime((t: number) => {
+              const d = duration || 0;
+              if (d > 0 && t >= d - pollEpsilon()) {
+                console.log('[Bunny] completion poll reached end', { t, d });
+                if (!isCompleteRef.current) {
+                  isCompleteRef.current = true;
+                  setIsComplete(true);
+                  onCompleteRef.current?.();
+                  setTimeout(() => onNextRef.current?.(), 300);
+                }
+              }
+            });
+          } catch {}
+        }, 500);
+
+        // Clear completionPoll when complete
+        const clearOnComplete = () => {
+          try { window.clearInterval(completionPoll); } catch {}
+        };
+        p.on('ended', clearOnComplete);
+        p.on('pause', clearOnComplete);
       });
 
       p.on('timeupdate', (data: any) => {
