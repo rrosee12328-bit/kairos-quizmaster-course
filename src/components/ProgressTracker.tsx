@@ -6,9 +6,10 @@ interface ProgressTrackerProps {
   completedSections: number[];
   currentSection: number;
   totalSections: number;
+  showLocks?: boolean;
 }
 
-const ProgressTracker = ({ completedSections, currentSection, totalSections }: ProgressTrackerProps) => {
+const ProgressTracker = ({ completedSections, currentSection, totalSections, showLocks = false }: ProgressTrackerProps) => {
   const progressPercentage = (completedSections.length / totalSections) * 100;
   const isQuizUnlocked = completedSections.length === totalSections;
 
@@ -36,7 +37,7 @@ const ProgressTracker = ({ completedSections, currentSection, totalSections }: P
               const sectionNumber = index + 1;
               const isCompleted = completedSections.includes(sectionNumber);
               const isCurrent = sectionNumber === currentSection;
-              const isLocked = !isCompleted && sectionNumber > Math.max(...completedSections, 0) + 1;
+              const isLocked = showLocks ? (!isCompleted && sectionNumber > Math.max(...completedSections, 0) + 1) : false;
               
               return (
                 <div

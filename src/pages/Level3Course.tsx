@@ -171,6 +171,13 @@ const Course = () => {
 
   const handleNextSlide = () => {
     if (!carouselApi) return;
+
+    // Mark current section complete when moving forward (keeps progress bar in sync)
+    const curId = courseSections[currentSlide]?.id;
+    if (curId) {
+      handleSectionComplete(curId);
+    }
+
     try {
       if (carouselApi.canScrollNext()) {
         carouselApi.scrollNext();
