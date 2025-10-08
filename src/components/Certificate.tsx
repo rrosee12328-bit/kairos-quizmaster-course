@@ -3,6 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 interface CertificateProps {
   userName: string;
   registrationNumber: string;
+  identificationType: string;
+  lastSixDigits: string;
   schoolName: string;
   schoolApprovalNumber: string;
   classroomInstructor: string;
@@ -19,6 +21,8 @@ interface CertificateProps {
 const Certificate = ({ 
   userName, 
   registrationNumber,
+  identificationType,
+  lastSixDigits,
   schoolName,
   schoolApprovalNumber,
   classroomInstructor,
@@ -41,7 +45,7 @@ const Certificate = ({
             <h2 className="text-2xl font-bold text-black">CERTIFICATE OF COMPLETION</h2>
           </div>
 
-          {/* Name Section */}
+          {/* Name and ID Section */}
           <div className="mb-6">
             <div className="bg-blue-100 border-b-2 border-black px-4 py-3 mb-1">
               <p className="text-center text-black font-semibold">{userName || "____________________"}</p>
@@ -54,7 +58,17 @@ const Certificate = ({
             <div className="bg-blue-100 border-b-2 border-black px-4 py-2 mb-1">
               <p className="text-center text-black">{registrationNumber || "____________________"}</p>
             </div>
-            <p className="text-center text-xs text-black">(Registration Number or social security number (last 4 digits) of student)</p>
+            <p className="text-center text-xs text-black">(Registration Number)</p>
+          </div>
+
+          {/* Identification - Last 6 digits */}
+          <div className="mb-6">
+            <div className="bg-blue-100 border-b-2 border-black px-4 py-2 mb-1">
+              <p className="text-center text-black">{lastSixDigits || "____________________"}</p>
+            </div>
+            <p className="text-center text-xs text-black">
+              ({identificationType === 'drivers_license' ? "Driver's License" : "Social Security"} - Last 6 digits)
+            </p>
           </div>
 
           {/* Certification Text */}

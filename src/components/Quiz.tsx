@@ -23,10 +23,14 @@ const Quiz = () => {
   const [userEmail, setUserEmail] = useState<string>("");
   const [isDownloading, setIsDownloading] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [certificateInfo, setCertificateInfo] = useState<{
+    registrationNumber: string;
+    identificationType: string;
+    lastSixDigits: string;
+  } | null>(null);
   
   // Certificate fields with default values
   const certificateData = {
-    registrationNumber: "",
     schoolName: "Kairos Training Academy",
     schoolApprovalNumber: "KTA-2025",
     classroomInstructor: "John Smith",
@@ -104,10 +108,95 @@ const Quiz = () => {
     }
   };
 
+  const saveCompletionAndCertificate = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    // Get enrollment data for identification info
+    const { data: enrollment } = await supabase
+      .from('enrollments')
+      .select('first_name, last_name, identification_type, last_six_digits')
+      .eq('user_id', user.id)
+      .eq('course_type', 'level3')
+      .single();
+
+    if (!enrollment) {
+      toast({
+        title: "Enrollment Not Found",
+        description: "Could not find your enrollment information. Please contact support.",
+        variant: "destructive",
+      });
+      return null;
+    }
+
+    const fullName = `${enrollment.first_name} ${enrollment.last_name}`;
+    setUserName(fullName);
+
+    // Save course completion
+    const { data: completion, error: completionError } = await supabase
+      .from('course_completions')
+      .insert({
+        user_id: user.id,
+        course_type: 'level3',
+        score,
+        total_questions: questions.length,
+        percentage,
+        passed: percentage >= 75
+      })
+      .select()
+      .single();
+
+    if (completionError || !completion) {
+      console.error('Error saving completion:', completionError);
+      return null;
+    }
+
+    // Generate and save certificate
+    const { data: regNumber } = await supabase.rpc('generate_registration_number');
+    
+    const { data: certificate, error: certError } = await supabase
+      .from('certificates')
+      .insert({
+        user_id: user.id,
+        completion_id: completion.id,
+        registration_number: regNumber,
+        student_name: fullName,
+        identification_type: enrollment.identification_type,
+        last_six_digits: enrollment.last_six_digits,
+        course_type: 'level3',
+        completion_date: new Date().toISOString().split('T')[0],
+        firearm_qualification_date: new Date().toISOString().split('T')[0],
+        firearm_category: certificateData.firearmCategory,
+        firearm_caliber: certificateData.firearmCaliber
+      })
+      .select()
+      .single();
+
+    if (certError) {
+      console.error('Error saving certificate:', certError);
+      return null;
+    }
+
+    // Store certificate info in state
+    setCertificateInfo({
+      registrationNumber: certificate.registration_number,
+      identificationType: certificate.identification_type,
+      lastSixDigits: certificate.last_six_digits
+    });
+
+    return certificate;
+  };
+
   const downloadCertificate = async () => {
     setIsDownloading(true);
     try {
       await getUserInfo();
+      const savedCert = await saveCompletionAndCertificate();
+      
+      if (!savedCert) {
+        setIsDownloading(false);
+        return;
+      }
       
       // Wait a bit for the certificate to render
       setTimeout(async () => {
@@ -126,7 +215,7 @@ const Quiz = () => {
           });
           
           pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-          pdf.save(`Level-3-Certificate-${userName.replace(/\s+/g, '-')}.pdf`);
+          pdf.save(`Level-3-Certificate-${savedCert.student_name.replace(/\s+/g, '-')}.pdf`);
           
           toast({
             title: "Certificate Downloaded",
@@ -150,6 +239,12 @@ const Quiz = () => {
     setIsSendingEmail(true);
     try {
       await getUserInfo();
+      const savedCert = await saveCompletionAndCertificate();
+      
+      if (!savedCert) {
+        setIsSendingEmail(false);
+        return;
+      }
       
       setTimeout(async () => {
         const certificateElement = document.getElementById('certificate');
@@ -171,7 +266,7 @@ const Quiz = () => {
           
           const { error } = await supabase.functions.invoke('send-certificate', {
             body: {
-              name: userName || 'Security Officer',
+              name: savedCert.student_name,
               email: userEmail,
               certificatePdf: pdfBase64,
               date: new Date().toLocaleDateString('en-US', { 
@@ -270,10 +365,13 @@ const Quiz = () => {
         </Card>
 
         {/* Hidden Certificate for Generation */}
-        {passed && (
+        {passed && certificateInfo && (
           <div className="hidden">
             <Certificate 
               userName={userName || "Security Officer"}
+              registrationNumber={certificateInfo.registrationNumber}
+              identificationType={certificateInfo.identificationType}
+              lastSixDigits={certificateInfo.lastSixDigits}
               {...certificateData}
             />
           </div>
