@@ -338,16 +338,30 @@ const Course = () => {
               </Button>
             </div>
 
-            <div className="text-center mt-4">
+            <div className="text-center mt-4 space-y-3">
               <Button
-                variant="ghost"
                 onClick={() => {
-                  setInCourseMode(false);
+                  // Mark all sections complete and open final exam
+                  setCompletedSections(courseSections.map(s => s.id));
+                  setShowQuiz(true);
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
+                size="sm"
               >
-                Exit Course View
+                Go to Final Exam
               </Button>
+
+              <div>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setInCourseMode(false);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                >
+                  Exit Course View
+                </Button>
+              </div>
             </div>
           </div>
         ) : (
