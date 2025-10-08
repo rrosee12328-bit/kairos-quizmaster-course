@@ -323,7 +323,7 @@ const Course = () => {
 
               <Button
                 onClick={handleNextSlide}
-                disabled={currentSlide === totalSections - 1 || !isCurrentSectionComplete}
+                disabled={currentSlide === totalSections - 1}
               >
                 Next
                 <ChevronRight className="h-4 w-4 ml-2" />
@@ -363,7 +363,6 @@ const Course = () => {
 
               {courseSections.map((section) => {
                 const isCompleted = completedSections.includes(section.id);
-                const isLocked = section.id > Math.max(...completedSections, 0) + 1;
                 
                 return (
                   <CourseSection
@@ -372,7 +371,7 @@ const Course = () => {
                       ...section,
                       videoUrl: section.videoUrl || "",
                       completed: isCompleted,
-                      locked: isLocked
+                      locked: false
                     }}
                     onStartSection={() => {
                       handleStartCourse();
