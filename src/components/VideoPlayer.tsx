@@ -104,13 +104,11 @@ const VideoPlayer = ({ section, onComplete, onNext }: VideoPlayerProps) => {
             });
           } catch {}
         }, 500);
-
-        // Clear completionPoll when complete
+        // Clear completionPoll when complete (on ended)
         const clearOnComplete = () => {
           try { window.clearInterval(completionPoll); } catch {}
         };
         p.on('ended', clearOnComplete);
-        p.on('pause', clearOnComplete);
       });
 
       p.on('timeupdate', (data: any) => {
