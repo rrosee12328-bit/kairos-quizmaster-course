@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Shield, Award, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import kairosLogo from "@/assets/kairos-logo.png";
+import securityOfficerImage from "@/assets/security-officer-professional.jpg";
 
 const Landing = () => {
   return (
@@ -102,6 +103,14 @@ const Landing = () => {
               From event security and executive protection to crisis intervention, our training equips you with the skills 
               needed to excel in any security role. Join the Kairos family and elevate your security career.
             </p>
+            
+            <div className="mb-12 rounded-lg overflow-hidden shadow-lg">
+              <img 
+                src={securityOfficerImage} 
+                alt="Professional Security Officer" 
+                className="w-full h-auto object-cover"
+              />
+            </div>
             
             <div className="grid md:grid-cols-2 gap-6">
               <Card className="hover:shadow-lg transition-all">
