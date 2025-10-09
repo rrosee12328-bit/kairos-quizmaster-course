@@ -27,13 +27,13 @@ const CourseHeader = ({ isAdmin = false, showAuthButtons = false }: CourseHeader
     <header className="bg-primary text-primary-foreground">
       <div className="container mx-auto px-6 py-8">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <Link to="/" className="flex items-center gap-4 hover:opacity-90 transition-opacity">
             <img src={kairosLogo} alt="Kairos Security Academy" className="h-12 w-12" />
             <div>
               <h1 className="text-3xl font-bold">Kairos Security Academy</h1>
               <p className="text-primary-foreground/80 text-lg">Professional Security Training</p>
             </div>
-          </div>
+          </Link>
           <div className="flex items-center gap-6 text-sm">
             {showAuthButtons && (
               <div className="flex items-center gap-2">

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, CreditCard, DollarSign } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import kairosLogo from "@/assets/kairos-logo.png";
 
 const Level3Checkout = () => {
   const navigate = useNavigate();
@@ -79,15 +80,22 @@ const Level3Checkout = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
+      {/* Header */}
+      <header className="border-b bg-background sticky top-0 z-50">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+              <img src={kairosLogo} alt="Kairos Security Academy" className="h-8 w-8" />
+              <h1 className="text-2xl font-bold">Kairos Security Academy</h1>
+            </Link>
+            <Button variant="ghost" asChild>
+              <Link to="/">Home</Link>
+            </Button>
+          </div>
+        </div>
+      </header>
+
       <div className="container mx-auto px-4 py-8">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/")}
-          className="mb-6"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Home
-        </Button>
 
         <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {/* Course Information */}

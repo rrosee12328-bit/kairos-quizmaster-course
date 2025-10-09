@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import kairosLogo from "@/assets/kairos-logo.png";
 
 interface BunnyVideo {
   guid: string;
@@ -57,8 +59,23 @@ const VideoMetadata = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-8">
-      <div className="container mx-auto max-w-4xl">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      {/* Header */}
+      <header className="border-b bg-background sticky top-0 z-50">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+              <img src={kairosLogo} alt="Kairos Security Academy" className="h-8 w-8" />
+              <h1 className="text-2xl font-bold">Kairos Security Academy</h1>
+            </Link>
+            <Button variant="ghost" asChild>
+              <Link to="/">Home</Link>
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <div className="container mx-auto max-w-4xl p-8">
         <Card>
           <CardHeader>
             <CardTitle>Bunny.net Video Metadata</CardTitle>

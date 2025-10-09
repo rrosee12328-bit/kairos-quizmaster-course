@@ -6,10 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Award, BookOpen, Users, ArrowLeft, CheckCircle, XCircle, LogOut } from "lucide-react";
 import { format } from "date-fns";
 import { toast as sonnerToast } from "sonner";
+import kairosLogo from "@/assets/kairos-logo.png";
 
 const Admin = () => {
   const { toast } = useToast();
@@ -123,19 +124,15 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-card">
+      <header className="border-b bg-background sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
-              </Button>
-              <h1 className="text-2xl font-bold">Admin Panel</h1>
-            </div>
-            <Button variant="outline" size="sm" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
+            <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+              <img src={kairosLogo} alt="Kairos Security Academy" className="h-8 w-8" />
+              <h1 className="text-2xl font-bold">Kairos Security Academy</h1>
+            </Link>
+            <Button variant="ghost" asChild>
+              <Link to="/">Home</Link>
             </Button>
           </div>
         </div>
