@@ -76,8 +76,8 @@ const Courses = () => {
       title: "Level 3 Security Officer Certification",
       subtitle: "Armed Security Professional",
       description: "Advanced training program for armed security professionals including firearm safety, advanced threat assessment, and armed response procedures.",
-      duration: "8 hours",
-      sections: 9,
+      duration: "30 hours",
+      sections: 10,
       level: "Advanced",
       color: "bg-red-500",
       features: [
