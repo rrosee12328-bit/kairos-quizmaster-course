@@ -35,7 +35,7 @@ const Landing = () => {
         <section className="py-20 px-6 text-center bg-gradient-to-br from-primary/5 via-background to-background">
           <div className="container mx-auto max-w-5xl">
             <h2 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight">
-              EXCELLENCE, PROFESSIONALISM, INTEGRITY
+              EXPERTISE, INNOVATION, EXCELLENCE
             </h2>
             <div className="flex justify-center mb-8">
               <ChevronDown className="h-8 w-8 text-primary animate-bounce" />
@@ -50,8 +50,9 @@ const Landing = () => {
               LEARN TEXAS LEVEL 2 & LEVEL 3 SECURITY CERTIFICATION
             </h3>
             <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-              Kairos Security Academy trains security officers for front line duty. We prioritize excellence 
-              above and beyond state and federal certification requirements.
+              At Kairos Security Academy, we combine expertise, innovation, and a passion for excellence to provide 
+              security training that not only protects but also empowers. We train security officers for front line duty, 
+              prioritizing excellence above and beyond state and federal certification requirements.
             </p>
             <Button size="lg" asChild className="text-lg px-8">
               <Link to="/courses">GET CERTIFIED WITH KAIROS SECURITY ACADEMY TODAY &gt;&gt;</Link>
@@ -111,12 +112,12 @@ const Landing = () => {
             <div className="flex justify-center mb-8">
               <ChevronDown className="h-6 w-6 text-primary" />
             </div>
-            <h3 className="text-4xl font-bold mb-8 text-center">TRY OUR COURSES NOW</h3>
+            <h3 className="text-4xl font-bold mb-8 text-center">START YOUR JOURNEY TODAY</h3>
             <p className="text-lg text-muted-foreground leading-relaxed mb-12 text-center">
-              We want our security guards to flourish professionally. That's why we established Kairos Security Academy 
-              to help you advance your career through ongoing training. With Kairos Security Academy you get the training 
-              you need to succeed in security roles at malls, office buildings, in personal protection and much more. 
-              At every step of the way we will steer you through the process.
+              We want our security professionals to flourish. That's why we established Kairos Security Academy - 
+              to help you advance your career through comprehensive training that prepares you for real-world challenges. 
+              From event security and executive protection to crisis intervention, our training equips you with the skills 
+              needed to excel in any security role. Join the Kairos family and elevate your security career.
             </p>
             
             <div className="grid md:grid-cols-2 gap-6">
@@ -127,7 +128,7 @@ const Landing = () => {
                     <h4 className="text-xl font-semibold">Level 2 Course</h4>
                   </div>
                   <p className="text-muted-foreground mb-6">
-                    Get certified as a professional security guard. Begin your career in security.
+                    Begin your journey in security excellence. Get certified and join Kairos Security's team of elite professionals.
                   </p>
                   <Button asChild className="w-full">
                     <Link to="/course/level2">Learn More &gt;&gt;</Link>
@@ -142,7 +143,7 @@ const Landing = () => {
                     <h4 className="text-xl font-semibold">Level 3 Course</h4>
                   </div>
                   <p className="text-muted-foreground mb-6">
-                    The next step in your security journey, get your armed certification.
+                    Elevate your career. Get your armed certification and unlock advanced security opportunities.
                   </p>
                   <Button asChild className="w-full">
                     <Link to="/course/level3/checkout">Learn More &gt;&gt;</Link>
@@ -200,12 +201,13 @@ const Landing = () => {
         {/* CTA Section */}
         <section className="py-20 px-6 bg-primary/5">
           <div className="container mx-auto max-w-3xl text-center">
-            <h3 className="text-4xl font-bold mb-6">Ready to Start Your Security Career?</h3>
+            <h3 className="text-4xl font-bold mb-6">Elevate Your Security Career Today</h3>
             <p className="text-xl text-muted-foreground mb-8">
-              Join Kairos Security Academy today and take the first step towards professional excellence.
+              Join Kairos Security Academy and discover how we can help secure your future with training 
+              that empowers you to protect and serve with excellence.
             </p>
             <Button size="lg" asChild className="text-lg px-8">
-              <Link to="/courses">Browse Our Courses &gt;&gt;</Link>
+              <Link to="/courses">Explore Our Training Programs &gt;&gt;</Link>
             </Button>
           </div>
         </section>
@@ -221,7 +223,7 @@ const Landing = () => {
                 <h4 className="font-bold">Kairos Security Academy</h4>
               </div>
               <p className="text-sm text-muted-foreground">
-                Excellence in security training and certification.
+                Training security professionals with expertise, innovation, and a passion for excellence.
               </p>
             </div>
             
