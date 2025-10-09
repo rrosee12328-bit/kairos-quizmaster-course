@@ -4,13 +4,10 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, XCircle, Download, Mail } from "lucide-react";
+import { CheckCircle, XCircle } from "lucide-react";
 import { level3ExamQuestions } from "@/data/level3ExamQuestions";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import Certificate from "./Certificate";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 
 const Quiz = () => {
   const { toast } = useToast();
@@ -19,38 +16,6 @@ const Quiz = () => {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
   const [showResults, setShowResults] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState<string>("");
-  const [userName, setUserName] = useState<string>("");
-  const [userEmail, setUserEmail] = useState<string>("");
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [isSendingEmail, setIsSendingEmail] = useState(false);
-  const [certificateInfo, setCertificateInfo] = useState<{
-    registrationNumber: string;
-    identificationType: string;
-    lastSixDigits: string;
-  } | null>(null);
-  
-  // Certificate fields with default values
-  const certificateData = {
-    schoolName: "Kairos Security",
-    schoolApprovalNumber: "F28623301",
-    classroomInstructor: "Stephen Taylor",
-    classroomInstructorApprovalNumber: "F28623301",
-    firearmInstructor: "Stephen Taylor",
-    firearmInstructorApprovalNumber: "F28623301",
-    schoolManager: "Stephen Taylor",
-    courseCompletionDate: new Date().toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: '2-digit', 
-      day: '2-digit' 
-    }),
-    firearmQualificationDate: new Date().toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: '2-digit', 
-      day: '2-digit' 
-    }),
-    firearmCategory: "Handgun",
-    firearmCaliber: ".38 Special"
-  };
 
   const handleAnswerSelect = (value: string) => {
     setSelectedAnswer(value);
@@ -89,51 +54,12 @@ const Quiz = () => {
     return correct;
   };
 
-  const getUserInfo = async () => {
+  const saveCompletion = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('full_name, email')
-        .eq('id', user.id)
-        .single();
-      
-      if (profile) {
-        setUserName(profile.full_name || 'Security Officer');
-        setUserEmail(profile.email || user.email || '');
-      } else {
-        setUserName('Security Officer');
-        setUserEmail(user.email || '');
-      }
-    }
-  };
-
-  const saveCompletionAndCertificate = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
-
-    // Get enrollment data for identification info
-    const { data: enrollment } = await supabase
-      .from('enrollments')
-      .select('first_name, last_name, identification_type, last_six_digits')
-      .eq('user_id', user.id)
-      .eq('course_type', 'level3')
-      .single();
-
-    if (!enrollment) {
-      toast({
-        title: "Enrollment Not Found",
-        description: "Could not find your enrollment information. Please contact support.",
-        variant: "destructive",
-      });
-      return null;
-    }
-
-    const fullName = `${enrollment.first_name} ${enrollment.last_name}`;
-    setUserName(fullName);
+    if (!user) return false;
 
     // Save course completion
-    const { data: completion, error: completionError } = await supabase
+    const { error: completionError } = await supabase
       .from('course_completions')
       .insert({
         user_id: user.id,
@@ -142,159 +68,19 @@ const Quiz = () => {
         total_questions: questions.length,
         percentage,
         passed: percentage >= 75
-      })
-      .select()
-      .single();
+      });
 
-    if (completionError || !completion) {
+    if (completionError) {
       console.error('Error saving completion:', completionError);
-      return null;
-    }
-
-    // Generate and save certificate
-    const { data: regNumber } = await supabase.rpc('generate_registration_number');
-    
-    const { data: certificate, error: certError } = await supabase
-      .from('certificates')
-      .insert({
-        user_id: user.id,
-        completion_id: completion.id,
-        registration_number: regNumber,
-        student_name: fullName,
-        identification_type: enrollment.identification_type,
-        last_six_digits: enrollment.last_six_digits,
-        course_type: 'level3',
-        completion_date: new Date().toISOString().split('T')[0],
-        firearm_qualification_date: new Date().toISOString().split('T')[0],
-        firearm_category: certificateData.firearmCategory,
-        firearm_caliber: certificateData.firearmCaliber
-      })
-      .select()
-      .single();
-
-    if (certError) {
-      console.error('Error saving certificate:', certError);
-      return null;
-    }
-
-    // Store certificate info in state
-    setCertificateInfo({
-      registrationNumber: certificate.registration_number,
-      identificationType: certificate.identification_type,
-      lastSixDigits: certificate.last_six_digits
-    });
-
-    return certificate;
-  };
-
-  const downloadCertificate = async () => {
-    setIsDownloading(true);
-    try {
-      await getUserInfo();
-      const savedCert = await saveCompletionAndCertificate();
-      
-      if (!savedCert) {
-        setIsDownloading(false);
-        return;
-      }
-      
-      // Wait a bit for the certificate to render
-      setTimeout(async () => {
-        const certificateElement = document.getElementById('certificate');
-        if (certificateElement) {
-          const canvas = await html2canvas(certificateElement, {
-            scale: 2,
-            backgroundColor: '#ffffff'
-          });
-          
-          const imgData = canvas.toDataURL('image/png');
-          const pdf = new jsPDF({
-            orientation: 'landscape',
-            unit: 'px',
-            format: [canvas.width, canvas.height]
-          });
-          
-          pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-          pdf.save(`Level-3-Certificate-${savedCert.student_name.replace(/\s+/g, '-')}.pdf`);
-          
-          toast({
-            title: "Certificate Downloaded",
-            description: "Your certificate has been downloaded successfully.",
-          });
-        }
-        setIsDownloading(false);
-      }, 500);
-    } catch (error) {
-      console.error('Error downloading certificate:', error);
       toast({
-        title: "Download Failed",
-        description: "Failed to download certificate. Please try again.",
+        title: "Error",
+        description: "Failed to save your results. Please contact support.",
         variant: "destructive",
       });
-      setIsDownloading(false);
+      return false;
     }
-  };
 
-  const emailCertificate = async () => {
-    setIsSendingEmail(true);
-    try {
-      await getUserInfo();
-      const savedCert = await saveCompletionAndCertificate();
-      
-      if (!savedCert) {
-        setIsSendingEmail(false);
-        return;
-      }
-      
-      setTimeout(async () => {
-        const certificateElement = document.getElementById('certificate');
-        if (certificateElement) {
-          const canvas = await html2canvas(certificateElement, {
-            scale: 2,
-            backgroundColor: '#ffffff'
-          });
-          
-          const imgData = canvas.toDataURL('image/png');
-          const pdf = new jsPDF({
-            orientation: 'landscape',
-            unit: 'px',
-            format: [canvas.width, canvas.height]
-          });
-          
-          pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-          const pdfBase64 = pdf.output('datauristring').split(',')[1];
-          
-          const { error } = await supabase.functions.invoke('send-certificate', {
-            body: {
-              name: savedCert.student_name,
-              email: userEmail,
-              certificatePdf: pdfBase64,
-              date: new Date().toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-              })
-            }
-          });
-
-          if (error) throw error;
-
-          toast({
-            title: "Certificate Sent",
-            description: userEmail ? `Your certificate has been sent to ${userEmail}` : 'Your certificate email was sent.',
-          });
-        }
-        setIsSendingEmail(false);
-      }, 500);
-    } catch (error) {
-      console.error('Error sending certificate:', error);
-      toast({
-        title: "Email Failed",
-        description: "Failed to send certificate. Please try again.",
-        variant: "destructive",
-      });
-      setIsSendingEmail(false);
-    }
+    return true;
   };
 
 
@@ -305,6 +91,11 @@ const Quiz = () => {
   if (showResults) {
     const passingScore = 75;
     const passed = percentage >= passingScore;
+    
+    // Save completion when results are shown
+    if (passed) {
+      saveCompletion();
+    }
     
     return (
       <div className="max-w-4xl mx-auto space-y-6">
@@ -331,51 +122,20 @@ const Quiz = () => {
                 : `You need ${passingScore}% to pass. Keep studying and try again!`}
             </div>
             {passed && (
-              <>
-                <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                  <p className="text-sm text-green-800 dark:text-green-200">
-                    You have successfully completed the Level 3 Security Officer Certification Course and passed the final examination.
-                  </p>
-                </div>
-                <div className="flex gap-4 justify-center">
-                  <Button 
-                    onClick={downloadCertificate} 
-                    size="lg"
-                    disabled={isDownloading}
-                  >
-                    <Download className="mr-2 h-5 w-5" />
-                    {isDownloading ? "Generating..." : "Download Certificate"}
-                  </Button>
-                  <Button 
-                    onClick={emailCertificate} 
-                    size="lg"
-                    variant="outline"
-                    disabled={isSendingEmail}
-                  >
-                    <Mail className="mr-2 h-5 w-5" />
-                    {isSendingEmail ? "Sending..." : "Email Certificate"}
-                  </Button>
-                </div>
-              </>
+              <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                <p className="text-sm text-green-800 dark:text-green-200 mb-2">
+                  You have successfully completed the online portion of the Level 3 Security Officer Certification Course.
+                </p>
+                <p className="text-sm font-semibold text-green-800 dark:text-green-200">
+                  You are now approved to proceed to the in-person training portion of Level 3.
+                </p>
+              </div>
             )}
             <Button onClick={() => window.location.reload()} size="lg" variant="secondary">
               Retake Exam
             </Button>
           </CardContent>
         </Card>
-
-        {/* Hidden Certificate for Generation */}
-        {passed && certificateInfo && (
-          <div className="hidden">
-            <Certificate 
-              userName={userName || "Security Officer"}
-              registrationNumber={certificateInfo.registrationNumber}
-              identificationType={certificateInfo.identificationType}
-              lastSixDigits={certificateInfo.lastSixDigits}
-              {...certificateData}
-            />
-          </div>
-        )}
 
         {/* Review Section */}
         <Card>
