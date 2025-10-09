@@ -141,26 +141,6 @@ const Courses = () => {
           </p>
         </div>
 
-        {/* Security Officer Info Section */}
-        <div className="mb-16">
-          <Card className="max-w-4xl mx-auto border-l-4 border-l-primary">
-            <CardHeader>
-              <CardTitle className="text-2xl flex items-center justify-center gap-3">
-                <Shield className="h-8 w-8 text-primary" />
-                What is a Security Officer?
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground text-lg leading-relaxed text-center">
-                A security officer is a trained professional responsible for protecting people, property, and assets. 
-                They maintain safety through vigilant monitoring, access control, emergency response, and ensuring 
-                compliance with security protocols. Our certification programs prepare you for a rewarding career 
-                in the security industry with comprehensive training in both unarmed and armed security roles.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Course Cards */}
         <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {courses.map((course) => (
