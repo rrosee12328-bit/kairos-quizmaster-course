@@ -87,7 +87,7 @@ const Courses = () => {
         "Weapons maintenance",
         "Legal responsibilities of armed officers"
       ],
-      route: "/course/level3"
+      route: "/course/level3/checkout"
     }
   ];
 

@@ -7,6 +7,7 @@ import Landing from "./pages/Landing";
 import Courses from "./pages/Courses";
 import Level2Course from "./pages/Level2Course";
 import Level3Course from "./pages/Level3Course";
+import Level3Checkout from "./pages/Level3Checkout";
 import Auth from "./pages/Auth";
 import VideoMetadata from "./pages/VideoMetadata";
 import Admin from "./pages/Admin";
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/" element={<Landing />} />
           <Route path="/courses" element={<Courses />} />
           <Route path="/course/level2" element={<Level2Course />} />
+          <Route path="/course/level3/checkout" element={<Level3Checkout />} />
           <Route path="/course/level3" element={<Level3Course />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/admin" element={<Admin />} />
