@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import kairosLogo from "@/assets/kairos-logo.png";
+import securityTrainingImage from "@/assets/security-training-courses.jpg";
 
 const Courses = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -139,6 +140,15 @@ const Courses = () => {
             Choose the certification level that matches your career goals. Both courses provide industry-recognized 
             training with comprehensive curriculum and final examinations.
           </p>
+        </div>
+
+        {/* Hero Image */}
+        <div className="mb-16 rounded-lg overflow-hidden shadow-xl max-w-5xl mx-auto">
+          <img 
+            src={securityTrainingImage} 
+            alt="Security Training Courses" 
+            className="w-full h-auto object-cover"
+          />
         </div>
 
         {/* Course Cards */}
