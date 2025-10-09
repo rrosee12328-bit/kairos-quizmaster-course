@@ -31,39 +31,18 @@ const Landing = () => {
       </header>
 
       <main>
-        {/* Hero Section */}
-        <section className="py-20 px-6 text-center bg-gradient-to-br from-primary/5 via-background to-background">
-          <div className="container mx-auto max-w-5xl">
-            <h2 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight">
-              EXPERTISE, INNOVATION, EXCELLENCE
-            </h2>
-            <div className="flex justify-center mb-8">
-              <ChevronDown className="h-8 w-8 text-primary animate-bounce" />
-            </div>
-          </div>
-        </section>
-
-        {/* Main Pitch Section */}
+        {/* Hero with Video Section */}
         <section className="py-16 px-6 bg-background">
-          <div className="container mx-auto max-w-4xl text-center">
-            <h3 className="text-4xl font-bold mb-6">
-              LEARN TEXAS LEVEL 2 & LEVEL 3 SECURITY CERTIFICATION
-            </h3>
-            <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
+          <div className="container mx-auto max-w-5xl text-center">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              Training Security Officers for Excellence
+            </h2>
+            <p className="text-xl text-muted-foreground mb-12 max-w-3xl mx-auto">
               At Kairos Security Academy, we combine expertise, innovation, and a passion for excellence to provide 
-              security training that not only protects but also empowers. We train security officers for front line duty, 
-              prioritizing excellence above and beyond state and federal certification requirements.
+              security training that not only protects but also empowers.
             </p>
-            <Button size="lg" asChild className="text-lg px-8">
-              <Link to="/courses">GET CERTIFIED WITH KAIROS SECURITY ACADEMY TODAY &gt;&gt;</Link>
-            </Button>
-          </div>
-        </section>
-
-        {/* Video Section */}
-        <section className="py-16 px-6 bg-muted/30">
-          <div className="container mx-auto max-w-5xl">
-            <Card className="overflow-hidden border-2">
+            
+            <Card className="overflow-hidden border-2 mb-8">
               <div className="relative aspect-video bg-black">
                 <iframe
                   className="w-full h-full"
@@ -74,6 +53,10 @@ const Landing = () => {
                 />
               </div>
             </Card>
+            
+            <Button size="lg" asChild className="text-lg px-8">
+              <Link to="/courses">Get Started Today &gt;&gt;</Link>
+            </Button>
           </div>
         </section>
 
