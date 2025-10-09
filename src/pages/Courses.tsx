@@ -68,7 +68,7 @@ const Courses = () => {
         "Emergency response (non-armed)",
         "Legal framework for unarmed officers"
       ],
-      route: "/course/level2"
+      route: "/course/level2/checkout"
     },
     {
       id: "level3", 

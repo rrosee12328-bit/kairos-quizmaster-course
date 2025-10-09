@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Courses from "./pages/Courses";
 import Level2Course from "./pages/Level2Course";
+import Level2Checkout from "./pages/Level2Checkout";
 import Level3Course from "./pages/Level3Course";
 import Level3Checkout from "./pages/Level3Checkout";
 import Auth from "./pages/Auth";
@@ -24,6 +25,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/courses" element={<Courses />} />
+          <Route path="/course/level2/checkout" element={<Level2Checkout />} />
           <Route path="/course/level2" element={<Level2Course />} />
           <Route path="/course/level3/checkout" element={<Level3Checkout />} />
           <Route path="/course/level3" element={<Level3Course />} />
