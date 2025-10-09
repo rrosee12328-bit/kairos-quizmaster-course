@@ -5,11 +5,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface CertificateEmailRequest {
+interface CompletionEmailRequest {
   name: string;
   email: string;
-  certificatePdf: string; // Base64 encoded PDF (no data: prefix)
   date: string;
+  score: number;
+  percentage: number;
 }
 
 Deno.serve(async (req: Request): Promise<Response> => {
@@ -23,11 +24,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
       throw new Error("RESEND_API_KEY not configured");
     }
 
-    const { name, email, certificatePdf, date }: CertificateEmailRequest = await req.json();
+    const { name, email, date, score, percentage }: CompletionEmailRequest = await req.json();
 
-    if (!email || !certificatePdf) {
+    if (!email || !name) {
       return new Response(
-        JSON.stringify({ error: "Missing required fields: email or certificatePdf" }),
+        JSON.stringify({ error: "Missing required fields: email or name" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -41,21 +42,19 @@ Deno.serve(async (req: Request): Promise<Response> => {
       body: JSON.stringify({
         from: "Kairos Training <onboarding@resend.dev>",
         to: [email],
-        subject: "Your Level 3 Security Officer Certificate",
+        subject: "Level 3 Part 1 Complete - Approved for In-Person Training",
         html: `
           <h1>Congratulations, ${name}!</h1>
-          <p>You have successfully completed the Level 3 Security Officer Certification Course.</p>
+          <p>You have successfully completed <strong>Part 1 (Online Portion)</strong> of the Level 3 Security Officer Certification Course.</p>
           <p><strong>Completion Date:</strong> ${date}</p>
-          <p>Your certificate is attached to this email.</p>
-          <p>— Kairos Training Team</p>
+          <p><strong>Your Score:</strong> ${score} (${percentage}%)</p>
+          <p><strong>Status:</strong> PASSED ✓</p>
+          <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;" />
+          <h2 style="color: #2563eb;">Next Steps</h2>
+          <p>You are now <strong>approved to proceed to Part 2</strong> - the in-person training portion of the Level 3 certification.</p>
+          <p>Our team will contact you shortly with scheduling information for the in-person training session.</p>
+          <p style="margin-top: 30px;">— Kairos Security Academy</p>
         `,
-        attachments: [
-          {
-            filename: `Level-3-Certificate-${name.replace(/\s+/g, '-')}.pdf`,
-            content: certificatePdf,
-            content_type: "application/pdf",
-          },
-        ],
       }),
     });
 

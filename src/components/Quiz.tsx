@@ -58,6 +58,18 @@ const Quiz = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
 
+    // Get enrollment data for user's name
+    const { data: enrollment } = await supabase
+      .from('enrollments')
+      .select('first_name, last_name')
+      .eq('user_id', user.id)
+      .eq('course_type', 'level3')
+      .single();
+
+    const fullName = enrollment 
+      ? `${enrollment.first_name} ${enrollment.last_name}` 
+      : 'Student';
+
     // Save course completion
     const { error: completionError } = await supabase
       .from('course_completions')
@@ -78,6 +90,37 @@ const Quiz = () => {
         variant: "destructive",
       });
       return false;
+    }
+
+    // Send completion email
+    if (percentage >= 75) {
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-certificate', {
+          body: {
+            name: fullName,
+            email: user.email,
+            date: new Date().toLocaleDateString('en-US', { 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            }),
+            score,
+            percentage
+          }
+        });
+
+        if (emailError) {
+          console.error('Error sending email:', emailError);
+          // Don't fail the completion if email fails
+          toast({
+            title: "Note",
+            description: "Results saved but confirmation email failed to send.",
+            variant: "default",
+          });
+        }
+      } catch (error) {
+        console.error('Error sending email:', error);
+      }
     }
 
     return true;
