@@ -100,7 +100,7 @@ const Courses = () => {
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               <img src={kairosLogo} alt="Kairos Security Academy" className="h-8 w-8" />
-              <h1 className="text-2xl font-bold">Kairos Security Academy</h1>
+              <h1 className="text-xl font-bold">Kairos Security Academy</h1>
             </Link>
             <div className="flex items-center gap-4">
               <Button variant="ghost" asChild>
