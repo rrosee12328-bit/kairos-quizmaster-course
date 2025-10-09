@@ -7,6 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
+import kairosLogo from "@/assets/kairos-logo.png";
 
 const Courses = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -98,7 +99,7 @@ const Courses = () => {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <Shield className="h-8 w-8 text-primary" />
+              <img src={kairosLogo} alt="Kairos Security Academy" className="h-8 w-8" />
               <h1 className="text-2xl font-bold">Kairos Security Academy</h1>
             </Link>
             <div className="flex items-center gap-4">
