@@ -23,7 +23,6 @@ const Course = () => {
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [inCourseMode, setInCourseMode] = useState(false);
-  const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -197,14 +196,6 @@ const Course = () => {
   };
   const handleStartCourse = () => {
     setInCourseMode(true);
-    setIsPreviewMode(false);
-    setCurrentSlide(0);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleStartPreview = () => {
-    setInCourseMode(true);
-    setIsPreviewMode(true);
     setCurrentSlide(0);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -369,92 +360,40 @@ const Course = () => {
                 Section {currentSlide + 1} of {totalSections}
               </div>
 
-              {isPreviewMode && currentSlide === 0 ? (
-                <Button
-                  onClick={() => window.location.href = '/course/level3/checkout'}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  Unlock Full Course
-                  <ChevronRight className="h-4 w-4 ml-2" />
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleNextSlide}
-                  disabled={currentSlide === totalSections - 1 || (isPreviewMode && currentSlide >= 0)}
-                >
-                  Next
-                  <ChevronRight className="h-4 w-4 ml-2" />
-                </Button>
-              )}
+              <Button
+                onClick={handleNextSlide}
+                disabled={currentSlide === totalSections - 1}
+              >
+                Next
+                <ChevronRight className="h-4 w-4 ml-2" />
+              </Button>
             </div>
 
-            {isPreviewMode && (
-              <Card className="mt-6 border-2 border-primary">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-primary">
-                    <Shield className="h-5 w-5" />
-                    Preview Complete - Unlock Full Course
-                  </CardTitle>
-                  <CardDescription>
-                    You've completed the free preview. Get full access to all 10 sections and earn your certification.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="grid gap-2 text-sm">
-                      <div className="flex items-center gap-2">
-                        <span className="text-green-600">✓</span>
-                        <span>8 hours of comprehensive video training</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-green-600">✓</span>
-                        <span>100-question certification exam</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-green-600">✓</span>
-                        <span>Official Level 3 Security Officer Certificate</span>
-                      </div>
-                    </div>
-                    <Button 
-                      onClick={() => window.location.href = '/course/level3/checkout'}
-                      className="w-full bg-green-600 hover:bg-green-700"
-                      size="lg"
-                    >
-                      Purchase Full Course - $150
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            <div className="text-center mt-4 space-y-3">
+              <Button
+                onClick={() => {
+                  // Mark all sections complete and open final exam
+                  setCompletedSections(courseSections.map(s => s.id));
+                  setShowQuiz(true);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                size="sm"
+              >
+                Go to Final Exam
+              </Button>
 
-            {!isPreviewMode && (
-              <div className="text-center mt-4 space-y-3">
+              <div>
                 <Button
+                  variant="ghost"
                   onClick={() => {
-                    // Mark all sections complete and open final exam
-                    setCompletedSections(courseSections.map(s => s.id));
-                    setShowQuiz(true);
+                    setInCourseMode(false);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  size="sm"
                 >
-                  Go to Final Exam
+                  Exit Course View
                 </Button>
-
-                <div>
-                  <Button
-                    variant="ghost"
-                    onClick={() => {
-                      setInCourseMode(false);
-                      setIsPreviewMode(false);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }}
-                  >
-                    Exit Course View
-                  </Button>
-                </div>
               </div>
-            )}
+            </div>
           </div>
         ) : (
           <>
@@ -467,31 +406,11 @@ const Course = () => {
                     Begin the course and progress through each section with our interactive video player.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent>
                   <Button onClick={handleStartCourse} size="lg" className="w-full">
                     <BookOpen className="h-5 w-5 mr-2" />
                     Start Course
                   </Button>
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-background px-2 text-muted-foreground">Or</span>
-                    </div>
-                  </div>
-                  <Button 
-                    onClick={handleStartPreview} 
-                    size="lg" 
-                    variant="outline"
-                    className="w-full border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-                  >
-                    <BookOpen className="h-5 w-5 mr-2" />
-                    Try Free Preview
-                  </Button>
-                  <p className="text-xs text-center text-muted-foreground">
-                    Preview the first section to see what you'll learn
-                  </p>
                 </CardContent>
               </Card>
 
