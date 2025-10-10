@@ -123,7 +123,7 @@ const Landing = () => {
                     Begin your journey in security excellence. Get certified and join Kairos Security's team of elite professionals.
                   </p>
                   <Button asChild className="w-full">
-                    <Link to="/course/level2/checkout">Learn More &gt;&gt;</Link>
+                    <Link to="/course/level2">Learn More &gt;&gt;</Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -138,7 +138,7 @@ const Landing = () => {
                     Elevate your career. Get your armed certification and unlock advanced security opportunities.
                   </p>
                   <Button asChild className="w-full">
-                    <Link to="/course/level3/checkout">Learn More &gt;&gt;</Link>
+                    <Link to="/course/level3">Learn More &gt;&gt;</Link>
                   </Button>
                 </CardContent>
               </Card>

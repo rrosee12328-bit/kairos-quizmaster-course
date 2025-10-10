@@ -70,7 +70,7 @@ const Courses = () => {
         "Emergency response (non-armed)",
         "Legal framework for unarmed officers"
       ],
-      route: "/course/level2/checkout"
+      route: "/course/level2"
     },
     {
       id: "level3", 
@@ -89,7 +89,7 @@ const Courses = () => {
         "Weapons maintenance",
         "Legal responsibilities of armed officers"
       ],
-      route: "/course/level3/checkout"
+      route: "/course/level3"
     }
   ];
 
