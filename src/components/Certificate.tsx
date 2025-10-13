@@ -28,7 +28,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate }: Cer
       
       {/* Registration Number - positioned next to student name */}
       <div className="absolute top-[32.5%] left-[60%]">
-        <p className="text-xl font-bold text-foreground">{registrationNumber || "REG123456"}</p>
+        <p className="text-xl font-bold text-foreground">{registrationNumber || "123456"}</p>
       </div>
       
       {/* Date of Completion - positioned at date field */}

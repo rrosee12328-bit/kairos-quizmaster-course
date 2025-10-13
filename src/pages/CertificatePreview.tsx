@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 const CertificatePreview = () => {
   const { toast } = useToast();
   const [userName, setUserName] = useState("John Doe");
-  const [registrationNumber, setRegistrationNumber] = useState("REG123456");
+  const [registrationNumber, setRegistrationNumber] = useState("123456");
   const [completionDate, setCompletionDate] = useState(new Date().toISOString().split('T')[0]);
   const [email, setEmail] = useState("");
   const [isDownloading, setIsDownloading] = useState(false);
