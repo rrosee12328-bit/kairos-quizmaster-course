@@ -184,15 +184,21 @@ const Profile = () => {
       <main className="flex-1 container mx-auto px-6 py-12">
         {/* Profile Header */}
         <div className="mb-8">
-          <div className="flex items-center gap-4 mb-2">
+          <div className="flex items-center gap-4 mb-4">
             <div className="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center">
               <Shield className="h-8 w-8 text-primary" />
             </div>
-            <div>
+            <div className="flex-1">
               <h1 className="text-3xl font-bold">{profile?.full_name || user?.email}</h1>
               <p className="text-muted-foreground">{user?.email}</p>
             </div>
           </div>
+          <Button variant="outline" asChild>
+            <Link to="/settings">
+              <Settings className="h-4 w-4 mr-2" />
+              Edit Profile
+            </Link>
+          </Button>
         </div>
 
         {/* Stats Overview */}
