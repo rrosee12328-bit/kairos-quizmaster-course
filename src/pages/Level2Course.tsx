@@ -370,19 +370,17 @@ const Level2Course = () => {
               </Button>
             </div>
 
-            {allSectionsComplete && (
-              <div className="text-center mt-4">
-                <Button
-                  onClick={() => {
-                    setShowQuiz(true);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  size="sm"
-                >
-                  Go to Final Exam
-                </Button>
-              </div>
-            )}
+            <div className="text-center mt-4">
+              <Button
+                onClick={() => {
+                  setShowQuiz(true);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                size="sm"
+              >
+                Go to Final Exam
+              </Button>
+            </div>
           </div>
 
         {/* Progress Tracker */}
@@ -477,7 +475,7 @@ const Level2Course = () => {
             </CardContent>
           </Card>
         )}
-        {allSectionsComplete && showQuiz && <Quiz courseType="level2" />}
+        {showQuiz && <Quiz courseType="level2" />}
       </div>
 
       <Footer />
