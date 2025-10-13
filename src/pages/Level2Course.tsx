@@ -314,17 +314,8 @@ const Level2Course = () => {
           </p>
         </div>
 
-        {/* Progress Tracker */}
-        <div className="mb-6">
-          <ProgressTracker 
-            completedSections={completedSections} 
-            currentSection={currentSlide + 1}
-            totalSections={totalSections}
-          />
-        </div>
-
         {/* Course Carousel */}
-        <div className="mb-8 animate-fade-in">
+        <div className="mb-6 animate-fade-in">
             <Carousel 
               setApi={setCarouselApi}
             >
@@ -384,6 +375,46 @@ const Level2Course = () => {
               </Button>
             </div>
           </div>
+
+        {/* Progress Tracker */}
+        <div className="mb-6">
+          <ProgressTracker 
+            completedSections={completedSections} 
+            currentSection={currentSlide + 1}
+            totalSections={totalSections}
+          />
+        </div>
+
+        {/* Course Overview */}
+        <div className="mb-8">
+          <Card className="border-l-4 border-l-primary">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <Shield className="h-6 w-6 text-primary" />
+                Course Overview
+              </CardTitle>
+              <CardDescription className="text-base">
+                Complete all sections and pass the final exam to earn your certification.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-3 gap-4 text-sm">
+                <div className="flex flex-col items-center p-4 bg-muted/50 rounded-lg">
+                  <span className="text-2xl font-bold text-primary">9</span>
+                  <span className="text-muted-foreground">Sections</span>
+                </div>
+                <div className="flex flex-col items-center p-4 bg-muted/50 rounded-lg">
+                  <span className="text-2xl font-bold text-primary">6</span>
+                  <span className="text-muted-foreground">Hours</span>
+                </div>
+                <div className="flex flex-col items-center p-4 bg-muted/50 rounded-lg">
+                  <span className="text-2xl font-bold text-primary">1</span>
+                  <span className="text-muted-foreground">Final Exam</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Final Quiz */}
         {allSectionsComplete && !showQuiz && (
