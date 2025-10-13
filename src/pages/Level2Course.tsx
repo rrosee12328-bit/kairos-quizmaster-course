@@ -25,6 +25,7 @@ const Level2Course = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [videosLoaded, setVideosLoaded] = useState(false);
+  const [isPageVisible, setIsPageVisible] = useState(true);
   const quizRef = useRef<HTMLDivElement>(null);
   const [courseSections, setCourseSections] = useState([
     {
@@ -136,7 +137,19 @@ const Level2Course = () => {
     }
   ]);
 
+  // Track page visibility to pause updates when tab is not active
   useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsPageVisible(!document.hidden);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
+  useEffect(() => {
+    if (!isPageVisible) return; // Skip auth check if page not visible
+    
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
         setIsAuthenticated(true);
@@ -155,7 +168,7 @@ const Level2Course = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [isPageVisible]);
 
   useEffect(() => {
     if (showQuiz) {
@@ -163,7 +176,7 @@ const Level2Course = () => {
     }
   }, [showQuiz]);
 
-  // Fetch videos from Bunny.net
+  // Fetch videos from Bunny.net (only when page is visible)
   useEffect(() => {
     const normalize = (s: string) =>
       (s || "")
@@ -179,6 +192,8 @@ const Level2Course = () => {
     };
 
     const fetchVideos = async () => {
+      if (!isPageVisible || videosLoaded) return; // Skip if page not visible or already loaded
+      
       try {
         const { data, error } = await supabase.functions.invoke('bunny-video', {
           body: { 
@@ -236,8 +251,10 @@ const Level2Course = () => {
       }
     };
 
-    fetchVideos();
-  }, []);
+    if (isPageVisible && !videosLoaded) {
+      fetchVideos();
+    }
+  }, [isPageVisible, videosLoaded]);
 
   const checkAdminStatus = async (userId: string) => {
     const { data, error } = await supabase.rpc('is_admin', { _user_id: userId });
