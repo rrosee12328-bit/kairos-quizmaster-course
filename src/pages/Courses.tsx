@@ -177,6 +177,11 @@ const Courses = () => {
                 <p className="text-muted-foreground leading-relaxed">
                   {course.description}
                 </p>
+                {course.id === "level3" && (
+                  <div className="mt-4 text-sm font-semibold text-primary bg-primary/10 p-3 rounded-lg border border-primary/20">
+                    ⚠️ Part 2 in-person training required for full armed certification
+                  </div>
+                )}
               </CardHeader>
 
               <CardContent className="relative">

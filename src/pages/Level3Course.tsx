@@ -254,9 +254,14 @@ const Course = () => {
             <Shield className="h-6 w-6 text-primary" />
             <h1 className="text-3xl font-bold">Level 3 Security Officer Certification (Part 1)</h1>
           </div>
-          <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-            <strong>Part 1 (Online):</strong> Complete all 10 sections and pass the final exam. <strong>Part 2 (In-Person):</strong> Must be completed in person after Part 1 to earn full certification.
-          </p>
+          <div className="max-w-2xl mx-auto">
+            <p className="text-sm text-muted-foreground mb-3">
+              <strong>Part 1 (Online):</strong> Complete all 10 sections and pass the final exam.
+            </p>
+            <div className="text-sm font-semibold text-primary bg-primary/10 p-3 rounded-lg border border-primary/20">
+              ⚠️ Part 2 (In-Person): Must be completed in person after Part 1 to earn full armed certification
+            </div>
+          </div>
         </div>
 
         {/* Course Carousel */}
@@ -337,8 +342,11 @@ const Course = () => {
                 <FileText className="h-5 w-5 text-primary" />
                 Private Security Level 3 PDF (Part 1)
               </CardTitle>
-              <CardDescription>
-                Reference manual for Part 1 online training. Part 2 in-person training required for full certification.
+              <CardDescription className="space-y-2">
+                <p>Reference manual for Part 1 online training.</p>
+                <p className="text-sm font-semibold text-primary bg-primary/10 p-2 rounded border border-primary/20">
+                  ⚠️ Part 2 in-person training required for full certification
+                </p>
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -362,8 +370,11 @@ const Course = () => {
                 <Shield className="h-6 w-6 text-primary" />
                 Course Overview
               </CardTitle>
-              <CardDescription className="text-base">
-                Complete all sections and pass the final exam for Part 1. Part 2 in-person training is required for full certification.
+              <CardDescription className="space-y-2">
+                <p className="text-base">Complete all sections and pass the final exam for Part 1.</p>
+                <p className="text-sm font-semibold text-primary bg-primary/10 p-2 rounded border border-primary/20">
+                  ⚠️ Part 2 in-person training is required for full armed certification
+                </p>
               </CardDescription>
             </CardHeader>
             <CardContent>
