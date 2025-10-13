@@ -132,10 +132,10 @@ const Landing = () => {
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 mb-4">
                     <Award className="h-8 w-8 text-primary" />
-                    <h4 className="text-xl font-semibold">Level 3 Course</h4>
+                    <h4 className="text-xl font-semibold">Level 3 Course (Part 1)</h4>
                   </div>
                   <p className="text-muted-foreground mb-6">
-                    Elevate your career. Get your armed certification and unlock advanced security opportunities.
+                    Elevate your career with Part 1 online training. Part 2 in-person training required for full armed certification.
                   </p>
                   <Button asChild className="w-full">
                     <Link to="/course/level3">Learn More &gt;&gt;</Link>

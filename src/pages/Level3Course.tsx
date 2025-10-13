@@ -252,10 +252,10 @@ const Course = () => {
         <div className="mb-6 text-center">
           <div className="flex items-center justify-center gap-3 mb-2">
             <Shield className="h-6 w-6 text-primary" />
-            <h1 className="text-3xl font-bold">Level 3 Security Officer Certification</h1>
+            <h1 className="text-3xl font-bold">Level 3 Security Officer Certification (Part 1)</h1>
           </div>
           <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-            Complete all 10 sections and pass the final exam to earn your certification.
+            <strong>Part 1 (Online):</strong> Complete all 10 sections and pass the final exam. <strong>Part 2 (In-Person):</strong> Must be completed in person after Part 1 to earn full certification.
           </p>
         </div>
 
@@ -315,7 +315,7 @@ const Course = () => {
                 }}
                 size="sm"
               >
-                Go to Final Exam
+                Go to Part 1 Final Exam
               </Button>
             </div>
           </div>
@@ -335,10 +335,10 @@ const Course = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5 text-primary" />
-                Private Security Level 3 PDF
+                Private Security Level 3 PDF (Part 1)
               </CardTitle>
               <CardDescription>
-                Reference manual to follow along with videos or use during the exam
+                Reference manual for Part 1 online training. Part 2 in-person training required for full certification.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -363,7 +363,7 @@ const Course = () => {
                 Course Overview
               </CardTitle>
               <CardDescription className="text-base">
-                Complete all sections and pass the final exam to earn your certification.
+                Complete all sections and pass the final exam for Part 1. Part 2 in-person training is required for full certification.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -391,10 +391,10 @@ const Course = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-green-600">
                 <Shield className="h-6 w-6" />
-                Ready for Final Exam
+                Ready for Part 1 Final Exam
               </CardTitle>
               <CardDescription>
-                Congratulations! You've completed all {totalSections} course sections. Take the final exam to earn your certification.
+                Congratulations! You&apos;ve completed all {totalSections} Part 1 sections. Pass the final exam, then complete Part 2 in-person training for full certification.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -407,7 +407,7 @@ const Course = () => {
                 setShowQuiz(true);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }} size="lg" className="w-full">
-                Start Final Exam (100 Questions)
+                Start Part 1 Final Exam (100 Questions)
               </Button>
             </CardContent>
           </Card>

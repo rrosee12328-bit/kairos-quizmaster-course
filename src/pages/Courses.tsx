@@ -74,9 +74,9 @@ const Courses = () => {
     },
     {
       id: "level3", 
-      title: "Level 3 Security Officer Certification",
-      subtitle: "Armed Security Professional",
-      description: "Advanced training program for armed security professionals including firearm safety, advanced threat assessment, and armed response procedures.",
+      title: "Level 3 Security Officer Certification (Part 1)",
+      subtitle: "Armed Security Professional - Online Training",
+      description: "Part 1: Advanced online training for armed security professionals including firearm safety, advanced threat assessment, and armed response procedures. Part 2 in-person training required for full certification.",
       duration: "30 hours",
       sections: 10,
       level: "Advanced",
