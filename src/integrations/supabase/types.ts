@@ -109,6 +109,39 @@ export type Database = {
         }
         Relationships: []
       }
+      course_progress: {
+        Row: {
+          completed: boolean | null
+          completed_at: string | null
+          course_type: string
+          created_at: string
+          id: string
+          section_id: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean | null
+          completed_at?: string | null
+          course_type: string
+          created_at?: string
+          id?: string
+          section_id: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          completed_at?: string | null
+          course_type?: string
+          created_at?: string
+          id?: string
+          section_id?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       enrollments: {
         Row: {
           course_type: string

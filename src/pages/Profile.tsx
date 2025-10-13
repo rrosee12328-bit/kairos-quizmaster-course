@@ -135,6 +135,15 @@ const Profile = () => {
     );
   };
 
+  const downloadCertificate = async (cert: Certificate) => {
+    try {
+      toast.info("Certificate download will be available soon. You can view your certificate details in your profile.");
+    } catch (error) {
+      console.error('Error downloading certificate:', error);
+      toast.error("Failed to download certificate");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -242,7 +251,11 @@ const Profile = () => {
                         Issued: {format(new Date(cert.completion_date), 'MMMM d, yyyy')}
                       </p>
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => downloadCertificate(cert)}
+                    >
                       <Download className="h-4 w-4 mr-2" />
                       Download
                     </Button>
