@@ -15,14 +15,15 @@ const Certificate = ({
   return (
     <Card id="certificate" className="w-full max-w-4xl mx-auto bg-white p-8">
       <CardContent className="pt-8">
-        <div className="border-[8px] border-[#1e3a8a] p-12 relative">
+        <div className="border-[8px] border-academy-red p-12 relative">
           {/* Inner border */}
-          <div className="border-4 border-[#1e3a8a] p-8">
+          <div className="border-4 border-academy-red p-8">
             {/* Header */}
             <div className="text-center mb-8">
-              <h1 className="text-2xl font-bold text-black mb-2">Private Security Program</h1>
-              <h2 className="text-xl font-bold text-black mb-2">Certificate of Completion</h2>
-              <h3 className="text-lg font-bold text-black">Level Two Training Course</h3>
+              <h1 className="text-3xl font-bold text-academy-red mb-4">Kairos Security Academy</h1>
+              <h2 className="text-2xl font-bold text-black mb-2">Private Security Program</h2>
+              <h3 className="text-xl font-bold text-black mb-2">Certificate of Completion</h3>
+              <h4 className="text-lg font-bold text-black">Level Two Training Course</h4>
             </div>
 
             {/* Main Text */}
