@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Shield, ChevronLeft, ChevronRight } from "lucide-react";
-import CourseSection from "@/components/CourseSection";
+import { Shield, ChevronLeft, ChevronRight } from "lucide-react";
 import ProgressTracker from "@/components/ProgressTracker";
 import Quiz from "@/components/Quiz";
 import CourseHeader from "@/components/CourseHeader";
 import VideoPlayer from "@/components/VideoPlayer";
-import securityHero from "@/assets/security-training-hero.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -22,7 +20,6 @@ const Level2Course = () => {
   const [showQuiz, setShowQuiz] = useState(false);
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [inCourseMode, setInCourseMode] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [videosLoaded, setVideosLoaded] = useState(false);
@@ -248,11 +245,6 @@ const Level2Course = () => {
     });
   };
 
-  const handleStartCourse = () => {
-    setInCourseMode(true);
-    setCurrentSlide(0);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
   const handleNextSlide = () => {
     if (!carouselApi) return;
@@ -312,71 +304,27 @@ const Level2Course = () => {
       
       <div className="container mx-auto px-6 py-8">
         {/* Course Title */}
-        <div className="mb-8 text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Shield className="h-8 w-8 text-primary" />
-            <h1 className="text-4xl font-bold">Level 2 Security Officer Certification Course</h1>
+        <div className="mb-6 text-center">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <Shield className="h-6 w-6 text-primary" />
+            <h1 className="text-3xl font-bold">Level 2 Security Officer Certification</h1>
           </div>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Comprehensive training program for unarmed security officers covering essential topics from basic security 
-            principles to emergency response. Complete all 9 sections and pass the final exam to earn your certification.
+          <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
+            Complete all 9 sections and pass the final exam to earn your certification.
           </p>
         </div>
 
-        {/* Hero Image */}
-        <div className="mb-8 rounded-lg overflow-hidden shadow-xl">
-          <img 
-            src={securityHero} 
-            alt="Professional security training for unarmed security officers"
-            className="w-full h-[400px] object-cover"
+        {/* Progress Tracker */}
+        <div className="mb-6">
+          <ProgressTracker 
+            completedSections={completedSections} 
+            currentSection={currentSlide + 1}
+            totalSections={totalSections}
           />
         </div>
-        
-        {/* Course Overview */}
-        <div className="mb-8">
-          <Card className="border-l-4 border-l-primary">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3">
-                <BookOpen className="h-6 w-6 text-primary" />
-                Course Overview
-              </CardTitle>
-              <CardDescription className="text-base">
-                Get familiar with the course structure and certification requirements.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-3 gap-4 text-sm">
-                <div className="flex flex-col items-center p-4 bg-muted/50 rounded-lg">
-                  <span className="text-2xl font-bold text-primary">9</span>
-                  <span className="text-muted-foreground">Sections</span>
-                </div>
-                <div className="flex flex-col items-center p-4 bg-muted/50 rounded-lg">
-                  <span className="text-2xl font-bold text-primary">6</span>
-                  <span className="text-muted-foreground">Hours</span>
-                </div>
-                <div className="flex flex-col items-center p-4 bg-muted/50 rounded-lg">
-                  <span className="text-2xl font-bold text-primary">1</span>
-                  <span className="text-muted-foreground">Final Exam</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
-        {/* Progress Tracker */}
-        {inCourseMode && (
-          <div className="mb-8">
-            <ProgressTracker 
-              completedSections={completedSections} 
-              currentSection={currentSlide + 1}
-              totalSections={totalSections}
-            />
-          </div>
-        )}
-
-        {/* Course Carousel - Kajabi Style */}
-        {inCourseMode ? (
-          <div className="mb-8 animate-fade-in">
+        {/* Course Carousel */}
+        <div className="mb-8 animate-fade-in">
             <Carousel 
               setApi={setCarouselApi}
             >
@@ -424,11 +372,9 @@ const Level2Course = () => {
               </Button>
             </div>
 
-            <div className="text-center mt-4 space-y-3">
+            <div className="text-center mt-4">
               <Button
                 onClick={() => {
-                  // Mark all sections complete and open final exam
-                  setCompletedSections(courseSections.map(s => s.id));
                   setShowQuiz(true);
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
@@ -436,61 +382,8 @@ const Level2Course = () => {
               >
                 Go to Final Exam
               </Button>
-
-              <div>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setInCourseMode(false);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                >
-                  Exit Course View
-                </Button>
-              </div>
             </div>
           </div>
-        ) : (
-          <>
-            {/* Course Overview - Show when not in course mode */}
-            <div className="space-y-6 mb-8 animate-fade-in">
-              <Card className="border-l-4 border-l-primary">
-                <CardHeader>
-                  <CardTitle>Start Your Training</CardTitle>
-                  <CardDescription>
-                    Begin the course and progress through each section with our interactive video player.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button onClick={handleStartCourse} size="lg" className="w-full" disabled={!videosLoaded}>
-                    <BookOpen className="h-5 w-5 mr-2" />
-                    {videosLoaded ? 'Start Course' : 'Loading videos…'}
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {courseSections.map((section) => {
-                const isCompleted = completedSections.includes(section.id);
-                
-                return (
-                  <CourseSection
-                    key={section.id}
-                    section={{
-                      ...section,
-                      videoUrl: section.videoUrl || "",
-                      completed: isCompleted,
-                      locked: false
-                    }}
-                    onStartSection={() => {
-                      handleStartCourse();
-                      setTimeout(() => carouselApi?.scrollTo(section.id - 1), 100);
-                    }}
-                  />
-                );
-              })}
-            </div>
-          </>
-        )}
 
         {/* Final Quiz */}
         {allSectionsComplete && !showQuiz && (
