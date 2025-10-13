@@ -1,10 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle, XCircle, Download } from "lucide-react";
 import { level3ExamQuestions } from "@/data/level3ExamQuestions";
 import { level2ExamQuestions } from "@/data/level2ExamQuestions";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +17,7 @@ interface QuizProps {
 
 const Quiz = ({ courseType = 'level3' }: QuizProps) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [questions] = useState(courseType === 'level2' ? level2ExamQuestions : level3ExamQuestions);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
@@ -256,10 +258,18 @@ const Quiz = ({ courseType = 'level3' }: QuizProps) => {
                 <p className="text-sm font-semibold text-green-900 dark:text-green-100 mb-2">
                   ✓ Certificate Available
                 </p>
-                <p className="text-sm text-green-800 dark:text-green-200">
+                <p className="text-sm text-green-800 dark:text-green-200 mb-3">
                   Your Level 2 Security Officer certificate is now available in your user profile. 
                   You can download it at any time by visiting your profile page.
                 </p>
+                <Button 
+                  onClick={() => navigate('/profile')}
+                  className="w-full"
+                  size="lg"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Go to Profile & Download Certificate
+                </Button>
               </div>
             )}
             {passed && courseType === 'level3' && (
