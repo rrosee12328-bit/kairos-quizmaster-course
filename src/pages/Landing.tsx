@@ -136,8 +136,11 @@ const Landing = () => {
                     <Award className="h-8 w-8 text-primary" />
                     <h4 className="text-xl font-semibold">Level 3 Course (Part 1)</h4>
                   </div>
-                  <p className="text-muted-foreground">
-                    Elevate your career with Part 1 online training. Part 2 in-person training required for full armed certification.
+                  <p className="text-muted-foreground mb-3">
+                    Elevate your career with Part 1 online training.
+                  </p>
+                  <p className="text-sm font-semibold text-primary bg-primary/10 p-3 rounded-lg border border-primary/20">
+                    ⚠️ Part 2 in-person training required for full armed certification
                   </p>
                 </CardContent>
               </Card>
