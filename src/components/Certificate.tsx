@@ -14,19 +14,19 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate }: Cer
         alt="Security Training Certificate of Completion" 
         className="w-full h-auto"
       />
-      {/* Student Name - positioned at top blank space */}
-      <div className="absolute top-[28%] left-0 right-0 text-center">
-        <p className="text-3xl font-serif text-foreground">{userName || "Student Name"}</p>
+      {/* Student Name - positioned after "This certificate is issued as proof that" */}
+      <div className="absolute top-[36.5%] left-0 right-0 text-center">
+        <p className="text-2xl font-bold text-foreground">{userName || "Student Name"}</p>
       </div>
       
-      {/* Registration Number - positioned on same line as "student pass and receive their certificates" */}
-      <div className="absolute top-[52%] left-[50%] translate-x-[-50%]">
-        <p className="text-lg font-serif text-foreground">{registrationNumber || "Registration Number"}</p>
+      {/* Registration Number - positioned in "School or Company Name" field */}
+      <div className="absolute top-[48.8%] left-[52%]">
+        <p className="text-base font-semibold text-foreground">{registrationNumber || "REG123456"}</p>
       </div>
       
-      {/* Date of Completion - positioned at date completion space */}
-      <div className="absolute bottom-[18%] left-[25%]">
-        <p className="text-lg font-serif text-foreground">{courseCompletionDate || "MM/DD/YYYY"}</p>
+      {/* Date of Completion - positioned at date field */}
+      <div className="absolute top-[46.5%] left-[52%]">
+        <p className="text-base font-semibold text-foreground">{courseCompletionDate || "MM/DD/YYYY"}</p>
       </div>
     </div>
   );
