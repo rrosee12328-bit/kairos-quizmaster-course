@@ -109,8 +109,8 @@ const Certificate = ({
               <div>
                 <div className="flex items-start">
                   <p className="text-sm text-black font-semibold min-w-[280px]">Signature of Instructor:</p>
-                  <div className="flex-1 border-b-2 border-black px-2 pb-1 min-h-[60px] flex items-center">
-                    <img src={signatureImage} alt="Stephen Taylor Signature" className="h-12 object-contain" />
+                  <div className="flex-1 border-b-2 border-black px-2 pb-1 min-h-[80px] flex items-center">
+                    <img src={signatureImage} alt="Stephen Taylor Signature" className="h-20 object-contain" />
                   </div>
                 </div>
               </div>
@@ -118,8 +118,8 @@ const Certificate = ({
               <div>
                 <div className="flex items-start">
                   <p className="text-sm text-black font-semibold min-w-[280px]">Signature of Qualified Manager:</p>
-                  <div className="flex-1 border-b-2 border-black px-2 pb-1 min-h-[60px] flex items-center">
-                    <img src={signatureImage} alt="Stephen Taylor Signature" className="h-12 object-contain" />
+                  <div className="flex-1 border-b-2 border-black px-2 pb-1 min-h-[80px] flex items-center">
+                    <img src={signatureImage} alt="Stephen Taylor Signature" className="h-20 object-contain" />
                   </div>
                 </div>
               </div>
