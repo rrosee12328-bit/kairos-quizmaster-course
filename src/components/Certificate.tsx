@@ -1,168 +1,135 @@
 import { Card, CardContent } from "@/components/ui/card";
+import signatureImage from "@/assets/stephen-taylor-signature.jpeg";
 
 interface CertificateProps {
-  userName: string;
-  registrationNumber: string;
-  identificationType: string;
-  lastSixDigits: string;
-  schoolName: string;
-  schoolApprovalNumber: string;
-  classroomInstructor: string;
-  classroomInstructorApprovalNumber: string;
-  firearmInstructor: string;
-  firearmInstructorApprovalNumber: string;
-  schoolManager: string;
-  courseCompletionDate: string;
-  firearmQualificationDate: string;
-  firearmCategory: string;
-  firearmCaliber: string;
+  userName?: string;
+  registrationNumber?: string;
+  courseCompletionDate?: string;
 }
 
 const Certificate = ({ 
-  userName, 
-  registrationNumber,
-  identificationType,
-  lastSixDigits,
-  schoolName,
-  schoolApprovalNumber,
-  classroomInstructor,
-  classroomInstructorApprovalNumber,
-  firearmInstructor,
-  firearmInstructorApprovalNumber,
-  schoolManager,
-  courseCompletionDate,
-  firearmQualificationDate,
-  firearmCategory,
-  firearmCaliber
+  userName = "TBD", 
+  registrationNumber = "TBD",
+  courseCompletionDate = "TBD"
 }: CertificateProps) => {
   return (
     <Card id="certificate" className="w-full max-w-4xl mx-auto bg-white p-8">
       <CardContent className="pt-8">
-        <div className="border-[6px] border-black p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-black mb-1">LEVEL THREE</h1>
-            <h2 className="text-2xl font-bold text-black">CERTIFICATE OF COMPLETION</h2>
-          </div>
-
-          {/* Name and ID Section */}
-          <div className="mb-6">
-            <div className="bg-blue-100 border-b-2 border-black px-4 py-3 mb-1">
-              <p className="text-center text-black font-semibold">{userName || "____________________"}</p>
-            </div>
-            <p className="text-center text-xs text-black">Name</p>
-          </div>
-
-          {/* Registration Number */}
-          <div className="mb-6">
-            <div className="bg-blue-100 border-b-2 border-black px-4 py-2 mb-1">
-              <p className="text-center text-black">{registrationNumber || "____________________"}</p>
-            </div>
-            <p className="text-center text-xs text-black">(Registration Number)</p>
-          </div>
-
-          {/* Identification - Last 6 digits */}
-          <div className="mb-6">
-            <div className="bg-blue-100 border-b-2 border-black px-4 py-2 mb-1">
-              <p className="text-center text-black">{lastSixDigits || "____________________"}</p>
-            </div>
-            <p className="text-center text-xs text-black">
-              ({identificationType === 'drivers_license' ? "Driver's License" : "Social Security"} - Last 6 digits)
-            </p>
-          </div>
-
-          {/* Certification Text */}
-          <div className="mb-8 text-center">
-            <p className="text-sm text-black leading-relaxed">
-              This certifies that the above-named individual has completed the Basic Security Officer<br />
-              Training Course approved by the Private Security Program.
-            </p>
-          </div>
-
-          {/* Two Column Section */}
-          <div className="grid grid-cols-2 gap-x-8 gap-y-4 mb-8">
-            {/* Left Column */}
-            <div>
-              <div className="bg-blue-100 border-b-2 border-black px-3 py-2 mb-1">
-                <p className="text-black text-sm">{schoolName || "____________________"}</p>
-              </div>
-              <p className="text-xs text-black mb-4">School Name</p>
-
-              <div className="bg-blue-100 border-b-2 border-black px-3 py-2 mb-1">
-                <p className="text-black text-sm">{classroomInstructor || "____________________"}</p>
-              </div>
-              <p className="text-xs text-black mb-4">Classroom Instructor</p>
-
-              <div className="bg-blue-100 border-b-2 border-black px-3 py-2 mb-1">
-                <p className="text-black text-sm">{firearmInstructor || "____________________"}</p>
-              </div>
-              <p className="text-xs text-black mb-4">Firearm Instructor</p>
-
-              <div className="bg-blue-100 border-b-2 border-black px-3 py-2 mb-1">
-                <p className="text-black text-sm">{schoolManager || "____________________"}</p>
-              </div>
-              <p className="text-xs text-black mb-4">School Manager</p>
-
-              <div className="border-b-2 border-black px-3 py-2 mb-1">
-                <p className="text-black text-sm">____________________</p>
-              </div>
-              <p className="text-xs text-black mb-4">Classroom Instructor Signature</p>
-
-              <div className="border-b-2 border-black px-3 py-2 mb-1">
-                <p className="text-black text-sm">____________________</p>
-              </div>
-              <p className="text-xs text-black mb-4">Firearm Instructor Signature</p>
-
-              <div className="border-b-2 border-black px-3 py-2 mb-1">
-                <p className="text-black text-sm">____________________</p>
-              </div>
-              <p className="text-xs text-black">School Manager Signature</p>
+        <div className="border-[8px] border-[#1e3a8a] p-12 relative">
+          {/* Inner border */}
+          <div className="border-4 border-[#1e3a8a] p-8">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <h1 className="text-2xl font-bold text-black mb-2">Private Security Program</h1>
+              <h2 className="text-xl font-bold text-black mb-2">Certificate of Completion</h2>
+              <h3 className="text-lg font-bold text-black">Level Two Training Course</h3>
             </div>
 
-            {/* Right Column */}
-            <div>
-              <div className="bg-blue-100 border-b-2 border-black px-3 py-2 mb-1">
-                <p className="text-black text-sm">{schoolApprovalNumber || "____________________"}</p>
-              </div>
-              <p className="text-xs text-black mb-4">School Approval Number</p>
-
-              <div className="bg-blue-100 border-b-2 border-black px-3 py-2 mb-1">
-                <p className="text-black text-sm">{classroomInstructorApprovalNumber || "____________________"}</p>
-              </div>
-              <p className="text-xs text-black mb-4">Classroom Instructor Approval Number</p>
-
-              <div className="bg-blue-100 border-b-2 border-black px-3 py-2 mb-1">
-                <p className="text-black text-sm">{firearmInstructorApprovalNumber || "____________________"}</p>
-              </div>
-              <p className="text-xs text-black mb-4">Firearm Instructor Approval Number</p>
-
-              <div className="bg-blue-100 border-b-2 border-black px-3 py-2 mb-1">
-                <p className="text-black text-sm">{courseCompletionDate || "____________________"}</p>
-              </div>
-              <p className="text-xs text-black mb-4">Course Completion Date</p>
-
-              <div className="border-b-2 border-black px-3 py-2 mb-1">
-                <p className="text-black text-sm">{firearmQualificationDate || "____________________"}</p>
-              </div>
-              <p className="text-xs text-black mb-4">Firearm Qualification Date</p>
-
-              <div className="border-b-2 border-black px-3 py-2 mb-1">
-                <p className="text-black text-sm">{firearmCategory || "____________________"}</p>
-              </div>
-              <p className="text-xs text-black mb-4">Firearm Category</p>
-
-              <div className="border-b-2 border-black px-3 py-2 mb-1">
-                <p className="text-black text-sm">{firearmCaliber || "____________________"}</p>
-              </div>
-              <p className="text-xs text-black">Firearm Caliber</p>
+            {/* Main Text */}
+            <div className="mb-8 text-center">
+              <p className="text-base text-black font-semibold mb-6">
+                This certificate is issued as proof that
+              </p>
             </div>
-          </div>
 
-          {/* Footer */}
-          <div className="flex justify-between items-center pt-4 border-t border-gray-300">
-            <p className="text-xs text-gray-600">PSB-30</p>
-            <p className="text-xs text-gray-600">Texas Department of Public Safety – Texas Private Security Board</p>
-            <p className="text-xs text-gray-600">Rev. 01/13</p>
+            {/* Student Name Field */}
+            <div className="mb-6">
+              <div className="border-b-2 border-black px-4 py-3 min-h-[40px] flex items-center justify-center">
+                <p className="text-center text-black font-medium">{userName}</p>
+              </div>
+              <p className="text-center text-xs text-black mt-1">
+                (Please print or type name and Registration Number or social security number (last 6 digits) of student)
+              </p>
+            </div>
+
+            {/* Certification Statement */}
+            <div className="mb-8 text-center">
+              <p className="text-sm text-black leading-relaxed">
+                has successfully completed the Board approved, PSP Level Two Training Course<br />
+                to meet the standards and requirements set forth in Texas Occupations Code,<br />
+                Section 1702, Title 10 and Administrative Rules.
+              </p>
+            </div>
+
+            {/* School Information */}
+            <div className="space-y-4 mb-6">
+              <div>
+                <div className="flex items-start">
+                  <p className="text-sm text-black font-semibold min-w-[280px]">School or Company Name:</p>
+                  <div className="flex-1 border-b-2 border-black px-2 pb-1">
+                    <p className="text-sm text-black">Kairos Security</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-start">
+                  <p className="text-sm text-black font-semibold min-w-[280px]">School Approval or Company License Number:</p>
+                  <div className="flex-1 border-b-2 border-black px-2 pb-1">
+                    <p className="text-sm text-black">F28623301</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-start">
+                  <p className="text-sm text-black font-semibold min-w-[280px]">Date of Completion:</p>
+                  <div className="flex-1 border-b-2 border-black px-2 pb-1">
+                    <p className="text-sm text-black">{courseCompletionDate}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Instructor & Manager */}
+            <div className="space-y-4 mb-6">
+              <div>
+                <div className="flex items-start">
+                  <p className="text-sm text-black font-semibold min-w-[280px]">Name of Instructor:</p>
+                  <div className="flex-1 border-b-2 border-black px-2 pb-1">
+                    <p className="text-sm text-black">Stephen Taylor</p>
+                  </div>
+                </div>
+                <p className="text-xs text-black ml-[280px] mt-1">(Please print or type)</p>
+              </div>
+
+              <div>
+                <div className="flex items-start">
+                  <p className="text-sm text-black font-semibold min-w-[280px]">Name of Qualified Manager:</p>
+                  <div className="flex-1 border-b-2 border-black px-2 pb-1">
+                    <p className="text-sm text-black">Stephen Taylor</p>
+                  </div>
+                </div>
+                <p className="text-xs text-black ml-[280px] mt-1">(Please print or type)</p>
+              </div>
+            </div>
+
+            {/* Signatures */}
+            <div className="space-y-4 mb-8">
+              <div>
+                <div className="flex items-start">
+                  <p className="text-sm text-black font-semibold min-w-[280px]">Signature of Instructor:</p>
+                  <div className="flex-1 border-b-2 border-black px-2 pb-1 min-h-[60px] flex items-center">
+                    <img src={signatureImage} alt="Stephen Taylor Signature" className="h-12 object-contain" />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-start">
+                  <p className="text-sm text-black font-semibold min-w-[280px]">Signature of Qualified Manager:</p>
+                  <div className="flex-1 border-b-2 border-black px-2 pb-1 min-h-[60px] flex items-center">
+                    <img src={signatureImage} alt="Stephen Taylor Signature" className="h-12 object-contain" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex justify-between items-center pt-4 border-t border-black">
+              <p className="text-xs text-black">PSB-36</p>
+              <p className="text-xs text-black">Texas Department of Public Safety – Texas Private Security Board</p>
+            </div>
           </div>
         </div>
       </CardContent>
