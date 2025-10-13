@@ -190,39 +190,38 @@ const Level2Course = () => {
           toast.error('No videos found in Bunny.net library 510506');
         }
 
-        // Build updated sections with matched videos
-        let updatedSections: typeof courseSections = [] as any;
-        updatedSections = (prevSections =>
-          prevSections.map(section => {
+        // Build updated sections with matched videos using functional state update
+        setCourseSections((prev) => {
+          const updated = prev.map((section) => {
             const sNorm = normalize(section.title);
 
-            const matchingVideo = videos.find((video: any) => {
+            const byNumber = videos.find((video: any) => leadingNumber(video?.title || '') === section.id);
+            const byTitle = videos.find((video: any) => {
               const title = video?.title || '';
               const vNorm = normalize(title);
-              const num = leadingNumber(title);
-              return (
-                vNorm.includes(sNorm) ||
-                sNorm.includes(vNorm) ||
-                num === section.id
-              );
+              return vNorm.includes(sNorm) || sNorm.includes(vNorm);
             });
-            
+
+            const matchingVideo = byNumber || byTitle;
+
             if (matchingVideo?.guid) {
               return {
                 ...section,
-                videoUrl: `https://iframe.mediadelivery.net/embed/510506/${matchingVideo.guid}`
+                videoUrl: `https://iframe.mediadelivery.net/embed/510506/${matchingVideo.guid}`,
               };
             }
             return section;
-          })
-        )(/* current state provided below */ courseSections as any);
+          });
 
-        setCourseSections(updatedSections as any);
+          console.log('[Level2Course] Section video map', updated.map(s => ({ id: s.id, title: s.title, hasUrl: !!s.videoUrl })));
 
-        const missing = updatedSections.filter(s => !s.videoUrl);
-        if (missing.length) {
-          toast.warning(`Videos not found for ${missing.length} section(s): ${missing.map(m => m.title).join(', ')}`);
-        }
+          const missing = updated.filter((s) => !s.videoUrl);
+          if (missing.length) {
+            toast.warning(`Videos not found for ${missing.length} section(s): ${missing.map((m) => m.title).join(', ')}`);
+          }
+
+          return updated;
+        });
 
         setVideosLoaded(true);
       } catch (err) {
@@ -463,9 +462,9 @@ const Level2Course = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button onClick={handleStartCourse} size="lg" className="w-full">
+                  <Button onClick={handleStartCourse} size="lg" className="w-full" disabled={!videosLoaded}>
                     <BookOpen className="h-5 w-5 mr-2" />
-                    Start Course
+                    {videosLoaded ? 'Start Course' : 'Loading videos…'}
                   </Button>
                 </CardContent>
               </Card>
