@@ -12,6 +12,7 @@ import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import VideoMetadata from "./pages/VideoMetadata";
 import Admin from "./pages/Admin";
+import CertificatePreview from "./pages/CertificatePreview";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/settings" element={<Settings />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/video-metadata" element={<VideoMetadata />} />
+          <Route path="/certificate-preview" element={<CertificatePreview />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
