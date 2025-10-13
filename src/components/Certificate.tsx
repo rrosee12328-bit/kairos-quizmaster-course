@@ -7,6 +7,13 @@ interface CertificateProps {
 }
 
 const Certificate = ({ userName, registrationNumber, courseCompletionDate }: CertificateProps) => {
+  // Format date to MM/DD/YYYY
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "MM/DD/YYYY";
+    const date = new Date(dateString);
+    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+  };
+
   return (
     <div id="certificate" className="w-full max-w-6xl mx-auto bg-white relative">
       <img 
@@ -25,8 +32,8 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate }: Cer
       </div>
       
       {/* Date of Completion - positioned at date field */}
-      <div className="absolute top-[48.8%] left-[57%]">
-        <p className="text-base font-semibold text-foreground">{courseCompletionDate || "MM/DD/YYYY"}</p>
+      <div className="absolute top-[48.3%] left-[57%]">
+        <p className="text-base font-semibold text-foreground">{formatDate(courseCompletionDate)}</p>
       </div>
     </div>
   );
