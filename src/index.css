@@ -122,3 +122,35 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+
+/* Print styles for certificates */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  
+  #certificate,
+  #certificate * {
+    visibility: visible;
+  }
+  
+  #certificate {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0 !important;
+    box-shadow: none !important;
+  }
+  
+  button,
+  input,
+  .no-print {
+    display: none !important;
+  }
+  
+  @page {
+    size: landscape;
+    margin: 0;
+  }
+}

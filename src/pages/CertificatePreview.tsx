@@ -10,7 +10,6 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import "../components/CertificatePrintStyles.css";
 
 const CertificatePreview = () => {
   const { toast } = useToast();
