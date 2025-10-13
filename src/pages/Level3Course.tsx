@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Shield, ChevronLeft, ChevronRight } from "lucide-react";
+import { Shield, ChevronLeft, ChevronRight, FileText, Download } from "lucide-react";
 import ProgressTracker from "@/components/ProgressTracker";
 import Quiz from "@/components/Quiz";
 import CourseHeader from "@/components/CourseHeader";
@@ -327,6 +327,31 @@ const Course = () => {
             currentSection={currentSlide + 1}
             totalSections={totalSections}
           />
+        </div>
+
+        {/* PDF Resource */}
+        <div className="mb-6">
+          <Card className="border-l-4 border-l-primary">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-primary" />
+                Private Security Level 3 PDF
+              </CardTitle>
+              <CardDescription>
+                Reference manual to follow along with videos or use during the exam
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                variant="outline" 
+                className="w-full sm:w-auto"
+                onClick={() => window.open('/Level3-Security-Manual.pdf', '_blank')}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download PDF Manual
+              </Button>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Course Overview */}
