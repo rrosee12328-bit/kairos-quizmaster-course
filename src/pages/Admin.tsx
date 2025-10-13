@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { BackButton } from "@/components/BackButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, Link } from "react-router-dom";
@@ -131,9 +132,12 @@ const Admin = () => {
               <img src={kairosLogo} alt="Kairos Security Academy" className="h-8 w-8" />
               <h1 className="text-2xl font-bold">Kairos Security Academy</h1>
             </Link>
-            <Button variant="ghost" asChild>
-              <Link to="/">Home</Link>
-            </Button>
+            <div className="flex items-center gap-2">
+              <BackButton />
+              <Button variant="ghost" asChild>
+                <Link to="/">Home</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </header>

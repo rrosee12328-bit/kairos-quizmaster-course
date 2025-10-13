@@ -7,6 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
+import { BackButton } from "@/components/BackButton";
 import kairosLogo from "@/assets/kairos-logo.png";
 import securityTrainingImage from "@/assets/security-training-courses.jpg";
 
@@ -103,10 +104,12 @@ const Courses = () => {
               <img src={kairosLogo} alt="Kairos Security Academy" className="h-8 w-8" />
               <h1 className="text-xl font-bold">Kairos Security Academy</h1>
             </Link>
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" asChild>
-                <Link to="/">Home</Link>
-              </Button>
+            <div className="flex items-center gap-2">
+              <BackButton />
+              <div className="flex items-center gap-4">
+                <Button variant="ghost" asChild>
+                  <Link to="/">Home</Link>
+                </Button>
               {user ? (
                 <>
                   {isAdmin && (
@@ -124,6 +127,7 @@ const Courses = () => {
                   <Link to="/auth">Sign In</Link>
                 </Button>
               )}
+            </div>
             </div>
           </div>
         </div>
