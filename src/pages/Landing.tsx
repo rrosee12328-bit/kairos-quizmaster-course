@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Shield, Award, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import kairosLogo from "@/assets/kairos-logo.png";
@@ -187,6 +189,106 @@ const Landing = () => {
                 </CardContent>
               </Card>
             </div>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="py-16 px-6 bg-background">
+          <div className="container mx-auto max-w-4xl">
+            <div className="flex justify-center mb-8">
+              <ChevronDown className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <h3 className="text-4xl font-bold mb-12 text-center">Frequently Asked Questions (FAQs)</h3>
+            
+            <Tabs defaultValue="general" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 mb-8">
+                <TabsTrigger value="general">General</TabsTrigger>
+                <TabsTrigger value="certification">Certification</TabsTrigger>
+                <TabsTrigger value="career">Career</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="general">
+                <Accordion type="single" collapsible className="w-full">
+                  <AccordionItem value="item-1">
+                    <AccordionTrigger>What is Kairos Security Academy?</AccordionTrigger>
+                    <AccordionContent>
+                      Kairos Security Academy is a premier training institution dedicated to preparing security officers for excellence in their field. We combine expertise, innovation, and a passion for excellence to provide security training that not only protects but also empowers.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="item-2">
+                    <AccordionTrigger>How long does the training take?</AccordionTrigger>
+                    <AccordionContent>
+                      The Level 2 course typically takes several weeks to complete, depending on your schedule and pace. We offer flexible learning options to accommodate working professionals. The Level 3 Part 1 online training has a similar timeline, with Part 2 requiring additional in-person training.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="item-3">
+                    <AccordionTrigger>What are the prerequisites for enrollment?</AccordionTrigger>
+                    <AccordionContent>
+                      For our Level 2 course, you must be at least 18 years old and have a clean background check. Additional requirements may apply for Level 3 certification. We'll guide you through all necessary steps during the enrollment process.
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </TabsContent>
+              
+              <TabsContent value="certification">
+                <Accordion type="single" collapsible className="w-full">
+                  <AccordionItem value="item-1">
+                    <AccordionTrigger>Will further certification help me earn more as a security officer?</AccordionTrigger>
+                    <AccordionContent>
+                      Yes. Certain roles require more advanced certification, especially duties where carrying a firearm or protecting an important person is required. Since these roles need specialist training, they receive higher pay.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="item-2">
+                    <AccordionTrigger>What Does Level 2 Certification Mean for Your Security Career?</AccordionTrigger>
+                    <AccordionContent>
+                      It means you can be employed as a roving patrol or dedicated security guard anywhere in the state. Without the certificate you are legally barred from performing the functions of a security guard officer. If you carry out shift work without the proper certification, both you and your employer could face legal censure.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="item-3">
+                    <AccordionTrigger>Does Where You Get Your Certification Matter?</AccordionTrigger>
+                    <AccordionContent>
+                      Yes. Not every security company has the same commitment to rigor as Kairos Security. Some companies are only interested in getting you through the program as quickly as possible to get you certified and on the streets, regardless of whether or not you understand the material. We will make sure you acquire all the skills you need to be an effective security guard.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="item-4">
+                    <AccordionTrigger>Will I be able to keep the certification even if I don't stay to work with Kairos Security?</AccordionTrigger>
+                    <AccordionContent>
+                      Yes. The certifications offered in our courses are issued by the Texas Department of Public Safety and are valid for any security role in the State of Texas at any company.
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </TabsContent>
+              
+              <TabsContent value="career">
+                <Accordion type="single" collapsible className="w-full">
+                  <AccordionItem value="item-1">
+                    <AccordionTrigger>Will Kairos Security hire me after I qualify?</AccordionTrigger>
+                    <AccordionContent>
+                      Kairos Security is expanding rapidly and we have positions available for every level of certification we offer. Contact us to ask about opportunities in your area.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="item-2">
+                    <AccordionTrigger>Will the skills I learn training as a security guard help me find other work in different fields?</AccordionTrigger>
+                    <AccordionContent>
+                      Any professional training or qualification you take will teach you many transferable skills. Furthermore it demonstrates to a future employer that you are hard working and committed to completing what you set out to do, traits which are always in demand in any field.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="item-3">
+                    <AccordionTrigger>What kind of career advancement opportunities are available?</AccordionTrigger>
+                    <AccordionContent>
+                      With Kairos Security Academy training, you can advance from entry-level security positions to specialized roles including executive protection, event security, crisis intervention specialist, and security management positions. Our comprehensive training prepares you for career growth in the security industry.
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </TabsContent>
+            </Tabs>
           </div>
         </section>
 
