@@ -14,6 +14,8 @@ interface CourseCompletionEmailRequest {
   percentage: number;
   passed: boolean;
   registrationNumber?: string;
+  approvalCode?: string;
+  approvalExpiresAt?: string;
 }
 
 Deno.serve(async (req: Request): Promise<Response> => {
@@ -36,7 +38,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
       totalQuestions, 
       percentage, 
       passed,
-      registrationNumber 
+      registrationNumber,
+      approvalCode,
+      approvalExpiresAt
     }: CourseCompletionEmailRequest = await req.json();
 
     console.log('Sending course completion email to:', email);
@@ -50,7 +54,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     const courseTitle = courseType === 'level2' 
       ? 'Level 2 Security Officer Certification' 
-      : 'Level 3 Security Officer Certification (Part 1)';
+      : 'Level 3 Security Officer Certification (Part 1 - Online)';
 
     const subject = passed 
       ? `🎉 Congratulations! You passed ${courseTitle}!`
@@ -67,7 +71,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
             .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
             .score-box { background: ${passed ? '#10b981' : '#ef4444'}; color: white; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0; }
             .score { font-size: 48px; font-weight: bold; margin: 10px 0; }
-            .button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin-top: 20px; }
             .footer { text-align: center; margin-top: 30px; color: #666; font-size: 12px; }
           </style>
         </head>
@@ -81,7 +84,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
               <p>Dear ${studentName},</p>
               
               ${passed 
-                ? `<p>We are thrilled to inform you that you have <strong>successfully passed</strong> the ${courseTitle} examination!</p>`
+                ? `<p>We are thrilled to inform you that you have <strong>successfully passed</strong> the ${courseTitle} examination with a score of ${percentage}%!</p>`
                 : `<p>Thank you for completing the ${courseTitle} examination.</p>`
               }
               
@@ -92,14 +95,24 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 ${passed ? '<p style="margin-top: 10px; font-size: 14px;">PASSED ✓</p>' : '<p style="margin-top: 10px; font-size: 14px;">Did not meet passing requirements</p>'}
               </div>
               
-              ${passed && registrationNumber 
+              ${passed && courseType === 'level2' && registrationNumber 
                 ? `
-                  <p><strong>Registration Number:</strong> ${registrationNumber}</p>
-                  <p>Your certificate has been generated and is available in your profile. You can download it at any time.</p>
+                  <p><strong>Certificate Registration Number:</strong> ${registrationNumber}</p>
+                  <p>Your certificate has been generated and is available in your user profile. You can download it at any time by logging into your account.</p>
+                `
+                : passed && courseType === 'level3' && approvalCode
+                ? `
+                  <div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <p style="margin: 0; font-size: 18px; font-weight: bold; color: #1e40af;">Your Approval Code</p>
+                    <p style="margin: 10px 0; font-size: 24px; font-weight: bold; color: #1e40af; letter-spacing: 2px;">${approvalCode}</p>
+                    <p style="margin: 5px 0 0 0; font-size: 12px; color: #1e40af;">Expires: ${approvalExpiresAt}</p>
+                    <p style="margin: 15px 0 0 0; font-size: 14px; color: #1e40af;">⚠️ This approval code is valid for 24 hours only and grants you access to schedule your in-person Level 3 Part 2 training.</p>
+                  </div>
+                  <p><strong>Important:</strong> Level 3 does not provide a certificate for the online portion. You must complete the in-person Level 3 Part 2 training to receive your full Armed Security Officer certification.</p>
                 `
                 : !passed
                 ? `
-                  <p>Unfortunately, you did not meet the passing requirements for this course. The passing score is 70%.</p>
+                  <p>Unfortunately, you did not meet the passing requirements for this course. <strong>A score of 75% or higher is required to pass.</strong></p>
                   <p>Don't worry! You can retake the exam to improve your score. We encourage you to review the course materials and try again.</p>
                 `
                 : ''
@@ -111,9 +124,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
               
               ${courseType === 'level3' && passed 
                 ? `
-                  <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 5px; margin-top: 20px;">
-                    <p style="margin: 0; color: #856404;"><strong>⚠️ Important Reminder:</strong></p>
-                    <p style="margin: 10px 0 0 0; color: #856404;">Part 2 in-person training is required for full armed certification. Please contact us to schedule your Part 2 training.</p>
+                  <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                    <p style="margin: 0; color: #856404; font-weight: bold; font-size: 16px;">⚠️ NEXT STEPS REQUIRED</p>
+                    <p style="margin: 10px 0 0 0; color: #856404;">You have completed Part 1 (Online) of the Level 3 Security Officer Certification. To receive your Armed Security Officer certificate, you MUST complete Part 2 in-person training.</p>
+                    <p style="margin: 10px 0 0 0; color: #856404; font-weight: bold;">Use your approval code above to schedule your in-person training session. This code expires in 24 hours.</p>
                   </div>
                 `
                 : ''

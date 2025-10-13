@@ -202,6 +202,36 @@ export type Database = {
         }
         Relationships: []
       }
+      level3_approvals: {
+        Row: {
+          approval_code: string
+          completion_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          used: boolean | null
+          user_id: string
+        }
+        Insert: {
+          approval_code: string
+          completion_id: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          used?: boolean | null
+          user_id: string
+        }
+        Update: {
+          approval_code?: string
+          completion_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          used?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address: string | null
@@ -270,6 +300,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_level3_approval_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       generate_registration_number: {
         Args: Record<PropertyKey, never>
         Returns: string
