@@ -343,6 +343,9 @@ const Landing = () => {
               </p>
             </div>
           </div>
+          <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
+            © 2025 Kairos Security Academy. All Rights Reserved. License #: F16852101
+          </div>
         </div>
       </footer>
     </div>
