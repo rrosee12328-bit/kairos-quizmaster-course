@@ -112,19 +112,16 @@ const Landing = () => {
               />
             </div>
             
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 gap-6 mb-8">
               <Card className="hover:shadow-lg transition-all">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 mb-4">
                     <Shield className="h-8 w-8 text-primary" />
                     <h4 className="text-xl font-semibold">Level 2 Course</h4>
                   </div>
-                  <p className="text-muted-foreground mb-6">
+                  <p className="text-muted-foreground">
                     Begin your journey in security excellence. Get certified and join Kairos Security's team of elite professionals.
                   </p>
-                  <Button asChild className="w-full">
-                    <Link to="/course/level2">Learn More &gt;&gt;</Link>
-                  </Button>
                 </CardContent>
               </Card>
               
@@ -134,14 +131,17 @@ const Landing = () => {
                     <Award className="h-8 w-8 text-primary" />
                     <h4 className="text-xl font-semibold">Level 3 Course (Part 1)</h4>
                   </div>
-                  <p className="text-muted-foreground mb-6">
+                  <p className="text-muted-foreground">
                     Elevate your career with Part 1 online training. Part 2 in-person training required for full armed certification.
                   </p>
-                  <Button asChild className="w-full">
-                    <Link to="/course/level3">Learn More &gt;&gt;</Link>
-                  </Button>
                 </CardContent>
               </Card>
+            </div>
+            
+            <div className="text-center">
+              <Button size="lg" asChild className="text-lg px-8">
+                <Link to="/courses">Get Started Today &gt;&gt;</Link>
+              </Button>
             </div>
           </div>
         </section>
