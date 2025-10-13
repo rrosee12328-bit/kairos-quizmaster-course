@@ -159,6 +159,19 @@ const Level2Course = () => {
 
   // Fetch videos from Bunny.net
   useEffect(() => {
+    const normalize = (s: string) =>
+      (s || "")
+        .toLowerCase()
+        .replace(/[_-]+/g, " ")
+        .replace(/\s+/g, " ")
+        .replace(/[^a-z0-9 ]/g, "")
+        .trim();
+
+    const leadingNumber = (s: string) => {
+      const m = (s || "").trim().match(/^(\d{1,2})/);
+      return m ? parseInt(m[1], 10) : null;
+    };
+
     const fetchVideos = async () => {
       try {
         const { data, error } = await supabase.functions.invoke('bunny-video', {
@@ -171,29 +184,30 @@ const Level2Course = () => {
         if (error) throw error;
 
         const videos = data?.items || [];
-        console.log('Fetched videos:', videos);
+        console.log('[Level2Course] Fetched videos:', videos?.map((v: any) => ({ title: v?.title, guid: v?.guid })));
 
-        // Map video titles to section IDs
-        const videoTitleMap: { [key: string]: number } = {
-          'welcome': 1,
-          'training objective': 2,
-          'security officer basics': 3,
-          'applicable rules and state laws': 4,
-          'personal communication and conflict resolution': 5,
-          'use of force': 6,
-          'arrests': 7,
-          'verbal and written communication best practices': 8,
-          'emergencies and safety hazards': 9
-        };
+        if (!videos.length) {
+          toast.error('No videos found in Bunny.net library 510506');
+        }
 
-        // Update course sections with video URLs
-        setCourseSections(prevSections =>
+        // Build updated sections with matched videos
+        let updatedSections: typeof courseSections = [] as any;
+        updatedSections = (prevSections =>
           prevSections.map(section => {
-            const matchingVideo = videos.find((video: any) => 
-              videoTitleMap[video.title?.toLowerCase()] === section.id
-            );
+            const sNorm = normalize(section.title);
+
+            const matchingVideo = videos.find((video: any) => {
+              const title = video?.title || '';
+              const vNorm = normalize(title);
+              const num = leadingNumber(title);
+              return (
+                vNorm.includes(sNorm) ||
+                sNorm.includes(vNorm) ||
+                num === section.id
+              );
+            });
             
-            if (matchingVideo) {
+            if (matchingVideo?.guid) {
               return {
                 ...section,
                 videoUrl: `https://iframe.mediadelivery.net/embed/510506/${matchingVideo.guid}`
@@ -201,11 +215,18 @@ const Level2Course = () => {
             }
             return section;
           })
-        );
+        )(/* current state provided below */ courseSections as any);
+
+        setCourseSections(updatedSections as any);
+
+        const missing = updatedSections.filter(s => !s.videoUrl);
+        if (missing.length) {
+          toast.warning(`Videos not found for ${missing.length} section(s): ${missing.map(m => m.title).join(', ')}`);
+        }
 
         setVideosLoaded(true);
-      } catch (error) {
-        console.error('Error fetching videos:', error);
+      } catch (err) {
+        console.error('Error fetching videos:', err);
         toast.error('Failed to load course videos');
       }
     };
