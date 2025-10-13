@@ -13,7 +13,7 @@ const Certificate = ({
   courseCompletionDate = "TBD"
 }: CertificateProps) => {
   return (
-    <Card id="certificate" className="w-[1920px] h-[1080px] mx-auto bg-white p-8">
+    <Card id="certificate" className="w-full max-w-6xl aspect-[16/9] mx-auto bg-white p-8">
       <CardContent className="pt-8">
         <div className="border-[8px] border-academy-red p-12 relative">
           {/* Inner border */}
