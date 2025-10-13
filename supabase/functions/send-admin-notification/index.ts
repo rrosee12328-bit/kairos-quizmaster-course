@@ -129,7 +129,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     `;
 
     // Send to both admin emails
-    const adminEmails = ['staylor@kairossecurity', 'trysocialmediahelp@gmail.com'];
+    const adminEmails = ['staylor@kairossecurity.com', 'trysocialmediahelp@gmail.com'];
     
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
