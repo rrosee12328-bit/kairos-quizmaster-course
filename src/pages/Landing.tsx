@@ -1,14 +1,39 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Shield, Award, ChevronDown } from "lucide-react";
+import { Shield, Award, ChevronDown, User, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { User as SupabaseUser } from "@supabase/supabase-js";
 import { Footer } from "@/components/Footer";
 import kairosLogo from "@/assets/kairos-logo.png";
 import securityOfficerImage from "@/assets/security-officer-professional.jpg";
 
+
 const Landing = () => {
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+
+  useEffect(() => {
+    // Check current user
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -23,15 +48,32 @@ const Landing = () => {
               <Button variant="ghost" asChild>
                 <Link to="/courses">Courses</Link>
               </Button>
-              <Button variant="ghost" asChild>
-                <Link to="/admin">Admin</Link>
-              </Button>
-              <Button variant="ghost" asChild>
-                <Link to="/auth">Sign In</Link>
-              </Button>
-              <Button asChild size="lg">
-                <Link to="/courses">Register Now &gt;&gt;</Link>
-              </Button>
+              {user ? (
+                <>
+                  <Button variant="ghost" asChild>
+                    <Link to="/profile">
+                      <User className="h-4 w-4 mr-2" />
+                      Profile
+                    </Link>
+                  </Button>
+                  <Button variant="outline" onClick={handleSignOut}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="ghost" asChild>
+                    <Link to="/admin">Admin</Link>
+                  </Button>
+                  <Button variant="ghost" asChild>
+                    <Link to="/auth">Sign In</Link>
+                  </Button>
+                  <Button asChild size="lg">
+                    <Link to="/courses">Register Now &gt;&gt;</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>

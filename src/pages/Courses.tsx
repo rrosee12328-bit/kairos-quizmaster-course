@@ -113,6 +113,9 @@ const Courses = () => {
                 </Button>
               {user ? (
                 <>
+                  <Button variant="ghost" asChild>
+                    <Link to="/profile">Profile</Link>
+                  </Button>
                   {isAdmin && (
                     <Button variant="ghost" asChild>
                       <Link to="/admin">Admin</Link>
