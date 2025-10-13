@@ -15,7 +15,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate }: Cer
         className="w-full h-auto"
       />
       {/* Student Name - positioned on the black line */}
-      <div className="absolute top-[33%] left-0 right-0 text-center">
+      <div className="absolute top-[32%] left-0 right-0 text-center">
         <p className="text-xl font-bold text-foreground">{userName || "Student Name"}</p>
       </div>
       
