@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle, XCircle } from "lucide-react";
 import { level3ExamQuestions } from "@/data/level3ExamQuestions";
+import { level2ExamQuestions } from "@/data/level2ExamQuestions";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -15,7 +16,7 @@ interface QuizProps {
 
 const Quiz = ({ courseType = 'level3' }: QuizProps) => {
   const { toast } = useToast();
-  const [questions] = useState(level3ExamQuestions);
+  const [questions] = useState(courseType === 'level2' ? level2ExamQuestions : level3ExamQuestions);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
   const [showResults, setShowResults] = useState(false);
@@ -228,7 +229,9 @@ const Quiz = ({ courseType = 'level3' }: QuizProps) => {
       <div className="max-w-4xl mx-auto space-y-6">
         <Card>
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Level 3 Security Officer Exam Complete!</CardTitle>
+            <CardTitle className="text-2xl">
+              {courseType === 'level2' ? 'Level 2' : 'Level 3'} Security Officer Exam Complete!
+            </CardTitle>
             <CardDescription>Here are your results</CardDescription>
           </CardHeader>
           <CardContent className="text-center space-y-6">
@@ -245,7 +248,7 @@ const Quiz = ({ courseType = 'level3' }: QuizProps) => {
             </div>
             <div className={`text-lg font-semibold ${passed ? 'text-green-600' : 'text-orange-600'}`}>
               {passed 
-                ? 'Congratulations! You passed the Level 3 Security Officer Certification Exam!' 
+                ? `Congratulations! You passed the ${courseType === 'level2' ? 'Level 2' : 'Level 3'} Security Officer Certification Exam!` 
                 : `You need ${passingScore}% to pass. Keep studying and try again!`}
             </div>
             {passed && courseType === 'level2' && (
@@ -348,7 +351,9 @@ const Quiz = ({ courseType = 'level3' }: QuizProps) => {
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center mb-2">
-            <CardTitle>Level 3 Security Officer Exam</CardTitle>
+            <CardTitle>
+              {courseType === 'level2' ? 'Level 2' : 'Level 3'} Security Officer Exam
+            </CardTitle>
             <span className="text-sm text-muted-foreground">
               Question {currentQuestion + 1} of {questions.length}
             </span>
