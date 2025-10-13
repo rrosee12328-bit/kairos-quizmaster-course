@@ -54,7 +54,7 @@ const CourseHeader = ({ isAdmin = false, showAuthButtons = false }: CourseHeader
             </div>
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              <span>100 Questions</span>
+              <span>32 Questions</span>
             </div>
           </div>
         </div>

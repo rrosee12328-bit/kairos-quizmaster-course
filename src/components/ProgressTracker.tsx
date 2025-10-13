@@ -79,7 +79,7 @@ const ProgressTracker = ({ completedSections, currentSection, totalSections, sho
             </span>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Complete all sections to unlock the 100-question final exam
+            Complete all sections to unlock the 32-question final exam
           </p>
         </div>
       </CardContent>
