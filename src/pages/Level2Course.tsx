@@ -263,7 +263,7 @@ const Level2Course = () => {
                   <span className="text-muted-foreground">Sections</span>
                 </div>
                 <div className="flex flex-col items-center p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                  <span className="text-2xl font-bold text-blue-500">2.5</span>
+                  <span className="text-2xl font-bold text-blue-500">6</span>
                   <span className="text-muted-foreground">Hours</span>
                 </div>
                 <div className="flex flex-col items-center p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
