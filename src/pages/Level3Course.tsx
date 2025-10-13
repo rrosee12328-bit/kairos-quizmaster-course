@@ -373,7 +373,7 @@ const Course = () => {
                   <span className="text-muted-foreground">Sections</span>
                 </div>
                 <div className="flex flex-col items-center p-4 bg-muted/50 rounded-lg">
-                  <span className="text-2xl font-bold text-primary">8</span>
+                  <span className="text-2xl font-bold text-primary">30</span>
                   <span className="text-muted-foreground">Hours</span>
                 </div>
                 <div className="flex flex-col items-center p-4 bg-muted/50 rounded-lg">
