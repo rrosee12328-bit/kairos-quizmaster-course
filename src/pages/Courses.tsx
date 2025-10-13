@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { BackButton } from "@/components/BackButton";
+import { Footer } from "@/components/Footer";
 import kairosLogo from "@/assets/kairos-logo.png";
 import securityTrainingImage from "@/assets/security-training-courses.jpg";
 
@@ -254,6 +255,8 @@ const Courses = () => {
           </Card>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 };

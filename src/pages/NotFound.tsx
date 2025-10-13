@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import kairosLogo from "@/assets/kairos-logo.png";
 import { Button } from "@/components/ui/button";
+import { Footer } from "@/components/Footer";
 
 const NotFound = () => {
   const location = window.location;
@@ -11,7 +12,7 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
       {/* Header */}
       <header className="border-b bg-background sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4">
@@ -27,7 +28,7 @@ const NotFound = () => {
         </div>
       </header>
 
-      <div className="flex min-h-[calc(100vh-80px)] items-center justify-center">
+      <div className="flex-1 flex items-center justify-center">
         <div className="text-center">
           <h1 className="mb-4 text-6xl font-bold">404</h1>
           <p className="mb-8 text-2xl text-muted-foreground">Oops! Page not found</p>
@@ -36,6 +37,8 @@ const NotFound = () => {
           </Button>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 };

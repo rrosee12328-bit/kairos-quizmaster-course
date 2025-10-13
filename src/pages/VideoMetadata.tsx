@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/BackButton";
+import { Footer } from "@/components/Footer";
 import { Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import kairosLogo from "@/assets/kairos-logo.png";
@@ -119,6 +120,8 @@ const VideoMetadata = () => {
           </CardContent>
         </Card>
       </div>
+
+      <Footer />
     </div>
   );
 };

@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Shield, ChevronLeft, ChevronRight, FileText, Download } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
+import { Footer } from "@/components/Footer";
 import ProgressTracker from "@/components/ProgressTracker";
 import Quiz from "@/components/Quiz";
 import CourseHeader from "@/components/CourseHeader";
@@ -476,6 +477,8 @@ const Level2Course = () => {
         )}
         {allSectionsComplete && showQuiz && <Quiz />}
       </div>
+
+      <Footer />
     </div>
   );
 };
