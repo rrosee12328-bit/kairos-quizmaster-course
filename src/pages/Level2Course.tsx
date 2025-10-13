@@ -385,7 +385,7 @@ const Level2Course = () => {
                 {courseSections.map((section, idx) => (
                   <CarouselItem key={section.id}>
                     <VideoPlayer
-                      key={`video-${section.id}-${section.videoUrl || 'empty'}`}
+                      key={`video-${section.id}-${section.videoUrl || 'empty'}-${currentSlide === idx ? 'active' : 'inactive'}`}
                       section={{
                         id: section.id,
                         title: section.title,

@@ -18,10 +18,13 @@ interface VideoPlayerProps {
 const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlayerProps) => {
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  const [reloadTick, setReloadTick] = useState(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const playerRef = useRef<any>(null);
   const maxWatchedRef = useRef(0);
   const isCompleteRef = useRef(false);
+  const readyRef = useRef(false);
+  const retryCountRef = useRef(0);
   const onCompleteRef = useRef(onComplete);
   const onNextRef = useRef(onNext);
 
@@ -50,6 +53,7 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
     let bootstrapPoll: any = null;
     let completionPoll: any = null;
     let durationUpdateInterval: any = null;
+    let fallbackTimeout: any = null;
     
     if (!isActive || !videoId) {
       // Reset state when inactive
@@ -57,6 +61,8 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
       setIsComplete(false);
       isCompleteRef.current = false;
       maxWatchedRef.current = 0;
+      readyRef.current = false;
+      retryCountRef.current = 0;
       return;
     }
 
@@ -78,6 +84,15 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
       playerRef.current = p;
 
       let duration = 0;
+      // Fallback: if player isn't ready in 6s, reload iframe (up to 2 retries)
+      readyRef.current = false;
+      if (fallbackTimeout) { try { clearTimeout(fallbackTimeout); } catch {} }
+      fallbackTimeout = window.setTimeout(() => {
+        if (!readyRef.current && retryCountRef.current < 2 && isMounted) {
+          retryCountRef.current += 1;
+          setReloadTick((t) => t + 1);
+        }
+      }, 6000);
 
       // Bootstrap completion poll (runs even if 'ready' never fires')
       const bootstrapStart = Date.now();
@@ -110,6 +125,8 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
 
       p.on('ready', () => {
         if (!isMounted) return;
+        readyRef.current = true;
+        try { clearTimeout(fallbackTimeout); } catch {}
         console.log('[Bunny] ready', { videoId });
         // Reset on new section
         setProgress(0);
@@ -229,6 +246,8 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
       try { window.clearInterval(bootstrapPoll); } catch {}
       try { window.clearInterval(completionPoll); } catch {}
       try { window.clearInterval(durationUpdateInterval); } catch {}
+      try { clearTimeout(fallbackTimeout); } catch {}
+      readyRef.current = false;
       // Destroy player
       if (playerRef.current) {
         try {
@@ -240,7 +259,7 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
         playerRef.current = null;
       }
     };
-  }, [section.videoUrl, isActive, videoId]);
+  }, [section.videoUrl, isActive, videoId, reloadTick]);
 
   return (
     <div className="space-y-6">
@@ -253,9 +272,9 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
           {isActive && videoId ? (
             <div className="relative rounded-lg overflow-hidden aspect-video mb-4 overscroll-none touch-none" onWheel={(e) => e.preventDefault()}>
               <iframe
-                key={videoId || undefined}
+                key={`${videoId}-${reloadTick}`}
                 ref={iframeRef}
-                src={`https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?autoplay=false&preload=true&playsinline=true&showSpeed=false&rememberPosition=false&playerjs=1&ts=${Date.now()}`}
+                src={`https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?autoplay=false&preload=true&playsinline=true&showSpeed=false&rememberPosition=false&playerjs=1&ts=${Date.now()}&rt=${reloadTick}`}
                 loading="lazy" scrolling="no"
                 style={{
                   border: 0,
