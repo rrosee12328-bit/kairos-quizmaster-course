@@ -1,16 +1,15 @@
-// @ts-nocheck
+import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface CompletionEmailRequest {
+interface CertificateEmailRequest {
   name: string;
   email: string;
   date: string;
-  score: number;
-  percentage: number;
+  registrationNumber: string;
 }
 
 Deno.serve(async (req: Request): Promise<Response> => {
@@ -24,7 +23,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       throw new Error("RESEND_API_KEY not configured");
     }
 
-    const { name, email, date, score, percentage }: CompletionEmailRequest = await req.json();
+    const { name, email, date, registrationNumber }: CertificateEmailRequest = await req.json();
 
     if (!email || !name) {
       return new Response(
@@ -33,41 +32,106 @@ Deno.serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "Kairos Training <onboarding@resend.dev>",
-        to: [email],
-        subject: "Level 3 Part 1 Complete - Approved for In-Person Training",
-        html: `
-          <h1>Congratulations, ${name}!</h1>
-          <p>You have successfully completed <strong>Part 1 (Online Portion)</strong> of the Level 3 Security Officer Certification Course.</p>
-          <p><strong>Completion Date:</strong> ${date}</p>
-          <p><strong>Your Score:</strong> ${score} (${percentage}%)</p>
-          <p><strong>Status:</strong> PASSED ✓</p>
-          <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;" />
-          <h2 style="color: #2563eb;">Next Steps</h2>
-          <p>You are now <strong>approved to proceed to Part 2</strong> - the in-person training portion of the Level 3 certification.</p>
-          <p>Our team will contact you shortly with scheduling information for the in-person training session.</p>
-          <p style="margin-top: 30px;">— Kairos Security Academy</p>
-        `,
-      }),
+    const resend = new Resend(RESEND_API_KEY);
+
+    const { data, error } = await resend.emails.send({
+      from: "Kairos Security Academy <onboarding@resend.dev>",
+      to: [email],
+      subject: "Your Level 2 Security Officer Certificate",
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+              }
+              .header {
+                background: linear-gradient(135deg, #1e0505 0%, #4a0000 100%);
+                color: white;
+                padding: 30px;
+                text-align: center;
+                border-radius: 8px 8px 0 0;
+              }
+              .content {
+                background: #ffffff;
+                padding: 30px;
+                border: 1px solid #e0e0e0;
+                border-top: none;
+                border-radius: 0 0 8px 8px;
+              }
+              .certificate-box {
+                background: #f9f9f9;
+                border-left: 4px solid #1e0505;
+                padding: 20px;
+                margin: 20px 0;
+              }
+              .footer {
+                text-align: center;
+                margin-top: 30px;
+                padding-top: 20px;
+                border-top: 1px solid #e0e0e0;
+                color: #666;
+                font-size: 14px;
+              }
+              .button {
+                display: inline-block;
+                background: #1e0505;
+                color: white;
+                padding: 12px 24px;
+                text-decoration: none;
+                border-radius: 4px;
+                margin: 20px 0;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1>🎓 Certificate of Completion</h1>
+              <p>Kairos Security Academy</p>
+            </div>
+            
+            <div class="content">
+              <h2>Congratulations, ${name}!</h2>
+              
+              <p>You have successfully completed the <strong>Level Two Training Course</strong> for Private Security Program.</p>
+              
+              <div class="certificate-box">
+                <p><strong>Student Name:</strong> ${name}</p>
+                <p><strong>Registration Number:</strong> ${registrationNumber}</p>
+                <p><strong>Completion Date:</strong> ${date}</p>
+                <p><strong>School License Number:</strong> F28623301</p>
+              </div>
+              
+              <p>This certificate verifies that you have met the standards and requirements set forth in Texas Occupations Code, Section 1702, Title 10 and Administrative Rules.</p>
+              
+              <p>Your certificate has been issued and is now available for download from your student portal.</p>
+              
+              <div class="footer">
+                <p><strong>Kairos Security Academy</strong></p>
+                <p>License #: F28623301</p>
+                <p>Training security professionals with expertise, innovation, and a passion for excellence.</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `,
     });
 
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error("Resend API error:", errText);
+    if (error) {
+      console.error("Resend API error:", error);
       return new Response(
-        JSON.stringify({ error: "Failed to send email", details: errText }),
+        JSON.stringify({ error: "Failed to send email", details: error }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const data = await res.json();
+    console.log("Certificate email sent successfully:", data);
 
     return new Response(JSON.stringify(data), {
       status: 200,
