@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shield, ChevronLeft, ChevronRight, FileText, Download } from "lucide-react";
@@ -25,6 +25,7 @@ const Level2Course = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [videosLoaded, setVideosLoaded] = useState(false);
+  const quizRef = useRef<HTMLDivElement>(null);
   const [courseSections, setCourseSections] = useState([
     {
       id: 1,
@@ -155,6 +156,12 @@ const Level2Course = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (showQuiz) {
+      quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [showQuiz]);
 
   // Fetch videos from Bunny.net
   useEffect(() => {
@@ -374,7 +381,6 @@ const Level2Course = () => {
               <Button
                 onClick={() => {
                   setShowQuiz(true);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
                 size="sm"
               >
@@ -468,14 +474,17 @@ const Level2Course = () => {
               </div>
               <Button onClick={() => {
                 setShowQuiz(true);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
               }} size="lg" className="w-full">
                 Start Final Exam (32 Questions)
               </Button>
             </CardContent>
           </Card>
         )}
-        {showQuiz && <Quiz courseType="level2" />}
+        {showQuiz && (
+          <div ref={quizRef}>
+            <Quiz courseType="level2" />
+          </div>
+        )}
       </div>
 
       <Footer />
