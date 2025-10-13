@@ -46,98 +46,109 @@ const Level2Course = () => {
   const courseSections = [
     {
       id: 1,
-      title: "Introduction to Unarmed Security Operations",
-      description: "Overview of unarmed security principles and professional responsibilities",
-      duration: "40 minutes",
+      title: "Welcome",
+      description: "Introduction to the Level 2 Security Officer Certification Course",
+      duration: "6 seconds",
+      videoUrl: "", // Will be populated with Bunny.net video ID
       content: [
-        "Understanding the role of an unarmed Security Officer",
-        "Professional conduct and appearance standards",
-        "Legal limitations and responsibilities",
-        "Code of ethics for security professionals"
+        "Course overview",
+        "What to expect from this training"
       ]
     },
     {
       id: 2,
-      title: "Observation and Reporting Techniques",
-      description: "Developing keen observation skills and effective reporting methods",
-      duration: "50 minutes",
+      title: "Training Objective",
+      description: "Understanding the goals and objectives of this certification program",
+      duration: "1 minute 59 seconds",
+      videoUrl: "",
       content: [
-        "Visual observation techniques",
-        "Note-taking and documentation skills", 
-        "Incident report writing",
-        "Chain of evidence procedures"
+        "Certification requirements",
+        "Learning outcomes",
+        "Career opportunities"
       ]
     },
     {
       id: 3,
-      title: "Communication and Customer Service",
-      description: "Professional communication skills for security environments",
-      duration: "45 minutes",
+      title: "Security Officer Basics",
+      description: "Fundamental principles and responsibilities of security officers",
+      duration: "27 minutes 3 seconds",
+      videoUrl: "",
       content: [
-        "Effective verbal communication",
-        "Active listening techniques",
-        "Customer service in security settings",
-        "Professional telephone etiquette"
+        "Professional conduct and appearance",
+        "Core security responsibilities",
+        "Industry standards and ethics"
       ]
     },
     {
       id: 4,
-      title: "Conflict Resolution and De-escalation",
-      description: "Non-violent conflict resolution and de-escalation strategies",
-      duration: "60 minutes",
+      title: "Applicable Rules and State Laws",
+      description: "Legal framework governing security operations",
+      duration: "38 minutes 3 seconds",
+      videoUrl: "",
       content: [
-        "Understanding conflict dynamics",
-        "Verbal de-escalation techniques",
-        "Body language and positioning",
-        "When to call for backup or law enforcement"
+        "State regulations for security officers",
+        "Legal powers and limitations",
+        "Compliance requirements"
       ]
     },
     {
       id: 5,
-      title: "Access Control and Perimeter Security",
-      description: "Managing access points and maintaining secure perimeters",
-      duration: "45 minutes",
+      title: "Personal Communication and Conflict Resolution",
+      description: "Effective communication and de-escalation techniques",
+      duration: "39 minutes 51 seconds",
+      videoUrl: "",
       content: [
-        "Access control procedures",
-        "Visitor management protocols",
-        "Key and card control systems",
-        "Patrol techniques and routes"
+        "Professional communication skills",
+        "Conflict de-escalation strategies",
+        "Active listening techniques"
       ]
     },
     {
       id: 6,
-      title: "Emergency Response for Unarmed Officers",
-      description: "Appropriate emergency response procedures without weapons",
-      duration: "55 minutes",
+      title: "Use of Force",
+      description: "Understanding appropriate force levels and legal considerations",
+      duration: "16 minutes 58 seconds",
+      videoUrl: "",
       content: [
-        "Medical emergency response",
-        "Fire evacuation procedures",
-        "Natural disaster protocols",
-        "Bomb threat procedures"
+        "Force continuum",
+        "Legal justifications",
+        "Documentation requirements"
       ]
     },
     {
       id: 7,
-      title: "Legal Framework for Unarmed Security",
-      description: "Understanding legal powers and limitations of unarmed officers",
-      duration: "40 minutes",
+      title: "Arrests",
+      description: "Citizen's arrest powers and procedures",
+      duration: "5 minutes 57 seconds",
+      videoUrl: "",
       content: [
-        "Citizen's arrest powers and limitations",
-        "Detention vs. arrest",
-        "Search and seizure restrictions",
-        "Liability and insurance considerations"
+        "Legal authority for arrests",
+        "Proper arrest procedures",
+        "Documentation and reporting"
       ]
     },
     {
       id: 8,
-      title: "Technology and Security Systems",
-      description: "Operating basic security technology and surveillance systems",
-      duration: "45 minutes",
+      title: "Verbal and Written Communication Best Practices",
+      description: "Professional communication and documentation standards",
+      duration: "8 minutes 57 seconds",
+      videoUrl: "",
       content: [
-        "CCTV monitoring basics",
-        "Alarm system operation",
-        "Radio communication protocols",
-        "Basic computer and mobile device usage"
+        "Report writing techniques",
+        "Professional correspondence",
+        "Documentation standards"
+      ]
+    },
+    {
+      id: 9,
+      title: "Emergencies and Safety Hazards",
+      description: "Emergency response procedures and hazard identification",
+      duration: "6 minutes 40 seconds",
+      videoUrl: "",
+      content: [
+        "Emergency response protocols",
+        "Safety hazard identification",
+        "Evacuation procedures"
       ]
     }
   ];
@@ -168,8 +179,8 @@ const Level2Course = () => {
             <span className="text-lg font-medium text-blue-600">Unarmed Security Professional</span>
           </div>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Comprehensive training program for unarmed security officers focusing on observation, communication, 
-            and conflict resolution. Complete all 8 sections and pass the final exam to earn your certification.
+            Comprehensive training program for unarmed security officers covering essential topics from basic security 
+            principles to emergency response. Complete all 9 sections and pass the final exam to earn your certification.
           </p>
         </div>
 
@@ -191,11 +202,11 @@ const Level2Course = () => {
             <CardContent>
               <div className="grid md:grid-cols-3 gap-4 text-sm mb-4">
                 <div className="flex flex-col items-center p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                  <span className="text-2xl font-bold text-blue-500">8</span>
+                  <span className="text-2xl font-bold text-blue-500">9</span>
                   <span className="text-muted-foreground">Sections</span>
                 </div>
                 <div className="flex flex-col items-center p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                  <span className="text-2xl font-bold text-blue-500">6</span>
+                  <span className="text-2xl font-bold text-blue-500">2.5</span>
                   <span className="text-muted-foreground">Hours</span>
                 </div>
                 <div className="flex flex-col items-center p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
