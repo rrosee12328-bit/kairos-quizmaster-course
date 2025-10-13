@@ -14,19 +14,19 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate }: Cer
         alt="Security Training Certificate of Completion" 
         className="w-full h-auto"
       />
-      {/* Student Name - positioned after "This certificate is issued as proof that" */}
-      <div className="absolute top-[36.5%] left-0 right-0 text-center">
-        <p className="text-2xl font-bold text-foreground">{userName || "Student Name"}</p>
+      {/* Student Name - positioned on the black line */}
+      <div className="absolute top-[37.8%] left-0 right-0 text-center">
+        <p className="text-xl font-bold text-foreground">{userName || "Student Name"}</p>
       </div>
       
       {/* Registration Number - positioned in "School or Company Name" field */}
-      <div className="absolute top-[48.8%] left-[52%]">
-        <p className="text-base font-semibold text-foreground">{registrationNumber || "REG123456"}</p>
+      <div className="absolute top-[49.2%] left-[52%]">
+        <p className="text-sm font-semibold text-foreground">{registrationNumber || "REG123456"}</p>
       </div>
       
       {/* Date of Completion - positioned at date field */}
-      <div className="absolute top-[46.5%] left-[52%]">
-        <p className="text-base font-semibold text-foreground">{courseCompletionDate || "MM/DD/YYYY"}</p>
+      <div className="absolute top-[46.8%] left-[52%]">
+        <p className="text-sm font-semibold text-foreground">{courseCompletionDate || "MM/DD/YYYY"}</p>
       </div>
     </div>
   );
