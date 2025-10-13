@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import signatureImage from "@/assets/stephen-taylor-signature.jpeg";
+import signatureImage from "@/assets/stephen-taylor-signature.png";
 
 interface CertificateProps {
   userName?: string;
