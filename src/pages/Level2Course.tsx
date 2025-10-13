@@ -8,48 +8,21 @@ import Quiz from "@/components/Quiz";
 import VideoPresentationPlaceholder from "@/components/VideoPresentationPlaceholder";
 import CourseHeader from "@/components/CourseHeader";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Level2Course = () => {
   const [completedSections, setCompletedSections] = useState<number[]>([]);
   const [showQuiz, setShowQuiz] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        setIsAuthenticated(true);
-        checkAdminStatus(user.id);
-      }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        setIsAuthenticated(true);
-        checkAdminStatus(session.user.id);
-      } else {
-        setIsAuthenticated(false);
-        setIsAdmin(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const checkAdminStatus = async (userId: string) => {
-    const { data, error } = await supabase.rpc('is_admin', { _user_id: userId });
-    if (!error && data) {
-      setIsAdmin(true);
-    }
-  };
-
-  const courseSections = [
+  const [videosLoaded, setVideosLoaded] = useState(false);
+  const [courseSections, setCourseSections] = useState([
     {
       id: 1,
       title: "Welcome",
       description: "Introduction to the Level 2 Security Officer Certification Course",
       duration: "6 seconds",
-      videoUrl: "", // Will be populated with Bunny.net video ID
+      videoUrl: "",
       content: [
         "Course overview",
         "What to expect from this training"
@@ -151,7 +124,91 @@ const Level2Course = () => {
         "Evacuation procedures"
       ]
     }
-  ];
+  ]);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setIsAuthenticated(true);
+        checkAdminStatus(user.id);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setIsAuthenticated(true);
+        checkAdminStatus(session.user.id);
+      } else {
+        setIsAuthenticated(false);
+        setIsAdmin(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Fetch videos from Bunny.net
+  useEffect(() => {
+    const fetchVideos = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('bunny-video', {
+          body: { 
+            action: 'listVideos',
+            libraryId: '510506'
+          }
+        });
+
+        if (error) throw error;
+
+        const videos = data?.items || [];
+        console.log('Fetched videos:', videos);
+
+        // Map video titles to section IDs
+        const videoTitleMap: { [key: string]: number } = {
+          'welcome': 1,
+          'training objective': 2,
+          'security officer basics': 3,
+          'applicable rules and state laws': 4,
+          'personal communication and conflict resolution': 5,
+          'use of force': 6,
+          'arrests': 7,
+          'verbal and written communication best practices': 8,
+          'emergencies and safety hazards': 9
+        };
+
+        // Update course sections with video URLs
+        setCourseSections(prevSections =>
+          prevSections.map(section => {
+            const matchingVideo = videos.find((video: any) => 
+              videoTitleMap[video.title?.toLowerCase()] === section.id
+            );
+            
+            if (matchingVideo) {
+              return {
+                ...section,
+                videoUrl: `https://iframe.mediadelivery.net/embed/510506/${matchingVideo.guid}`
+              };
+            }
+            return section;
+          })
+        );
+
+        setVideosLoaded(true);
+      } catch (error) {
+        console.error('Error fetching videos:', error);
+        toast.error('Failed to load course videos');
+      }
+    };
+
+    fetchVideos();
+  }, []);
+
+  const checkAdminStatus = async (userId: string) => {
+    const { data, error } = await supabase.rpc('is_admin', { _user_id: userId });
+    if (!error && data) {
+      setIsAdmin(true);
+    }
+  };
 
   const handleSectionComplete = (sectionId: number) => {
     if (!completedSections.includes(sectionId)) {

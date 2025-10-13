@@ -6,7 +6,6 @@ const corsHeaders = {
 };
 
 const BUNNY_API_KEY = Deno.env.get('BUNNY_API_KEY');
-const LIBRARY_ID = '506173';
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -19,14 +18,18 @@ serve(async (req) => {
       throw new Error('BUNNY_API_KEY not configured');
     }
 
-    const { action, videoId, title, collectionId } = await req.json();
+    const { action, videoId, title, collectionId, libraryId } = await req.json();
+    
+    if (!libraryId) {
+      throw new Error('libraryId is required');
+    }
 
     console.log(`Bunny.net request - Action: ${action}, VideoId: ${videoId}`);
 
     // Get video details
     if (action === 'getVideo' && videoId) {
       const response = await fetch(
-        `https://video.bunnycdn.com/library/${LIBRARY_ID}/videos/${videoId}`,
+        `https://video.bunnycdn.com/library/${libraryId}/videos/${videoId}`,
         {
           headers: {
             'AccessKey': BUNNY_API_KEY,
@@ -50,7 +53,7 @@ serve(async (req) => {
     // Create a new video
     if (action === 'createVideo' && title) {
       const response = await fetch(
-        `https://video.bunnycdn.com/library/${LIBRARY_ID}/videos`,
+        `https://video.bunnycdn.com/library/${libraryId}/videos`,
         {
           method: 'POST',
           headers: {
@@ -79,7 +82,7 @@ serve(async (req) => {
     // List all videos
     if (action === 'listVideos') {
       const response = await fetch(
-        `https://video.bunnycdn.com/library/${LIBRARY_ID}/videos?page=1&itemsPerPage=100`,
+        `https://video.bunnycdn.com/library/${libraryId}/videos?page=1&itemsPerPage=100`,
         {
           headers: {
             'AccessKey': BUNNY_API_KEY,

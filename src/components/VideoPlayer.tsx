@@ -33,7 +33,9 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
   };
 
   const videoId = getBunnyVideoId(section.videoUrl);
-  const libraryId = '506173';
+  // Extract library ID from the video URL or use default
+  const libraryIdMatch = section.videoUrl.match(/embed\/(\d+)\//);
+  const libraryId = libraryIdMatch ? libraryIdMatch[1] : '510506';
 
   useEffect(() => {
     onCompleteRef.current = onComplete;
