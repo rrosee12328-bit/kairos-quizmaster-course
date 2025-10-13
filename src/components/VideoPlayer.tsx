@@ -47,7 +47,18 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
 
   useEffect(() => {
     let isMounted = true;
-    if (!isActive) return;
+    let bootstrapPoll: any = null;
+    let completionPoll: any = null;
+    let durationUpdateInterval: any = null;
+    
+    if (!isActive || !videoId) {
+      // Reset state when inactive
+      setProgress(0);
+      setIsComplete(false);
+      isCompleteRef.current = false;
+      maxWatchedRef.current = 0;
+      return;
+    }
 
     const ensurePlayerJs = () =>
       new Promise<void>((resolve) => {
@@ -70,8 +81,11 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
 
       // Bootstrap completion poll (runs even if 'ready' never fires')
       const bootstrapStart = Date.now();
-      const bootstrapPoll = window.setInterval(() => {
-        if (isCompleteRef.current) { try { window.clearInterval(bootstrapPoll); } catch {} return; }
+      bootstrapPoll = window.setInterval(() => {
+        if (isCompleteRef.current || !isMounted) { 
+          try { window.clearInterval(bootstrapPoll); } catch {} 
+          return; 
+        }
         try {
           p.getDuration((d: number) => {
             if (d && d > 0) duration = d;
@@ -95,6 +109,7 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
       }, 500);
 
       p.on('ready', () => {
+        if (!isMounted) return;
         console.log('[Bunny] ready', { videoId });
         // Reset on new section
         setProgress(0);
@@ -103,22 +118,26 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
         maxWatchedRef.current = 0;
 
         const updateDuration = () => {
+          if (!isMounted) return;
           p.getDuration((d: number) => {
             if (d && d > 0) {
               duration = d;
               console.log('[Bunny] duration', duration);
-              try { clearInterval((updateDuration as any)._i); } catch {}
+              try { clearInterval(durationUpdateInterval); } catch {}
             }
           });
         };
         // Poll until duration is known
-        (updateDuration as any)._i = window.setInterval(updateDuration, 500);
+        durationUpdateInterval = window.setInterval(updateDuration, 500);
         updateDuration();
 
         // Robust completion polling as a fallback for very short videos or missing 'ended'
         const pollEpsilon = () => Math.max(0.25, (duration || 0) * 0.01);
-        const completionPoll = window.setInterval(() => {
-          if (isCompleteRef.current) return;
+        completionPoll = window.setInterval(() => {
+          if (isCompleteRef.current || !isMounted) {
+            try { window.clearInterval(completionPoll); } catch {}
+            return;
+          }
           try {
             p.getCurrentTime((t: number) => {
               const d = duration || 0;
@@ -134,7 +153,7 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
             });
           } catch {}
         }, 500);
-        // Clear completionPoll when complete (on ended)
+        
         const clearOnComplete = () => {
           try { window.clearInterval(completionPoll); } catch {}
         };
@@ -142,6 +161,7 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
       });
 
       p.on('timeupdate', (data: any) => {
+        if (!isMounted) return;
         const current = data?.seconds ?? 0;
         const dur = data?.duration ?? duration ?? 0;
         const percentRaw = typeof data?.percent === 'number' ? data.percent : null;
@@ -190,6 +210,7 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
       });
 
       p.on('ended', () => {
+        if (!isMounted) return;
         console.log('[Bunny] ended');
         if (!isCompleteRef.current) {
           isCompleteRef.current = true;
@@ -204,8 +225,22 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
 
     return () => {
       isMounted = false;
+      // Clear all intervals
+      try { window.clearInterval(bootstrapPoll); } catch {}
+      try { window.clearInterval(completionPoll); } catch {}
+      try { window.clearInterval(durationUpdateInterval); } catch {}
+      // Destroy player
+      if (playerRef.current) {
+        try {
+          playerRef.current.off?.('ready');
+          playerRef.current.off?.('timeupdate');
+          playerRef.current.off?.('seeked');
+          playerRef.current.off?.('ended');
+        } catch {}
+        playerRef.current = null;
+      }
     };
-  }, [section.videoUrl, isActive]);
+  }, [section.videoUrl, isActive, videoId]);
 
   return (
     <div className="space-y-6">

@@ -385,6 +385,7 @@ const Level2Course = () => {
                 {courseSections.map((section, idx) => (
                   <CarouselItem key={section.id}>
                     <VideoPlayer
+                      key={`video-${section.id}-${section.videoUrl || 'empty'}`}
                       section={{
                         id: section.id,
                         title: section.title,
