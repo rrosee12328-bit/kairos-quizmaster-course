@@ -470,7 +470,7 @@ const Level2Course = () => {
                 setShowQuiz(true);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }} size="lg" className="w-full">
-                Start Final Exam (100 Questions)
+                Start Final Exam (32 Questions)
               </Button>
             </CardContent>
           </Card>
