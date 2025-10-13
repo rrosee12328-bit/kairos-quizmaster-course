@@ -430,7 +430,7 @@ const Course = () => {
             </CardContent>
           </Card>
         )}
-        {allSectionsComplete && showQuiz && <Quiz />}
+        {allSectionsComplete && showQuiz && <Quiz courseType="level3" />}
       </div>
 
       <Footer />
