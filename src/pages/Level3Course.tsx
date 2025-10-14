@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shield, ChevronLeft, ChevronRight, FileText, Download } from "lucide-react";
@@ -23,6 +23,7 @@ const Course = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const quizRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -245,6 +246,14 @@ const Course = () => {
   const currentSectionId = courseSections[currentSlide]?.id;
   const isCurrentSectionComplete = currentSectionId ? completedSections.includes(currentSectionId) : false;
 
+  useEffect(() => {
+    if (showQuiz) {
+      setTimeout(() => {
+        quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 0);
+    }
+  }, [showQuiz]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <CourseHeader isAdmin={isAdmin} showAuthButtons={isAuthenticated} />
@@ -323,7 +332,6 @@ const Course = () => {
               <Button
                 onClick={() => {
                   setShowQuiz(true);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
                 size="sm"
               >
@@ -421,16 +429,15 @@ const Course = () => {
                   ✓ All sections completed ({completedSections.length}/{totalSections})
                 </p>
               </div>
-              <Button onClick={() => {
-                setShowQuiz(true);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }} size="lg" className="w-full">
+               <Button onClick={() => {
+                 setShowQuiz(true);
+               }} size="lg" className="w-full">
                 Start Part 1 Final Exam (100 Questions)
               </Button>
             </CardContent>
           </Card>
         )}
-        {showQuiz && <Quiz courseType="level3" />}
+        <div ref={quizRef}>{showQuiz && <Quiz courseType="level3" />}</div>
       </div>
 
       <Footer />
