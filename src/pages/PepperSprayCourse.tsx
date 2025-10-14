@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shield, CheckCircle } from "lucide-react";
@@ -6,8 +6,10 @@ import { BackButton } from "@/components/BackButton";
 import { Footer } from "@/components/Footer";
 import CourseHeader from "@/components/CourseHeader";
 import VideoPlayer from "@/components/VideoPlayer";
+import Quiz from "@/components/Quiz";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { pepperSprayExamQuestions } from "@/data/pepperSprayExamQuestions";
 
 const LIBRARY_ID = "512130";
 const VIDEO_GUID = "02e75fb5-d4ac-4cff-9ff0-5f2e058d9287";
@@ -17,6 +19,8 @@ const PepperSprayCourse = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [videoUrl, setVideoUrl] = useState("");
+  const [showQuiz, setShowQuiz] = useState(false);
+  const quizRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -43,6 +47,12 @@ const PepperSprayCourse = () => {
     setVideoUrl(`https://iframe.mediadelivery.net/embed/${LIBRARY_ID}/${VIDEO_GUID}`);
   }, []);
 
+  useEffect(() => {
+    if (showQuiz) {
+      quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [showQuiz]);
+
   const checkAdminStatus = async (userId: string) => {
     const { data, error } = await supabase.rpc('is_admin', { _user_id: userId });
     if (!error && data) {
@@ -52,7 +62,6 @@ const PepperSprayCourse = () => {
 
   const handleComplete = () => {
     setCompleted(true);
-    toast.success("Course completed successfully!");
   };
 
   return (
@@ -88,25 +97,38 @@ const PepperSprayCourse = () => {
           />
         </div>
 
-        {completed && (
-          <Card className="border-l-4 border-l-green-500 animate-fade-in">
+        {completed && !showQuiz && (
+          <Card className="border-l-4 border-l-green-500 animate-fade-in mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-green-600">
                 <CheckCircle className="h-6 w-6" />
-                Course Completed
+                Video Completed
               </CardTitle>
               <CardDescription>
-                Congratulations! You've completed the Pepper Spray training course.
+                Great! You've completed the training video. Take the final exam to earn your certificate.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+              <div className="mb-4 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
                 <p className="text-sm text-green-800 dark:text-green-200">
-                  ✓ Training completed successfully
+                  ✓ Training video completed
                 </p>
               </div>
+              <Button onClick={() => setShowQuiz(true)} size="lg" className="w-full">
+                Start Final Exam (17 Questions)
+              </Button>
             </CardContent>
           </Card>
+        )}
+
+        {showQuiz && (
+          <div ref={quizRef}>
+            <Quiz 
+              questions={pepperSprayExamQuestions}
+              courseType="pepper-spray"
+              passingPercentage={70}
+            />
+          </div>
         )}
 
         <div className="mb-8">

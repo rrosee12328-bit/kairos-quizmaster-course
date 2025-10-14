@@ -8,17 +8,32 @@ import { Progress } from "@/components/ui/progress";
 import { CheckCircle, XCircle, Download } from "lucide-react";
 import { level3ExamQuestions } from "@/data/level3ExamQuestions";
 import { level2ExamQuestions } from "@/data/level2ExamQuestions";
+import { pepperSprayExamQuestions } from "@/data/pepperSprayExamQuestions";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-interface QuizProps {
-  courseType?: 'level2' | 'level3';
+interface QuizQuestion {
+  id: number;
+  question: string;
+  options: string[];
+  correctAnswer: number;
 }
 
-const Quiz = ({ courseType = 'level3' }: QuizProps) => {
+interface QuizProps {
+  courseType?: 'level2' | 'level3' | 'pepper-spray';
+  questions?: QuizQuestion[];
+  passingPercentage?: number;
+}
+
+const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercentage = 80 }: QuizProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [questions] = useState(courseType === 'level2' ? level2ExamQuestions : level3ExamQuestions);
+  const [questions] = useState(
+    customQuestions || 
+    (courseType === 'level2' ? level2ExamQuestions : 
+     courseType === 'pepper-spray' ? pepperSprayExamQuestions :
+     level3ExamQuestions)
+  );
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
   const [showResults, setShowResults] = useState(false);
@@ -67,7 +82,7 @@ const Quiz = ({ courseType = 'level3' }: QuizProps) => {
 
     const score = calculateScore();
     const percentage = Math.round((score / questions.length) * 100);
-    const passed = percentage >= 75;
+    const passed = percentage >= passingPercentage;
 
     // Get enrollment data for user's name
     const { data: enrollment } = await supabase
