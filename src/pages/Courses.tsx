@@ -61,7 +61,7 @@ const Courses = () => {
       subtitle: "Unarmed Security Professional",
       description: "Comprehensive training for unarmed security officers focusing on observation, communication, and conflict resolution without the use of firearms.",
       duration: "6 hours",
-      sections: 8,
+      sections: 9,
       level: "Intermediate",
       color: "bg-blue-500",
       features: [
