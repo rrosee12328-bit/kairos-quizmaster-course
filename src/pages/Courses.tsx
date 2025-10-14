@@ -98,7 +98,7 @@ const Courses = () => {
       title: "Pepper Spray Training",
       subtitle: "Non-Lethal Defense Equipment",
       description: "Essential training on the proper use, safety protocols, and legal considerations of pepper spray for security professionals.",
-      duration: "1 hour",
+      duration: "2 hours",
       sections: 1,
       level: "Beginner",
       color: "bg-orange-500",
