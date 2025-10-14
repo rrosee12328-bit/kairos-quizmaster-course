@@ -9,8 +9,8 @@ import VideoPlayer from "@/components/VideoPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const LIBRARY_ID = "510506"; // Update this with the correct library ID
-const VIDEO_ID = "512130";
+const LIBRARY_ID = "510506";
+const VIDEO_GUID = "02e75fb5-d4ac-4cff-9ff0-5f2e058d9287";
 
 const PepperSprayCourse = () => {
   const [completed, setCompleted] = useState(false);
@@ -40,30 +40,7 @@ const PepperSprayCourse = () => {
   }, []);
 
   useEffect(() => {
-    const fetchVideo = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke('bunny-video', {
-          body: { 
-            action: 'getVideo',
-            libraryId: LIBRARY_ID,
-            videoId: VIDEO_ID
-          }
-        });
-
-        if (error) throw error;
-
-        if (data?.guid) {
-          setVideoUrl(`https://iframe.mediadelivery.net/embed/${LIBRARY_ID}/${data.guid}`);
-        } else {
-          toast.error('Video not found');
-        }
-      } catch (err) {
-        console.error('Error fetching video:', err);
-        toast.error('Failed to load video');
-      }
-    };
-
-    fetchVideo();
+    setVideoUrl(`https://iframe.mediadelivery.net/embed/${LIBRARY_ID}/${VIDEO_GUID}`);
   }, []);
 
   const checkAdminStatus = async (userId: string) => {
