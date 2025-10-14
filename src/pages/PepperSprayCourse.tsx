@@ -9,7 +9,7 @@ import VideoPlayer from "@/components/VideoPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const LIBRARY_ID = "510506";
+const LIBRARY_ID = "512130";
 const VIDEO_GUID = "02e75fb5-d4ac-4cff-9ff0-5f2e058d9287";
 
 const PepperSprayCourse = () => {
