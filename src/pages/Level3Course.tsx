@@ -319,17 +319,19 @@ const Course = () => {
               </Button>
             </div>
 
-            <div className="text-center mt-4">
-              <Button
-                onClick={() => {
-                  setShowQuiz(true);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                size="sm"
-              >
-                Go to Part 1 Final Exam
-              </Button>
-            </div>
+            {allSectionsComplete && (
+              <div className="text-center mt-4">
+                <Button
+                  onClick={() => {
+                    setShowQuiz(true);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  size="sm"
+                >
+                  Go to Part 1 Final Exam
+                </Button>
+              </div>
+            )}
           </div>
 
         {/* Progress Tracker */}
@@ -350,10 +352,10 @@ const Course = () => {
                 Private Security Level 3 PDF (Part 1)
               </CardTitle>
               <CardDescription className="space-y-2">
-                <p>Reference manual for Part 1 online training.</p>
-                <p className="text-sm font-semibold text-primary bg-primary/10 p-2 rounded border border-primary/20">
+                <span className="block">Reference manual for Part 1 online training.</span>
+                <span className="block text-sm font-semibold text-primary bg-primary/10 p-2 rounded border border-primary/20">
                   ⚠️ Part 2 in-person training required for full certification
-                </p>
+                </span>
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -378,10 +380,10 @@ const Course = () => {
                 Course Overview
               </CardTitle>
               <CardDescription className="space-y-2">
-                <p className="text-base">Complete all sections and pass the final exam for Part 1.</p>
-                <p className="text-sm font-semibold text-primary bg-primary/10 p-2 rounded border border-primary/20">
+                <span className="block text-base">Complete all sections and pass the final exam for Part 1.</span>
+                <span className="block text-sm font-semibold text-primary bg-primary/10 p-2 rounded border border-primary/20">
                   ⚠️ Part 2 in-person training is required for full armed certification
-                </p>
+                </span>
               </CardDescription>
             </CardHeader>
             <CardContent>
