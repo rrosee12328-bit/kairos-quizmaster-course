@@ -234,6 +234,41 @@ const Profile = () => {
           </Card>
         </div>
 
+        {/* Level 3 Approval Code */}
+        {profile?.level3_approval_code && (
+          <Card className="mb-8 border-blue-500">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-blue-600">
+                <Shield className="h-5 w-5" />
+                Level 3 Part 1 Approval Code
+              </CardTitle>
+              <CardDescription>Use this code to schedule your in-person Part 2 training (expires in 24 hours)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="p-6 bg-blue-50 dark:bg-blue-950/20 rounded-lg border-2 border-blue-500">
+                <div className="text-center space-y-4">
+                  <div className="text-3xl font-bold font-mono text-blue-900 dark:text-blue-100 tracking-wider">
+                    {profile.level3_approval_code}
+                  </div>
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                    Save this code and bring it to your in-person training session. This code verifies you've completed Part 1.
+                  </p>
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      navigator.clipboard.writeText(profile.level3_approval_code);
+                      toast.success("Approval code copied to clipboard!");
+                    }}
+                  >
+                    Copy Code
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Certificates */}
         {certificates.length > 0 && (
           <Card className="mb-8">

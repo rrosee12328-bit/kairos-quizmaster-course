@@ -149,6 +149,12 @@ const Quiz = ({ courseType = 'level3' }: QuizProps) => {
         if (!approvalError && approvalData) {
           approvalCode = approvalData.approval_code;
           approvalExpiresAt = new Date(approvalData.expires_at).toLocaleString();
+          
+          // Save approval code to user's profile
+          await supabase
+            .from('profiles')
+            .update({ level3_approval_code: approvalCode })
+            .eq('id', user.id);
         }
       }
     }
@@ -273,7 +279,7 @@ const Quiz = ({ courseType = 'level3' }: QuizProps) => {
               </div>
             )}
             {passed && courseType === 'level3' && (
-              <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border-2 border-blue-500">
+              <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border-2 border-blue-500 space-y-3">
                 <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
                   ⚠️ IMPORTANT: Level 3 Part 2 In-Person Training Required
                 </p>
@@ -282,6 +288,13 @@ const Quiz = ({ courseType = 'level3' }: QuizProps) => {
                   you MUST complete Part 2 in-person training. Check your email for your approval code 
                   to schedule your in-person session. The approval code expires in 24 hours.
                 </p>
+                <Button 
+                  onClick={() => navigate('/profile')}
+                  className="w-full"
+                  size="lg"
+                >
+                  View Approval Code in Profile
+                </Button>
               </div>
             )}
             {!passed && (
