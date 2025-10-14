@@ -9,10 +9,14 @@ import VideoPlayer from "@/components/VideoPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+const LIBRARY_ID = "510506"; // Update this with the correct library ID
+const VIDEO_ID = "512130";
+
 const PepperSprayCourse = () => {
   const [completed, setCompleted] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [videoUrl, setVideoUrl] = useState("");
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -35,6 +39,33 @@ const PepperSprayCourse = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    const fetchVideo = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('bunny-video', {
+          body: { 
+            action: 'getVideo',
+            libraryId: LIBRARY_ID,
+            videoId: VIDEO_ID
+          }
+        });
+
+        if (error) throw error;
+
+        if (data?.guid) {
+          setVideoUrl(`https://iframe.mediadelivery.net/embed/${LIBRARY_ID}/${data.guid}`);
+        } else {
+          toast.error('Video not found');
+        }
+      } catch (err) {
+        console.error('Error fetching video:', err);
+        toast.error('Failed to load video');
+      }
+    };
+
+    fetchVideo();
+  }, []);
+
   const checkAdminStatus = async (userId: string) => {
     const { data, error } = await supabase.rpc('is_admin', { _user_id: userId });
     if (!error && data) {
@@ -46,8 +77,6 @@ const PepperSprayCourse = () => {
     setCompleted(true);
     toast.success("Course completed successfully!");
   };
-
-  const videoUrl = "https://iframe.mediadelivery.net/embed/510506/512130";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
