@@ -92,6 +92,25 @@ const Courses = () => {
         "Legal responsibilities of armed officers"
       ],
       route: "/course/level3"
+    },
+    {
+      id: "pepper-spray",
+      title: "Pepper Spray Training",
+      subtitle: "Non-Lethal Defense Equipment",
+      description: "Essential training on the proper use, safety protocols, and legal considerations of pepper spray for security professionals.",
+      duration: "1 hour",
+      sections: 1,
+      level: "Beginner",
+      color: "bg-orange-500",
+      features: [
+        "Proper handling techniques",
+        "Deployment and aim",
+        "Safety protocols",
+        "Legal use of force considerations",
+        "Decontamination procedures",
+        "Maintenance and storage"
+      ],
+      route: "/course/pepper-spray"
     }
   ];
 
