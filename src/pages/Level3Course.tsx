@@ -319,19 +319,17 @@ const Course = () => {
               </Button>
             </div>
 
-            {allSectionsComplete && (
-              <div className="text-center mt-4">
-                <Button
-                  onClick={() => {
-                    setShowQuiz(true);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  size="sm"
-                >
-                  Go to Part 1 Final Exam
-                </Button>
-              </div>
-            )}
+            <div className="text-center mt-4">
+              <Button
+                onClick={() => {
+                  setShowQuiz(true);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                size="sm"
+              >
+                Go to Part 1 Final Exam
+              </Button>
+            </div>
           </div>
 
         {/* Progress Tracker */}
@@ -432,7 +430,7 @@ const Course = () => {
             </CardContent>
           </Card>
         )}
-        {allSectionsComplete && showQuiz && <Quiz courseType="level3" />}
+        {showQuiz && <Quiz courseType="level3" />}
       </div>
 
       <Footer />
