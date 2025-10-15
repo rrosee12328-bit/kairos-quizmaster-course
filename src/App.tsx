@@ -8,6 +8,7 @@ import Landing from "./pages/Landing";
 import Courses from "./pages/Courses";
 import Level2Course from "./pages/Level2Course";
 import Level3Course from "./pages/Level3Course";
+import Level4Course from "./pages/Level4Course";
 import PepperSprayCourse from "./pages/PepperSprayCourse";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/courses" element={<Courses />} />
           <Route path="/course/level2" element={<Level2Course />} />
           <Route path="/course/level3" element={<Level3Course />} />
+          <Route path="/course/level4" element={<Level4Course />} />
           <Route path="/course/pepper-spray" element={<PepperSprayCourse />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/profile" element={<Profile />} />

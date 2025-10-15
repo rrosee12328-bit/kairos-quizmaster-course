@@ -94,6 +94,25 @@ const Courses = () => {
       route: "/course/level3"
     },
     {
+      id: "level4",
+      title: "Level 4: Personal Protection Officer",
+      subtitle: "Bodyguard & Executive Protection",
+      description: "15 hour advanced certification for Personal Protection Officers. Learn comprehensive protection planning, threat avoidance, defensive tactics, and coordination with authorities.",
+      duration: "15 hours",
+      sections: 1,
+      level: "Expert",
+      color: "bg-purple-500",
+      features: [
+        "Comprehensive Protection Planning",
+        "Building Client Profiles",
+        "Rings of Protection",
+        "Force Continuum",
+        "Unarmed Defensive Tactics",
+        "Use of Force & Deadly Force"
+      ],
+      route: "/course/level4"
+    },
+    {
       id: "pepper-spray",
       title: "Pepper Spray Training",
       subtitle: "Non-Lethal Defense Equipment",

@@ -1,0 +1,231 @@
+import { useState, useEffect, useRef } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Shield, CheckCircle } from "lucide-react";
+import { BackButton } from "@/components/BackButton";
+import { Footer } from "@/components/Footer";
+import CourseHeader from "@/components/CourseHeader";
+import VideoPlayer from "@/components/VideoPlayer";
+import Quiz from "@/components/Quiz";
+import { supabase } from "@/integrations/supabase/client";
+import { level4ExamQuestions } from "@/data/level4ExamQuestions";
+
+const LIBRARY_ID = "512706";
+const VIDEO_GUID = "f5fc34de-7c2a-445a-9a5b-cd36225549a2";
+
+const Level4Course = () => {
+  const [completed, setCompleted] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [videoUrl, setVideoUrl] = useState("");
+  const [showQuiz, setShowQuiz] = useState(false);
+  const quizRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setIsAuthenticated(true);
+        checkAdminStatus(user.id);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        setIsAuthenticated(true);
+        checkAdminStatus(session.user.id);
+      } else {
+        setIsAuthenticated(false);
+        setIsAdmin(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    setVideoUrl(`https://iframe.mediadelivery.net/embed/${LIBRARY_ID}/${VIDEO_GUID}`);
+  }, []);
+
+  useEffect(() => {
+    if (showQuiz) {
+      quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [showQuiz]);
+
+  const checkAdminStatus = async (userId: string) => {
+    const { data, error } = await supabase.rpc('is_admin', { _user_id: userId });
+    if (!error && data) {
+      setIsAdmin(true);
+    }
+  };
+
+  const handleComplete = () => {
+    setCompleted(true);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+      <CourseHeader isAdmin={isAdmin} showAuthButtons={isAuthenticated} />
+      
+      <div className="container mx-auto px-6 py-8">
+        <div className="mb-4">
+          <BackButton fallbackPath="/courses" />
+        </div>
+        
+        <div className="mb-6 text-center">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <Shield className="h-6 w-6 text-primary" />
+            <h1 className="text-3xl font-bold">Level 4: Personal Protection Officer</h1>
+          </div>
+          <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
+            Advanced training for Personal Protection Officers - 15 hour certification course
+          </p>
+        </div>
+
+        <div className="mb-6 animate-fade-in">
+          <VideoPlayer
+            section={{
+              id: 1,
+              title: "Level 4: Personal Protection Officer Training",
+              videoUrl: videoUrl,
+              duration: "Training Video",
+            }}
+            isActive={true}
+            onComplete={handleComplete}
+            onNext={() => {}}
+          />
+        </div>
+
+        {completed && !showQuiz && (
+          <Card className="border-l-4 border-l-green-500 animate-fade-in mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3 text-green-600">
+                <CheckCircle className="h-6 w-6" />
+                Video Completed
+              </CardTitle>
+              <CardDescription>
+                Great! You've completed the training video. Take the final exam to earn your certificate.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-4 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
+                <p className="text-sm text-green-800 dark:text-green-200">
+                  ✓ Training video completed
+                </p>
+              </div>
+              <Button onClick={() => setShowQuiz(true)} size="lg" className="w-full">
+                Start Final Exam (31 Questions)
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {showQuiz && (
+          <div ref={quizRef}>
+            <Quiz 
+              questions={level4ExamQuestions}
+              courseType="level-4"
+              passingPercentage={70}
+            />
+          </div>
+        )}
+
+        <div className="mb-8">
+          <Card className="border-l-4 border-l-primary">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <Shield className="h-6 w-6 text-primary" />
+                Course Overview
+              </CardTitle>
+              <CardDescription className="text-base">
+                This is a 15 hour course required by the Texas Department of Public Safety – Private Security Board.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4 text-sm">
+                <div>
+                  <h3 className="font-semibold mb-2">About This Course</h3>
+                  <p className="text-muted-foreground">
+                    This course meets if not exceeds the training requirements of the PSB for a Personal Protection Officer license which allows a security officer to work in a bodyguard position. Subjects covered include: how to protect the principle when alone or as a team, threat avoidance techniques, and how to plan and scout escape routes. Some defensive tactics are taught as well as transportation tips, and the value and importance of proper planning and preplanning.
+                  </p>
+                  <p className="text-muted-foreground mt-2 font-medium">
+                    THIS COURSE IS ALL CLASSROOM, NO RANGE OR LIVE FIRE IS REQUIRED
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold mb-2">Prerequisites</h3>
+                  <p className="text-muted-foreground">
+                    The PSB Commission Rule 430.1 states that an applicant for a Personal Protection authorization must have already been issued a Commission. *If you have taken a Level 3 course, you can take the Level 4 course. You just can't apply for your Level 4 license until your Level 3 is issued.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold mb-2">Topics Include</h3>
+                  <ul className="space-y-2 ml-4">
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5"></div>
+                      Options in Personal Protection
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5"></div>
+                      Comprehensive Protection Planning
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5"></div>
+                      Coordination with local Authorities
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5"></div>
+                      Building a Client Profile
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5"></div>
+                      Rings of Protection
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5"></div>
+                      The Force Continuum
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5"></div>
+                      Unarmed Defensive Tactics
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5"></div>
+                      Private Security Act & Commission Rules
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5"></div>
+                      Texas Penal Code
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5"></div>
+                      Conflict Resolution & Avoidance
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5"></div>
+                      Public Perception
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5"></div>
+                      Arrest Authority
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1.5"></div>
+                      Use of Force & Deadly Force
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default Level4Course;

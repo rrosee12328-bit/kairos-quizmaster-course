@@ -9,6 +9,7 @@ import { CheckCircle, XCircle, Download } from "lucide-react";
 import { level3ExamQuestions } from "@/data/level3ExamQuestions";
 import { level2ExamQuestions } from "@/data/level2ExamQuestions";
 import { pepperSprayExamQuestions } from "@/data/pepperSprayExamQuestions";
+import { level4ExamQuestions } from "@/data/level4ExamQuestions";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -20,7 +21,7 @@ interface QuizQuestion {
 }
 
 interface QuizProps {
-  courseType?: 'level2' | 'level3' | 'pepper-spray';
+  courseType?: 'level2' | 'level3' | 'pepper-spray' | 'level-4';
   questions?: QuizQuestion[];
   passingPercentage?: number;
 }
@@ -32,6 +33,7 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
     customQuestions || 
     (courseType === 'level2' ? level2ExamQuestions : 
      courseType === 'pepper-spray' ? pepperSprayExamQuestions :
+     courseType === 'level-4' ? level4ExamQuestions :
      level3ExamQuestions)
   );
   const [currentQuestion, setCurrentQuestion] = useState(0);
