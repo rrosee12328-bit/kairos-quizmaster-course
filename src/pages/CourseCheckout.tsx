@@ -91,8 +91,8 @@ const CourseCheckout = () => {
     },
     level4: {
       title: "Level 4: Personal Protection Officer",
-      subtitle: "Bodyguard & Executive Protection",
-      description: "15 hour advanced certification for Personal Protection Officers. Learn comprehensive protection planning, threat avoidance, defensive tactics, and coordination with authorities.",
+      subtitle: "Bodyguard & Executive Protection - Online + In-Person Training",
+      description: "15 hour advanced certification for Personal Protection Officers combining online coursework with mandatory in-person training. Learn comprehensive protection planning, threat avoidance, defensive tactics, and coordination with authorities.",
       duration: "15 hours",
       sections: 1,
       level: "Expert",
@@ -106,7 +106,8 @@ const CourseCheckout = () => {
         "Use of Force & Deadly Force"
       ],
       priceId: "price_1SIuhk2Lv7r2i0JXmknziXJn",
-      price: "$200.00"
+      price: "$200.00",
+      isLevel4: true
     },
     "pepper-spray": {
       title: "Pepper Spray Training",
@@ -354,6 +355,62 @@ const CourseCheckout = () => {
                     </a>
                   </div>
                   <p className="text-sm font-semibold">PSB CUSTOMER SERVICE – 512-424-7293</p>
+                </div>
+              )}
+
+              {/* Level 4 Important Information */}
+              {courseType === 'level4' && (
+                <div className="space-y-6">
+                  <div className="bg-purple-500/10 border-2 border-purple-500/30 rounded-lg p-6">
+                    <h3 className="text-xl font-bold text-purple-700 dark:text-purple-400 mb-4">Texas Level 4: Personal Protection Officer</h3>
+                    <div className="space-y-4">
+                      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                        <p className="font-semibold text-blue-700 dark:text-blue-400 mb-2">📍 Training Format: Online + In-Person</p>
+                        <p className="text-sm text-muted-foreground">This course combines online learning with mandatory in-person training sessions.</p>
+                      </div>
+                      
+                      <div>
+                        <p className="font-semibold mb-2">Prerequisites:</p>
+                        <p className="text-sm text-muted-foreground">You must be a <strong>Level III certified officer</strong> to enroll in Level IV training.</p>
+                      </div>
+
+                      <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                        <p className="font-semibold text-green-700 dark:text-green-400 mb-2">💰 Career Potential</p>
+                        <p className="text-sm text-muted-foreground">Level IV Officers can earn between <strong>$35.00-$85.00 per hour</strong>. Overtime is often available for Officers willing to work extra hours.</p>
+                      </div>
+
+                      <div>
+                        <p className="font-semibold mb-2">Overview:</p>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          PSP does not have a Level I Security Officer. You must be a Level II to be a Level III; you must also be a Level III to be a Level IV. 
+                          A Personal Protection Officer (Level IV) is not required to wear a uniform and can carry a Firearm along with a Baton, ECD, and OC if trained.
+                        </p>
+                      </div>
+
+                      <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
+                        <p className="font-semibold mb-2">What You'll Learn:</p>
+                        <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                          <li>Objectives as determined by the Private Security Program</li>
+                          <li>Unarmed Defensive Tactics</li>
+                          <li>Baton Training</li>
+                          <li>Personal Protection Officer Specifics</li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
+                        <p className="text-sm text-muted-foreground italic">
+                          "Please be advised under the Private Security Act (Occ. Code Chapter 1702) and Administrative Rule 35.4 (37 Tex. Admin. Code 1), 
+                          a criminal conviction may disqualify you from a Commission or license under the Act. You may wish to review Rule 35.4's list of 
+                          disqualifying offenses and the related periods of ineligibility, available on the department's website at{" "}
+                          <a href="http://www.dps.texas.gov/rsd/psb/index.htm" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                            www.dps.texas.gov/rsd/psb/index.htm
+                          </a>{" "}
+                          (click on the link to Administrative Code). You also have a right to request from the department a criminal history evaluation 
+                          letter under Occupations Code Section 53.102."
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 
