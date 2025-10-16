@@ -9,6 +9,7 @@ import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import kairosLogo from "@/assets/kairos-logo.png";
 import level3SecurityImage from "@/assets/level3-security-professional.jpg";
+import level2SecurityImage from "@/assets/level2-security-professional.jpg";
 
 const CourseCheckout = () => {
   const { courseType } = useParams();
@@ -65,7 +66,8 @@ const CourseCheckout = () => {
       ],
       priceId: "price_1SIuwK2Lv7r2i0JX3XIe7Oi0",
       price: "$1.00",
-      originalPrice: "$50.00"
+      originalPrice: "$50.00",
+      isLevel2: true
     },
     level3: {
       title: "Level 3 Security Officer Certification (Part 1)",
@@ -210,6 +212,17 @@ const CourseCheckout = () => {
             </CardHeader>
 
             <CardContent className="p-8 space-y-8">
+              {/* Level 2 Hero Image */}
+              {course.isLevel2 && (
+                <div className="rounded-lg overflow-hidden -mt-8 -mx-8 mb-6">
+                  <img 
+                    src={level2SecurityImage} 
+                    alt="Professional Security Officer" 
+                    className="w-full h-64 object-cover"
+                  />
+                </div>
+              )}
+
               {/* Level 3 Hero Image */}
               {course.isLevel3 && (
                 <div className="rounded-lg overflow-hidden -mt-8 -mx-8 mb-6">
@@ -218,6 +231,27 @@ const CourseCheckout = () => {
                     alt="Professional Security Officer" 
                     className="w-full h-64 object-cover"
                   />
+                </div>
+              )}
+
+              {/* Level 2 Important Information */}
+              {course.isLevel2 && (
+                <div className="bg-blue-500/10 border-2 border-blue-500/30 rounded-lg p-6 space-y-4">
+                  <h3 className="text-xl font-bold text-blue-700 dark:text-blue-400">📋 Course Information</h3>
+                  <div className="space-y-3 text-sm">
+                    <p className="font-semibold">What you'll receive:</p>
+                    <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                      <li><strong>PSP-36 Certificate</strong> to submit to TOPS (Texas Online Private Security)</li>
+                    </ul>
+                    
+                    <div className="pt-4 border-t border-blue-500/20">
+                      <p className="font-semibold mb-2">Are you looking for a new career path?</p>
+                      <p className="text-muted-foreground">
+                        This course will teach individuals with little or no previous experience the basic principles of the security industry 
+                        using the State of Texas required materials.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -284,6 +318,72 @@ const CourseCheckout = () => {
                 <h3 className="text-xl font-semibold mb-4">Course Overview</h3>
                 <p className="text-muted-foreground leading-relaxed">{course.description}</p>
               </div>
+
+              {/* Level 2 Detailed Information */}
+              {course.isLevel2 && (
+                <div className="space-y-6 border-t pt-6">
+                  <div className="prose prose-sm max-w-none dark:prose-invert">
+                    <h3 className="text-lg font-bold mb-3">Eligibility Notice</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                      Please be advised under the Private Security Act (Occ. Code Chapter 1702) and Administrative Rule 35.4 (37 Tex. Admin. Code 1), 
+                      a criminal conviction may disqualify you from a registration, commission or license under the Act. You may wish to review Rule 35.4's 
+                      list of disqualifying offenses and the related periods of ineligibility, available on the{" "}
+                      <a href="http://www.dps.texas.gov/rsd/psb/index.htm" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        department's website
+                      </a>
+                      . You also have a right to request from the department a criminal history evaluation letter under Occupations Code Section 53.102.
+                    </p>
+
+                    <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 my-4">
+                      <p className="text-sm font-semibold text-yellow-700 dark:text-yellow-500">
+                        ⚠️ PURSUANT TO HB 1508: If an individual is denied an occupational license based on their criminal history and the training 
+                        provider failed to provide the individual the above information, the training provider will be required to refund the amount 
+                        of any tuition paid and corresponding application and examination fees.
+                      </p>
+                    </div>
+
+                    <h3 className="text-lg font-bold mt-6 mb-3">Course Requirements</h3>
+                    <p className="text-sm font-semibold mb-2">THE LEVEL II TRAINING COURSE AND TEST IS REQUIRED OF ALL:</p>
+                    <ul className="text-sm text-muted-foreground space-y-2">
+                      <li>✓ Non-commissioned security officers</li>
+                      <li>✓ Commissioned security officers</li>
+                      <li>✓ Personal protection officers</li>
+                    </ul>
+
+                    <h3 className="text-lg font-bold mt-6 mb-3">Training Topics Include:</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Laws and Regulations, Field Notes and Report Writing, Crime Scene, Cover and Concealment, Use of Force, Conflict Resolution, and Ethics.
+                    </p>
+
+                    <h3 className="text-lg font-bold mt-6 mb-3">Course Flexibility</h3>
+                    <ul className="text-sm text-muted-foreground space-y-2">
+                      <li>✓ This course can be taken at your leisure - <strong>no time limit</strong></li>
+                      <li>✓ Contains 8-10 hours of training material</li>
+                      <li>✓ Must pass each lesson exam with <strong>75% or better</strong> to proceed</li>
+                      <li>✓ Exams can be reset and lessons loop until passing grade is achieved</li>
+                    </ul>
+
+                    <h3 className="text-lg font-bold mt-6 mb-3">Prerequisites</h3>
+                    <p className="text-sm text-muted-foreground">
+                      <strong>None!</strong> There are no prerequisites for this course.
+                    </p>
+
+                    <h3 className="text-lg font-bold mt-6 mb-3">Equipment Needed</h3>
+                    <ul className="text-sm text-muted-foreground space-y-2">
+                      <li>✓ Computer with internet access</li>
+                      <li>✓ Broadband Internet connection</li>
+                      <li>✓ Recommended: Google Chrome</li>
+                    </ul>
+
+                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mt-6">
+                      <p className="text-sm font-semibold">
+                        🎓 Upon completion, you will receive the basic certification (PSP-36) to submit and be approved by the State to work 
+                        legally as an unarmed security officer in the State of Texas.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Level 3 Detailed Information */}
               {course.isLevel3 && (
