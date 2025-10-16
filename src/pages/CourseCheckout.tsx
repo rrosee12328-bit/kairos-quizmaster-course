@@ -136,18 +136,7 @@ const CourseCheckout = () => {
       requirements: [
         "This course is for security guards only",
         "Must be 18 years of age or older to take the course",
-        "Students are NOT required to be sprayed",
-        "Training pepper spray on dummy targets will be used"
-      ],
-      gearRequired: [
-        "Note taking gear",
-        "Clear glasses",
-        "Water"
-      ],
-      gearRecommended: [
-        "Drinks and snacks",
-        "Laptop or tablet",
-        "Check the weather on the day of the course and dress appropriately"
+        "Students are NOT required to be sprayed"
       ]
     }
   };
@@ -471,7 +460,7 @@ const CourseCheckout = () => {
                           The Pepper Spray Training Course trains the student in the theory and practice of the effective use of pepper spray for a security officer in the State of Texas. Today's security professional faces a large variety of threats and challenges in the security profession. To face these threats effectively, he or she must be both well trained and well equipped. Pepper spray is an important and useful tool for the security officer. This additional tool enables greater flexibility in security detail to maintain order, along with a secure and safe environment.
                         </p>
                         <p className="text-sm text-muted-foreground mb-4">
-                          This is a 2 hour course that is required by the Texas Department of Public Safety – Private Security Board. Students are not required to be sprayed. We will be using training pepper spray on dummy targets.
+                          This is a 2 hour course that is required by the Texas Department of Public Safety – Private Security Board. Students are not required to be sprayed.
                         </p>
                       </div>
                       <div className="w-full md:w-48 flex-shrink-0">
@@ -491,27 +480,6 @@ const CourseCheckout = () => {
                             <li key={index}>{req}</li>
                           ))}
                         </ul>
-                      </div>
-
-                      <div>
-                        <p className="font-semibold mb-2">Come prepared to take this course with the following gear:</p>
-                        <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                          {course.gearRequired?.map((gear: string, index: number) => (
-                            <li key={index}>{gear}</li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      <div>
-                        <p className="font-semibold mb-2">The following is not required but recommended:</p>
-                        <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                          {course.gearRecommended?.map((gear: string, index: number) => (
-                            <li key={index}>{gear}</li>
-                          ))}
-                        </ul>
-                        <p className="text-sm font-semibold text-muted-foreground mt-2">
-                          Check the weather on the day of the course and dress appropriately.
-                        </p>
                       </div>
 
                       <div className="pt-4 border-t border-orange-500/30">
