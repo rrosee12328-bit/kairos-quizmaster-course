@@ -94,6 +94,15 @@ const Level4Course = () => {
             onComplete={handleComplete}
             onNext={() => {}}
           />
+          
+          <div className="text-center mt-4">
+            <Button
+              onClick={() => setShowQuiz(true)}
+              size="sm"
+            >
+              Go to Final Exam
+            </Button>
+          </div>
         </div>
 
         {completed && !showQuiz && (
