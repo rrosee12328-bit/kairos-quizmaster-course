@@ -227,26 +227,42 @@ const Level2Course = () => {
         }
 
         // Build updated sections with matched videos and generate signed URLs
-        const updatedSectionsPromises = courseSections.map(async (section) => {
+        const availableVideos: any[] = Array.isArray(videos) ? [...videos] : [];
+        const used = new Set<string>();
+
+        const getMatchForSection = (section: any) => {
           const sNorm = normalize(section.title);
 
-          // Try matching by leading number first
-          const byNumber = videos.find((video: any) => {
-            const num = leadingNumber(video?.title || '');
-            return num === section.id;
+          // 1) Prefer numeric prefix match
+          let match = availableVideos.find((v: any) => {
+            const num = leadingNumber(v?.title || '');
+            return num === section.id && !used.has(v.guid);
           });
 
-          // Try matching by title keywords
-          const byTitle = videos.find((video: any) => {
-            const title = video?.title || '';
-            const vNorm = normalize(title);
-            return vNorm.includes(sNorm) || sNorm.includes(vNorm);
-          });
+          // 2) Fuzzy title match
+          if (!match) {
+            match = availableVideos.find((v: any) => {
+              const vNorm = normalize(v?.title || '');
+              return (vNorm.includes(sNorm) || sNorm.includes(vNorm)) && !used.has(v.guid);
+            });
+          }
 
-          const matchingVideo = byNumber || byTitle;
+          // 3) Fallback by index alignment (sorted by title)
+          if (!match) {
+            const sorted = [...availableVideos].sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+            match = sorted[section.id - 1];
+            if (match && used.has(match.guid)) match = undefined;
+          }
+
+          if (match) used.add(match.guid);
+          return match;
+        };
+
+        const updatedSectionsPromises = courseSections.map(async (section) => {
+          const matchingVideo = getMatchForSection(section);
 
           if (matchingVideo?.guid) {
-            console.log(`[Level2Course] Matched section ${section.id} "${section.title}" to video "${matchingVideo.title}"`);
+            console.log(`[Level2Course] Matched section ${section.id} "${section.title}" to video "${matchingVideo.title}" (${matchingVideo.guid})`);
             
             // Generate signed URL for private video
             try {
@@ -259,8 +275,8 @@ const Level2Course = () => {
                 }
               });
 
-              if (signedError) {
-                console.error(`[Level2Course] Failed to generate signed URL for ${matchingVideo.guid}:`, signedError);
+              if (signedError || !signedData?.signedUrl) {
+                console.error(`[Level2Course] Failed to generate signed URL for ${matchingVideo.guid}:`, signedError || signedData);
                 return section;
               }
 

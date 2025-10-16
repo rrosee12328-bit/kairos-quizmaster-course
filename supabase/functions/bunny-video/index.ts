@@ -6,19 +6,26 @@ const corsHeaders = {
 };
 
 const BUNNY_API_KEY = Deno.env.get('BUNNY_API_KEY');
-const BUNNY_VIDEO_LIBRARY_KEY = Deno.env.get('BUNNY_VIDEO_LIBRARY_KEY');
+const DEFAULT_SIGNING_KEY = Deno.env.get('BUNNY_VIDEO_LIBRARY_KEY');
+
+function getSigningKey(libraryId: string): string | null {
+  const envName = `BUNNY_SIGNING_KEY_${libraryId}`;
+  const key = Deno.env.get(envName);
+  return key || DEFAULT_SIGNING_KEY || null;
+}
 
 async function generateSignedUrl(libraryId: string, videoId: string, expiresInHours: number = 24): Promise<string> {
-  if (!BUNNY_VIDEO_LIBRARY_KEY) {
-    throw new Error('BUNNY_VIDEO_LIBRARY_KEY not configured');
+  const signingKey = getSigningKey(libraryId);
+  if (!signingKey) {
+    throw new Error(`Signing key not configured. Set BUNNY_SIGNING_KEY_${libraryId} or BUNNY_VIDEO_LIBRARY_KEY`);
   }
 
   const expiryTimestamp = Math.floor(Date.now() / 1000) + (expiresInHours * 3600);
   
-  // Create the signature string: libraryId + videoId + expiryTimestamp + securityKey
-  const signatureString = `${libraryId}${videoId}${expiryTimestamp}${BUNNY_VIDEO_LIBRARY_KEY}`;
+  // Embed token auth: SHA256_HEX(token_security_key + video_id + expiration)
+  const signatureString = `${signingKey}${videoId}${expiryTimestamp}`;
   
-  // Generate SHA256 hash
+  // Generate SHA256 hash (hex)
   const encoder = new TextEncoder();
   const data = encoder.encode(signatureString);
   const hashBuffer = await crypto.subtle.digest('SHA-256', data);
