@@ -175,7 +175,9 @@ const Courses = () => {
         "Decontamination procedures",
         "Maintenance and storage"
       ],
-      route: "/course/pepper-spray"
+      route: "/course/pepper-spray",
+      priceId: "price_1SIulC2Lv7r2i0JX6rKjuKRr",
+      price: "$50.00"
     }
   ];
 
