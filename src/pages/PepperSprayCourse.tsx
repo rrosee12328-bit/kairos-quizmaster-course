@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Shield, CheckCircle } from "lucide-react";
-import { BackButton } from "@/components/BackButton";
+import { Shield, CheckCircle, ArrowLeft } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import CourseHeader from "@/components/CourseHeader";
 import VideoPlayer from "@/components/VideoPlayer";
@@ -15,6 +15,7 @@ const LIBRARY_ID = "512130";
 const VIDEO_GUID = "9ccd2d12-bbcf-4fd7-a74f-15cf1188e453";
 
 const PepperSprayCourse = () => {
+  const navigate = useNavigate();
   const [completed, setCompleted] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -70,7 +71,10 @@ const PepperSprayCourse = () => {
       
       <div className="container mx-auto px-6 py-8">
         <div className="mb-4">
-          <BackButton fallbackPath="/courses" />
+          <Button variant="ghost" onClick={() => navigate('/courses')} className="gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Courses
+          </Button>
         </div>
         
         <div className="mb-6 text-center">
