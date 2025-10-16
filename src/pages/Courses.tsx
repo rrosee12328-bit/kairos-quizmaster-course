@@ -133,7 +133,9 @@ const Courses = () => {
         "Weapons maintenance",
         "Legal responsibilities of armed officers"
       ],
-      route: "/course/level3"
+      route: "/course/level3",
+      priceId: "price_1SIuap2Lv7r2i0JXWjbkKkWm",
+      price: "$149.00"
     },
     {
       id: "level4",
