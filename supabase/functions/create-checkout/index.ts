@@ -18,51 +18,50 @@ serve(async (req) => {
   );
 
   try {
-    const authHeader = req.headers.get("Authorization")!;
-    const token = authHeader.replace("Bearer ", "");
-    const { data } = await supabaseClient.auth.getUser(token);
-    const user = data.user;
-    
-    if (!user?.email) {
-      throw new Error("User not authenticated or email not available");
+    // Auth is optional for guest checkout
+    const authHeader = req.headers.get("Authorization");
+    let userEmail: string | null = null;
+    if (authHeader) {
+      try {
+        const token = authHeader.replace("Bearer ", "");
+        const { data } = await supabaseClient.auth.getUser(token);
+        userEmail = data.user?.email ?? null;
+      } catch (_) {
+        userEmail = null;
+      }
     }
 
     const { priceId } = await req.json();
-    
-    if (!priceId) {
-      throw new Error("Price ID is required");
-    }
+    if (!priceId) throw new Error("Price ID is required");
 
-    console.log("Creating checkout session for user:", user.email, "with price:", priceId);
+    console.log("[create-checkout] Starting for:", userEmail || "guest", priceId);
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
 
-    // Check if customer exists
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    let customerId;
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
-      console.log("Found existing customer:", customerId);
+    // Try to map to an existing Stripe customer when we have email
+    let customerId: string | undefined = undefined;
+    if (userEmail) {
+      const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
+      if (customers.data.length > 0) {
+        customerId = customers.data[0].id;
+        console.log("[create-checkout] Found customer:", customerId);
+      }
     }
 
-    // Create checkout session
+    const origin = req.headers.get("origin") || "https://";
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      customer_email: customerId ? undefined : user.email,
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
+      customer_email: customerId ? undefined : (userEmail || undefined),
+      line_items: [{ price: priceId, quantity: 1 }],
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/courses?payment=success`,
-      cancel_url: `${req.headers.get("origin")}/courses?payment=canceled`,
+      success_url: `${origin}/courses?payment=success`,
+      cancel_url: `${origin}/courses?payment=canceled`,
     });
 
-    console.log("Checkout session created:", session.id);
+    console.log("[create-checkout] Session:", session.id);
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -70,7 +69,7 @@ serve(async (req) => {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error("Error creating checkout session:", message);
+    console.error("[create-checkout] ERROR:", message);
     return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

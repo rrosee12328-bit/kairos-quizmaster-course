@@ -56,12 +56,6 @@ const Courses = () => {
   };
 
   const handlePurchase = async (priceId: string) => {
-    if (!user) {
-      toast.error("Please sign in to purchase");
-      navigate("/auth");
-      return;
-    }
-
     setProcessingPayment(true);
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
