@@ -151,6 +151,11 @@ const Level4Course = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              <div className="mb-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                <p className="text-sm font-semibold text-center">
+                  📋 Passing Score Required: 70% or higher
+                </p>
+              </div>
               <div className="space-y-4 text-sm">
                 <div>
                   <h3 className="font-semibold mb-2">About This Course</h3>

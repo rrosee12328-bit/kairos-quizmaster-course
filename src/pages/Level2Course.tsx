@@ -453,7 +453,7 @@ const Level2Course = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-3 gap-4 text-sm">
+              <div className="grid md:grid-cols-3 gap-4 text-sm mb-4">
                 <div className="flex flex-col items-center p-4 bg-muted/50 rounded-lg">
                   <span className="text-2xl font-bold text-primary">9</span>
                   <span className="text-muted-foreground">Sections</span>
@@ -466,6 +466,11 @@ const Level2Course = () => {
                   <span className="text-2xl font-bold text-primary">1</span>
                   <span className="text-muted-foreground">Final Exam</span>
                 </div>
+              </div>
+              <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
+                <p className="text-sm font-semibold text-center">
+                  📋 Passing Score Required: 80% or higher
+                </p>
               </div>
             </CardContent>
           </Card>
