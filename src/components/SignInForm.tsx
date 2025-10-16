@@ -87,6 +87,27 @@ const SignInForm = ({ onSuccess }: SignInFormProps) => {
     }
   };
 
+  const handleMagicLink = async () => {
+    const email = form.getValues('email')?.trim();
+    if (!email) {
+      toast.error('Please enter your email above first.');
+      return;
+    }
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: `${window.location.origin}/courses` },
+      });
+      if (error) {
+        toast.error(`Could not send login link: ${error.message}`);
+        return;
+      }
+      toast.success('Login link sent. Please check your inbox or spam folder.');
+    } catch (e) {
+      console.error('Magic link error:', e);
+      toast.error('Failed to send login link.');
+    }
+  };
   const handleForgotPassword = async () => {
     const email = form.getValues('email')?.trim();
     if (!email) {
@@ -158,6 +179,9 @@ const SignInForm = ({ onSuccess }: SignInFormProps) => {
                 Resend confirmation
               </Button>
             </div>
+            <Button type="button" variant="outline" className="w-full" onClick={handleMagicLink}>
+              Email me a one-time login link
+            </Button>
           </form>
         </Form>
       </CardContent>
