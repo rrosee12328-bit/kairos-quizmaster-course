@@ -237,7 +237,7 @@ const CourseCheckout = () => {
               )}
 
               {/* Level 4 Hero Image */}
-              {courseType === 'level4' && (
+              {course.isLevel4 && (
                 <div className="rounded-lg overflow-hidden -mt-8 -mx-8 mb-6">
                   <img 
                     src={level4BodyguardImage} 
