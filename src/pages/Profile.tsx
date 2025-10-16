@@ -226,7 +226,11 @@ const Profile = () => {
               <Shield className="h-8 w-8 text-primary" />
             </div>
             <div className="flex-1">
-              <h1 className="text-3xl font-bold">{profile?.full_name || user?.email}</h1>
+              <h1 className="text-3xl font-bold">
+                {profile?.full_name && profile.full_name !== user?.email 
+                  ? profile.full_name 
+                  : 'Welcome!'}
+              </h1>
               <p className="text-muted-foreground">{user?.email}</p>
             </div>
           </div>
