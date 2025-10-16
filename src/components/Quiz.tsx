@@ -255,7 +255,10 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
         <Card>
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">
-              {courseType === 'level2' ? 'Level 2' : 'Level 3'} Security Officer Exam Complete!
+              {courseType === 'level2' ? 'Level 2 Security Officer' : 
+               courseType === 'level3' ? 'Level 3 Security Officer' :
+               courseType === 'pepper-spray' ? 'Pepper Spray Training' :
+               courseType === 'level-4' ? 'Level 4 Personal Protection Officer' : 'Security Officer'} Exam Complete!
             </CardTitle>
             <CardDescription>Here are your results</CardDescription>
           </CardHeader>
@@ -392,7 +395,10 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
         <CardHeader>
           <div className="flex justify-between items-center mb-2">
             <CardTitle>
-              {courseType === 'level2' ? 'Level 2' : 'Level 3'} Security Officer Exam
+              {courseType === 'level2' ? 'Level 2 Security Officer' : 
+               courseType === 'level3' ? 'Level 3 Security Officer' :
+               courseType === 'pepper-spray' ? 'Pepper Spray Training' :
+               courseType === 'level-4' ? 'Level 4 Personal Protection Officer' : 'Security Officer'} Exam
             </CardTitle>
             <span className="text-sm text-muted-foreground">
               Question {currentQuestion + 1} of {questions.length}
