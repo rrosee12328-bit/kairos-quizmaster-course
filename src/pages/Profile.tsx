@@ -11,6 +11,7 @@ import { BackButton } from "@/components/BackButton";
 import { Footer } from "@/components/Footer";
 import { Shield, Award, BookOpen, Download, Settings, CheckCircle, Clock, XCircle } from "lucide-react";
 import { format } from "date-fns";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import kairosLogo from "@/assets/kairos-logo.png";
 
 interface Enrollment {
@@ -144,6 +145,31 @@ const Profile = () => {
     }
   };
 
+  const handleResend = async () => {
+    try {
+      const email = user?.email?.trim();
+      if (!email) {
+        toast.error('No email found on your account.');
+        return;
+      }
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth`,
+        },
+      });
+      if (error) {
+        toast.error(`Could not resend confirmation: ${error.message}`);
+        return;
+      }
+      toast.success('Confirmation email sent. Please check your inbox or spam folder.');
+    } catch (e) {
+      console.error('Resend confirmation error:', e);
+      toast.error('Failed to resend confirmation email.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -200,6 +226,20 @@ const Profile = () => {
             </Link>
           </Button>
         </div>
+
+        {user && !user.email_confirmed_at && (
+          <Alert className="mb-6">
+            <AlertTitle>Email not confirmed</AlertTitle>
+            <AlertDescription className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+              <span>
+                Please confirm your email to secure your account. You can still access your courses now.
+              </span>
+              <Button variant="outline" size="sm" onClick={handleResend}>
+                Resend confirmation email
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Stats Overview */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
