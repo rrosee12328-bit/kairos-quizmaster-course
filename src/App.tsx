@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ScrollToTop } from "./components/ScrollToTop";
 import Landing from "./pages/Landing";
 import Courses from "./pages/Courses";
+import CourseCheckout from "./pages/CourseCheckout";
 import Level2Course from "./pages/Level2Course";
 import Level3Course from "./pages/Level3Course";
 import Level4Course from "./pages/Level4Course";
@@ -30,6 +31,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/courses" element={<Courses />} />
+          <Route path="/checkout/:courseType" element={<CourseCheckout />} />
           <Route path="/course/level2" element={<Level2Course />} />
           <Route path="/course/level3" element={<Level3Course />} />
           <Route path="/course/level4" element={<Level4Course />} />

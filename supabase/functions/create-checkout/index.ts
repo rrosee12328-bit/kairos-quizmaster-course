@@ -31,10 +31,10 @@ serve(async (req) => {
       }
     }
 
-    const { priceId, email } = await req.json();
+    const { priceId, email, courseType } = await req.json();
     if (!priceId) throw new Error("Price ID is required");
 
-    console.log("[create-checkout] Starting for:", userEmail || "guest", priceId);
+    console.log("[create-checkout] Starting for:", userEmail || "guest", priceId, courseType);
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
@@ -57,8 +57,11 @@ serve(async (req) => {
       customer_email: customerId ? undefined : (userEmail || (typeof email === 'string' ? email : undefined) || undefined),
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "payment",
-      success_url: `${origin}/courses?payment=success`,
-      cancel_url: `${origin}/courses?payment=canceled`,
+      success_url: `${origin}/course/${courseType || 'level2'}?payment=success`,
+      cancel_url: `${origin}/checkout/${courseType || 'level2'}?payment=canceled`,
+      metadata: {
+        courseType: courseType || 'unknown'
+      }
     });
 
     console.log("[create-checkout] Session:", session.id);

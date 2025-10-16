@@ -254,23 +254,47 @@ const Courses = () => {
             </p>
           </div>
 
-          {/* Hero Image */}
-          <div className="mb-12 rounded-lg overflow-hidden shadow-lg">
-            <img 
-              src={securityTrainingImage} 
-              alt="Security Training Courses" 
-              className="w-full h-[400px] object-cover"
-            />
-          </div>
-
-          {/* Course Grid */}
-          <div className="grid md:grid-cols-2 gap-8">
+          {/* Course Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {courses.map((course) => {
               const enrolled = isEnrolled(course.id);
               
               return (
-                <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  <CardHeader>
+                <Card 
+                  key={course.id} 
+                  className="overflow-hidden hover:shadow-lg transition-all hover:scale-105 cursor-pointer"
+                  onClick={() => enrolled ? navigate(course.route) : navigate(`/checkout/${course.id}`)}
+                >
+                  <CardContent className="p-4 text-center space-y-3">
+                    <div className={`w-16 h-16 mx-auto rounded-full ${course.color} flex items-center justify-center`}>
+                      <Shield className="h-8 w-8 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-sm line-clamp-2 mb-1">{course.title}</h3>
+                      <p className="text-xs text-muted-foreground">{course.duration}</p>
+                    </div>
+                    {enrolled ? (
+                      <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-green-500/20 text-xs">
+                        ✓ Owned
+                      </Badge>
+                    ) : (
+                      <p className="text-sm font-bold text-primary">{course.price}</p>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Detailed Course Information */}
+          <div className="space-y-6">
+            <h3 className="text-2xl font-bold text-center mb-6">Course Details</h3>
+            {courses.map((course) => {
+              const enrolled = isEnrolled(course.id);
+              
+              return (
+                <Card key={course.id} className="overflow-hidden">
+                  <CardHeader className="pb-4">
                     <div className="flex items-start justify-between mb-2">
                       <Badge className={course.color}>{course.level}</Badge>
                       {enrolled && (
@@ -279,14 +303,13 @@ const Courses = () => {
                         </Badge>
                       )}
                     </div>
-                    <CardTitle className="text-2xl">{course.title}</CardTitle>
-                    <CardDescription className="text-base">{course.subtitle}</CardDescription>
+                    <CardTitle className="text-xl">{course.title}</CardTitle>
+                    <CardDescription>{course.subtitle}</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    <p className="text-muted-foreground">{course.description}</p>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground line-clamp-2">{course.description}</p>
                     
-                    {/* Course Stats */}
-                    <div className="flex gap-6 text-sm">
+                    <div className="flex gap-4 text-sm">
                       <div className="flex items-center gap-2">
                         <BookOpen className="h-4 w-4 text-muted-foreground" />
                         <span>{course.sections} sections</span>
@@ -297,53 +320,20 @@ const Courses = () => {
                       </div>
                     </div>
 
-                    {/* Learning Objectives */}
-                    <div>
-                      <h4 className="font-semibold mb-3">What you'll learn:</h4>
-                      <ul className="space-y-2">
-                        {course.features.map((feature, idx) => (
-                          <li key={idx} className="flex items-start gap-2 text-sm">
-                            <CheckCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {/* Price and CTA */}
-                    <div className="pt-4 border-t">
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <p className="text-2xl font-bold">{course.price}</p>
-                          <p className="text-xs text-muted-foreground">One-time payment</p>
-                        </div>
-                      </div>
-                      
+                    <div className="flex items-center justify-between pt-2">
+                      <p className="text-xl font-bold">{course.price}</p>
                       {enrolled ? (
-                        <div className="space-y-2">
-                          <Button asChild className="w-full" size="lg">
-                            <Link to={course.route}>
-                              Continue Course
-                              <ArrowRight className="ml-2 h-4 w-4" />
-                            </Link>
-                          </Button>
-                          <p className="text-xs text-center text-muted-foreground">
-                            You already own this course
-                          </p>
-                        </div>
-                      ) : user ? (
-                        <Button 
-                          className="w-full" 
-                          size="lg"
-                          onClick={() => handlePurchase(course.priceId || '', course.id)}
-                          disabled={processingPayment}
-                        >
-                          {processingPayment ? "Processing..." : "Purchase Course"}
+                        <Button asChild size="sm">
+                          <Link to={course.route}>
+                            Continue
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                          </Link>
                         </Button>
                       ) : (
-                        <Button asChild className="w-full" size="lg">
-                          <Link to="/auth">
-                            Sign In to Purchase
+                        <Button asChild size="sm">
+                          <Link to={`/checkout/${course.id}`}>
+                            View Details
+                            <ArrowRight className="ml-2 h-4 w-4" />
                           </Link>
                         </Button>
                       )}
