@@ -11,6 +11,7 @@ import kairosLogo from "@/assets/kairos-logo.png";
 import level3SecurityImage from "@/assets/level3-security-professional.jpg";
 import level2SecurityImage from "@/assets/level2-security-vehicle.jpg";
 import level4BodyguardImage from "@/assets/level4-bodyguard.jpg";
+import pepperSprayHeroImage from "@/assets/pepper-spray-hero.jpg";
 
 const CourseCheckout = () => {
   const { courseType } = useParams();
@@ -267,6 +268,18 @@ const CourseCheckout = () => {
                 </div>
               )}
 
+              {/* Pepper Spray Hero Image */}
+              {course.isPepperSpray && (
+                <div className="rounded-lg overflow-hidden -mt-8 -mx-8 mb-6">
+                  <img 
+                    src={pepperSprayHeroImage}
+                    alt="Pepper Spray Training Course"
+                    loading="lazy"
+                    className="w-full h-64 object-cover"
+                  />
+                </div>
+              )}
+
               {/* Level 2 Important Information */}
               {course.isLevel2 && (
                 <div className="space-y-6">
@@ -492,6 +505,9 @@ const CourseCheckout = () => {
                       <div className="pt-4 border-t border-orange-500/30">
                         <p className="text-lg font-bold text-center">
                           Cost per student ${course.price.replace('$', '').replace('.00', '')}
+                        </p>
+                        <p className="text-center mt-2">
+                          <a href="https://operationshieldtx.com/schedule/category/private-security/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-semibold">Class Dates & Times</a>
                         </p>
                       </div>
                     </div>
