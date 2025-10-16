@@ -154,7 +154,9 @@ const Courses = () => {
         "Unarmed Defensive Tactics",
         "Use of Force & Deadly Force"
       ],
-      route: "/course/level4"
+      route: "/course/level4",
+      priceId: "price_1SIuhk2Lv7r2i0JXmknziXJn",
+      price: "$200.00"
     },
     {
       id: "pepper-spray",
