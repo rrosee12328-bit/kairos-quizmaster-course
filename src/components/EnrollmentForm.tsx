@@ -81,17 +81,26 @@ const EnrollmentForm = ({ onSuccess, priceId, defaultCourseType }: EnrollmentFor
               password: data.password,
             });
             if (signInError) {
-              console.error('Sign-in error:', signInError);
-              toast.error("Account exists. Please sign in with your password or use the Sign In page.");
-              return;
+              // If sign-in fails due to email confirmation, still proceed with signup data
+              console.warn('Sign-in failed, proceeding with signup data:', signInError.message);
+              if (authData?.user) {
+                currentUser = authData.user;
+                toast.success("Account created! You can sign in once you confirm your email.");
+              } else {
+                toast.error("Account exists but sign-in failed. Please check your password or confirm your email first.");
+                return;
+              }
+            } else {
+              currentUser = signInData.user ?? null;
+              toast.success("Welcome back!");
             }
-            currentUser = signInData.user ?? null;
           } else {
             toast.error(`Registration failed: ${authError.message}`);
             return;
           }
         } else {
           currentUser = authData.user ?? null;
+          toast.success("Account created successfully!");
         }
       }
 

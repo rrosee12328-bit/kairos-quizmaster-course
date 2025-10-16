@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
@@ -13,6 +13,10 @@ import SignInForm from "@/components/SignInForm";
 const Auth = () => {
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const priceIdFromUrl = params.get('priceId') || undefined;
+  const courseFromUrl = params.get('course') || undefined;
 
   const processPendingEnrollment = async (sessionUser: User) => {
     try {
@@ -95,7 +99,7 @@ const Auth = () => {
             </TabsList>
             
             <TabsContent value="enroll" className="mt-6">
-              <EnrollmentForm onSuccess={handleAuthSuccess} />
+              <EnrollmentForm onSuccess={handleAuthSuccess} priceId={priceIdFromUrl} defaultCourseType={courseFromUrl} />
             </TabsContent>
             
             <TabsContent value="signin" className="mt-6">

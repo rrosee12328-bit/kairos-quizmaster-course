@@ -331,7 +331,7 @@ const Courses = () => {
                       className="w-full"
                       size="lg"
                       variant="secondary"
-                      onClick={() => handlePurchase("price_1SIuwK2Lv7r2i0JX3XIe7Oi0")}
+                      onClick={() => navigate(`/auth?priceId=${encodeURIComponent("price_1SIuwK2Lv7r2i0JX3XIe7Oi0")}&course=level2`)}
                       disabled={processingPayment}
                     >
                       <ShoppingCart className="h-4 w-4 mr-2" />
