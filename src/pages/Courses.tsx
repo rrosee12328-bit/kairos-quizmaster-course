@@ -331,6 +331,20 @@ const Courses = () => {
                       </Link>
                     </Button>
                   ) : null}
+
+                  {course.id === "level2" && (
+                    <Button
+                      className="w-full"
+                      size="lg"
+                      variant="secondary"
+                      onClick={() => handlePurchase("price_1SIuwK2Lv7r2i0JX3XIe7Oi0")}
+                      disabled={processingPayment}
+                    >
+                      <ShoppingCart className="h-4 w-4 mr-2" />
+                      Test Purchase - $1.00
+                    </Button>
+                  )}
+
                   <Button asChild className="w-full" size="lg" variant={course.priceId ? "outline" : "default"}>
                     <Link to={course.route} className="flex items-center gap-2">
                       View Course Details
