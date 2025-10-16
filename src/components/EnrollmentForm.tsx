@@ -100,6 +100,13 @@ const EnrollmentForm = ({ onSuccess, priceId, defaultCourseType }: EnrollmentFor
         return;
       }
 
+      // Ensure we have an active session (required for RLS policies)
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Please sign in (or confirm your email) before enrolling.");
+        return;
+      }
+
       // Save enrollment data (RLS allows any authenticated user to insert)
       const { error: enrollmentError } = await supabase
         .from('enrollments')
@@ -117,7 +124,8 @@ const EnrollmentForm = ({ onSuccess, priceId, defaultCourseType }: EnrollmentFor
 
       if (enrollmentError) {
         console.error('Enrollment error:', enrollmentError);
-        toast.error("Failed to save enrollment. Please try again.");
+        const msg = (enrollmentError as any)?.message || 'Failed to save enrollment. Please try again.';
+        toast.error(msg);
         return;
       }
 
