@@ -111,23 +111,42 @@ const CourseCheckout = () => {
       isLevel4: true
     },
     "pepper-spray": {
-      title: "Pepper Spray Training",
-      subtitle: "Non-Lethal Defense Equipment",
-      description: "Essential training on the proper use, safety protocols, and legal considerations of pepper spray for security professionals.",
+      title: "Pepper Spray Training Course",
+      subtitle: "For Security Officers in Texas",
+      description: "The Pepper Spray Training Course trains the student in the theory and practice of the effective use of pepper spray for a security officer in the State of Texas. Today's security professional faces a large variety of threats and challenges in the security profession. To face these threats effectively, he or she must be both well trained and well equipped. Pepper spray is an important and useful tool for the security officer. This additional tool enables greater flexibility in security detail to maintain order, along with a secure and safe environment.",
       duration: "2 hours",
       sections: 1,
-      level: "Beginner",
+      level: "Required",
       color: "bg-orange-500",
       features: [
-        "Proper handling techniques",
-        "Deployment and aim",
-        "Safety protocols",
-        "Legal use of force considerations",
-        "Decontamination procedures",
-        "Maintenance and storage"
+        "History of chemical weapons",
+        "Introduction to modern chemical weapons",
+        "OC Pepper spray",
+        "Understanding OC Spray",
+        "First Aid and decontamination",
+        "Side effects",
+        "Criminal and civil liability",
+        "Drills"
       ],
       priceId: "price_1SIulC2Lv7r2i0JX6rKjuKRr",
-      price: "$50.00"
+      price: "$50.00",
+      isPepperSpray: true,
+      requirements: [
+        "This course is for security guards only",
+        "Must be 18 years of age or older to take the course",
+        "Students are NOT required to be sprayed",
+        "Training pepper spray on dummy targets will be used"
+      ],
+      gearRequired: [
+        "Note taking gear",
+        "Clear glasses",
+        "Water"
+      ],
+      gearRecommended: [
+        "Drinks and snacks",
+        "Laptop or tablet",
+        "Check the weather on the day of the course and dress appropriately"
+      ]
     }
   };
 
@@ -421,6 +440,55 @@ const CourseCheckout = () => {
                           (click on the link to Administrative Code). You also have a right to request from the department a criminal history evaluation 
                           letter under Occupations Code Section 53.102."
                         </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Pepper Spray Important Information */}
+              {course.isPepperSpray && (
+                <div className="space-y-6">
+                  <div className="bg-orange-500/10 border-2 border-orange-500/30 rounded-lg p-6">
+                    <h3 className="text-xl font-bold text-orange-700 dark:text-orange-400 mb-4">Texas Pepper Spray Training Course</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      This is a 2 hour course that is required by the Texas Department of Public Safety – Private Security Board.
+                    </p>
+                    <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 mb-4">
+                      <p className="text-sm font-semibold text-green-700 dark:text-green-400">
+                        ✓ Students are NOT required to be sprayed
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        We will be using training pepper spray on dummy targets.
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <p className="font-semibold mb-2">Requirements:</p>
+                        <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                          {course.requirements?.map((req: string, index: number) => (
+                            <li key={index}>{req}</li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                        <p className="font-semibold mb-2">Come prepared with the following gear:</p>
+                        <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                          {course.gearRequired?.map((gear: string, index: number) => (
+                            <li key={index}>{gear}</li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
+                        <p className="font-semibold mb-2">The following is not required but recommended:</p>
+                        <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                          {course.gearRecommended?.map((gear: string, index: number) => (
+                            <li key={index}>{gear}</li>
+                          ))}
+                        </ul>
                       </div>
                     </div>
                   </div>
