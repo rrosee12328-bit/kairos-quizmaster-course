@@ -9,7 +9,7 @@ import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import kairosLogo from "@/assets/kairos-logo.png";
 import level3SecurityImage from "@/assets/level3-security-professional.jpg";
-import level2SecurityImage from "@/assets/level2-security-professional.jpg";
+import level2SecurityImage from "@/assets/level2-security-officer.jpg";
 
 const CourseCheckout = () => {
   const { courseType } = useParams();
