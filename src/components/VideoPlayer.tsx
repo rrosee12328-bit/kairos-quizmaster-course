@@ -286,16 +286,36 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
                 }}
                 allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
                 allowFullScreen
+                onError={(e) => {
+                  console.error('[VideoPlayer] iframe load error for video:', videoId);
+                }}
               />
             </div>
+          ) : isActive && !videoId && section.videoUrl ? (
+            <div className="relative bg-destructive/10 border border-destructive/50 rounded-lg overflow-hidden aspect-video mb-4">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center p-6">
+                  <div className="text-6xl mb-4">⚠️</div>
+                  <p className="text-lg font-semibold mb-2">Video ID Error</p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Could not extract video ID from URL
+                  </p>
+                  <p className="text-xs font-mono bg-muted p-2 rounded break-all">
+                    {section.videoUrl}
+                  </p>
+                </div>
+              </div>
+            </div>
           ) : (
-            <div className="relative bg-black rounded-lg overflow-hidden aspect-video mb-4 overscroll-none touch-none" onWheel={(e) => e.preventDefault()}>
-              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/40">
-                <div className="text-center text-white">
+            <div className="relative bg-muted/50 border-2 border-dashed rounded-lg overflow-hidden aspect-video mb-4">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center p-6">
                   <div className="text-6xl mb-4">🎥</div>
-                  <p className="text-lg">Security Training Video</p>
-                  <p className="text-sm opacity-80">Duration: {section.duration}</p>
-                  <p className="text-xs opacity-60 mt-2">Video URL not configured</p>
+                  <p className="text-lg font-semibold mb-2">Video Not Available</p>
+                  <p className="text-sm text-muted-foreground mb-1">Duration: {section.duration}</p>
+                  <p className="text-xs text-muted-foreground mt-4">
+                    This video is still being configured. Please refresh the page or contact support if this persists.
+                  </p>
                 </div>
               </div>
             </div>
