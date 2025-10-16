@@ -34,9 +34,18 @@ const CourseHeader = ({ isAdmin = false, showAuthButtons = false }: CourseHeader
               <p className="text-primary-foreground/80 text-lg">Professional Security Training</p>
             </div>
           </Link>
-          <div className="flex items-center gap-6 text-sm">
+          <div className="flex items-center gap-4 text-sm">
             {showAuthButtons && (
-              <div className="flex items-center gap-2">
+              <>
+                <Button variant="ghost" size="sm" asChild className="text-primary-foreground hover:bg-primary-foreground/10">
+                  <Link to="/">Home</Link>
+                </Button>
+                <Button variant="ghost" size="sm" asChild className="text-primary-foreground hover:bg-primary-foreground/10">
+                  <Link to="/courses">Courses</Link>
+                </Button>
+                <Button variant="ghost" size="sm" asChild className="text-primary-foreground hover:bg-primary-foreground/10">
+                  <Link to="/profile">Profile</Link>
+                </Button>
                 {isAdmin && (
                   <Button variant="outline" size="sm" asChild className="text-foreground">
                     <Link to="/admin">Admin</Link>
@@ -46,16 +55,8 @@ const CourseHeader = ({ isAdmin = false, showAuthButtons = false }: CourseHeader
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign Out
                 </Button>
-              </div>
+              </>
             )}
-            <div className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5" />
-              <span>9 Sections</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              <span>32 Questions</span>
-            </div>
           </div>
         </div>
       </div>
