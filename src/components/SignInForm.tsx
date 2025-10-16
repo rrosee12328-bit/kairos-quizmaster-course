@@ -41,7 +41,14 @@ const SignInForm = ({ onSuccess }: SignInFormProps) => {
       });
 
       if (error) {
-        toast.error(`Sign in failed: ${error.message}`);
+        // Check if it's an email confirmation issue
+        if (error.message.includes('Email not confirmed')) {
+          toast.error("Please check your email and click the confirmation link before signing in.");
+        } else if (error.message.includes('Invalid login credentials')) {
+          toast.error("Invalid email or password. If you just signed up, please check your email for a confirmation link first.");
+        } else {
+          toast.error(`Sign in failed: ${error.message}`);
+        }
         return;
       }
 
