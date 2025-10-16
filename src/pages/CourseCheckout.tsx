@@ -486,9 +486,6 @@ const CourseCheckout = () => {
                         <p className="text-lg font-bold text-center">
                           Cost per student ${course.price.replace('$', '').replace('.00', '')}
                         </p>
-                        <p className="text-center mt-2">
-                          <a href="https://operationshieldtx.com/schedule/category/private-security/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-semibold">Class Dates & Times</a>
-                        </p>
                       </div>
                     </div>
                   </div>
