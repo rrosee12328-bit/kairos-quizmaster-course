@@ -54,77 +54,95 @@ const EnrollmentForm = ({ onSuccess, priceId, defaultCourseType }: EnrollmentFor
     setIsSubmitting(true);
 
     try {
-      // First, sign up the user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth`,
-          data: {
-            first_name: data.firstName,
-            last_name: data.lastName,
-          },
-        },
-      });
+      // Use existing session if logged in, otherwise attempt sign up
+      const { data: sessionData } = await supabase.auth.getSession();
+      let currentUser = sessionData.session?.user ?? null;
 
-      if (authError) {
-        toast.error(`Registration failed: ${authError.message}`);
+      if (!currentUser) {
+        // Try to sign up
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: data.email,
+          password: data.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth`,
+            data: {
+              first_name: data.firstName,
+              last_name: data.lastName,
+            },
+          },
+        });
+
+        if (authError) {
+          // If user already exists, try to sign in instead
+          const msg = authError.message?.toLowerCase() || "";
+          if (msg.includes("already registered") || msg.includes("exists")) {
+            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+              email: data.email,
+              password: data.password,
+            });
+            if (signInError) {
+              console.error('Sign-in error:', signInError);
+              toast.error("Account exists. Please sign in with your password or use the Sign In page.");
+              return;
+            }
+            currentUser = signInData.user ?? null;
+          } else {
+            toast.error(`Registration failed: ${authError.message}`);
+            return;
+          }
+        } else {
+          currentUser = authData.user ?? null;
+        }
+      }
+
+      if (!currentUser) {
+        toast.error("Unable to authenticate. Please try signing in again.");
         return;
       }
 
-      if (authData.user) {
-        // Save enrollment data
-        const { error: enrollmentError } = await supabase
-          .from('enrollments')
-          .insert({
-            user_id: authData.user.id,
-            email: data.email,
-            first_name: data.firstName,
-            last_name: data.lastName,
-            phone_number: data.phoneNumber,
-            identification_type: data.identificationType,
-            last_six_digits: data.lastSixDigits,
-            course_type: data.courseType,
-            enrollment_status: 'pending',
-          });
+      // Save enrollment data (RLS allows any authenticated user to insert)
+      const { error: enrollmentError } = await supabase
+        .from('enrollments')
+        .insert({
+          user_id: currentUser.id,
+          email: data.email,
+          first_name: data.firstName,
+          last_name: data.lastName,
+          phone_number: data.phoneNumber,
+          identification_type: data.identificationType,
+          last_six_digits: data.lastSixDigits,
+          course_type: data.courseType,
+          enrollment_status: 'pending',
+        });
 
-        if (enrollmentError) {
-          console.error('Enrollment error:', enrollmentError);
-          toast.error("Failed to save enrollment. Please try again.");
+      if (enrollmentError) {
+        console.error('Enrollment error:', enrollmentError);
+        toast.error("Failed to save enrollment. Please try again.");
+        return;
+      }
+
+      // If there's a priceId, redirect to Stripe checkout
+      if (priceId) {
+        toast.success("Enrollment saved! Redirecting to payment...");
+        const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
+          body: { priceId }
+        });
+
+        if (checkoutError) {
+          console.error('Checkout error:', checkoutError);
+          toast.error("Failed to create checkout session");
           return;
         }
 
-        // If there's a priceId, redirect to Stripe checkout
-        if (priceId) {
-          toast.success("Enrollment saved! Redirecting to payment...");
-          
-          // Get auth session for the checkout
-          const { data: { session } } = await supabase.auth.getSession();
-          
-          if (session) {
-            const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
-              body: { priceId }
-            });
-
-            if (checkoutError) {
-              console.error('Checkout error:', checkoutError);
-              toast.error("Failed to create checkout session");
-              return;
-            }
-
-            if (checkoutData?.url) {
-              window.open(checkoutData.url, '_blank');
-              toast.success("Payment window opened! Complete your purchase to access the course.");
-            }
-          }
-        } else {
-          toast.success("Enrollment completed successfully!");
+        if (checkoutData?.url) {
+          window.open(checkoutData.url, '_blank');
+          toast.success("Payment window opened! Complete your purchase to access the course.");
         }
-
-        if (onSuccess) {
-          onSuccess();
-        }
+      } else {
+        toast.success("Enrollment completed successfully!");
       }
+
+      onSuccess?.();
     } catch (error) {
       console.error('Enrollment error:', error);
       toast.error("An unexpected error occurred. Please try again.");
