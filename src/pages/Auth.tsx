@@ -51,7 +51,7 @@ const Auth = () => {
       setUser(session?.user ?? null);
       if (session?.user) {
         await processPendingEnrollment(session.user);
-        navigate('/courses');
+        navigate('/profile');
       }
     };
 
@@ -64,7 +64,7 @@ const Auth = () => {
         if (event === 'SIGNED_IN' && session?.user) {
           setTimeout(async () => {
             await processPendingEnrollment(session.user!);
-            navigate('/courses');
+            navigate('/profile');
           }, 0);
         }
       }
@@ -74,7 +74,7 @@ const Auth = () => {
   }, [navigate]);
 
   const handleAuthSuccess = () => {
-    navigate('/courses');
+    navigate('/profile');
   };
 
   return (

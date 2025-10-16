@@ -96,7 +96,7 @@ const SignInForm = ({ onSuccess }: SignInFormProps) => {
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email,
-        options: { emailRedirectTo: `${window.location.origin}/courses` },
+        options: { emailRedirectTo: `${window.location.origin}/profile` },
       });
       if (error) {
         toast.error(`Could not send login link: ${error.message}`);

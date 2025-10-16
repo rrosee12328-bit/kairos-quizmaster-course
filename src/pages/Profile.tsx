@@ -9,7 +9,7 @@ import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { BackButton } from "@/components/BackButton";
 import { Footer } from "@/components/Footer";
-import { Shield, Award, BookOpen, Download, Settings, CheckCircle, Clock, XCircle } from "lucide-react";
+import { Shield, Award, BookOpen, Download, Settings, CheckCircle, Clock, XCircle, ArrowRight } from "lucide-react";
 import { format } from "date-fns";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import kairosLogo from "@/assets/kairos-logo.png";
@@ -346,6 +346,25 @@ const Profile = () => {
             </CardContent>
           </Card>
         )}
+
+        {/* Browse More Courses */}
+        <Card className="mb-8 bg-primary/5 border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-primary" />
+              Want to Expand Your Skills?
+            </CardTitle>
+            <CardDescription>Explore more security certification courses</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild size="lg" className="w-full">
+              <Link to="/courses">
+                Browse All Courses
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
 
         {/* Enrollments */}
         <Card className="mb-8">
