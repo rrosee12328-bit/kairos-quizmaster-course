@@ -391,7 +391,7 @@ const Profile = () => {
                   const canAccess = enrollment.enrollment_status === 'enrolled' && !completion;
                   
                   return (
-                    <div key={enrollment.id} className="border rounded-lg p-4 hover:border-primary transition-colors">
+                    <div key={enrollment.id} className={`border rounded-lg p-4 ${canAccess ? 'cursor-pointer hover:border-primary hover:shadow-md' : ''} transition-all`}>
                       <div className="flex items-start justify-between mb-3">
                         <div>
                           <h4 className="font-semibold mb-1">{getCourseTitle(enrollment.course_type)}</h4>
@@ -417,14 +417,18 @@ const Profile = () => {
                         </div>
                       )}
                       
-                      {canAccess && (
-                        <Button asChild className="mt-3 w-full" size="lg">
-                          <Link to={`/course/${enrollment.course_type}`}>
-                            Continue Course
-                            <ArrowRight className="h-4 w-4 ml-2" />
-                          </Link>
-                        </Button>
-                      )}
+                      <Button asChild className="mt-3 w-full" size="lg" variant={canAccess ? "default" : "outline"} disabled={!canAccess}>
+                        <Link to={canAccess ? `/course/${enrollment.course_type}` : '#'}>
+                          {canAccess ? (
+                            <>
+                              Continue Course
+                              <ArrowRight className="h-4 w-4 ml-2" />
+                            </>
+                          ) : (
+                            'Course Completed'
+                          )}
+                        </Link>
+                      </Button>
                     </div>
                   );
                 })}
