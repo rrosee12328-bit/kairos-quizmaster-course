@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import kairosLogo from "@/assets/kairos-logo.png";
+import level3SecurityImage from "@/assets/level3-security-professional.jpg";
 
 const CourseCheckout = () => {
   const { courseType } = useParams();
@@ -209,6 +210,17 @@ const CourseCheckout = () => {
             </CardHeader>
 
             <CardContent className="p-8 space-y-8">
+              {/* Level 3 Hero Image */}
+              {course.isLevel3 && (
+                <div className="rounded-lg overflow-hidden -mt-8 -mx-8 mb-6">
+                  <img 
+                    src={level3SecurityImage} 
+                    alt="Professional Security Officer" 
+                    className="w-full h-64 object-cover"
+                  />
+                </div>
+              )}
+
               {/* Level 3 Important Information */}
               {course.isLevel3 && (
                 <div className="bg-yellow-500/10 border-2 border-yellow-500/30 rounded-lg p-6 space-y-4">
