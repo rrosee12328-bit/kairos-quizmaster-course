@@ -107,6 +107,35 @@ serve(async (req) => {
       }
 
       console.log("[stripe-webhook] Enrollment processed successfully");
+      
+      // Send enrollment confirmation email
+      try {
+        console.log("[stripe-webhook] Sending enrollment confirmation email");
+        const emailResponse = await fetch(
+          `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-enrollment-confirmation`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: customerEmail,
+              firstName: session.customer_details?.name?.split(" ")[0] || "Student",
+              lastName: session.customer_details?.name?.split(" ").slice(1).join(" ") || "",
+              courseType: courseType,
+            }),
+          }
+        );
+        
+        if (!emailResponse.ok) {
+          console.error("[stripe-webhook] Failed to send confirmation email:", await emailResponse.text());
+        } else {
+          console.log("[stripe-webhook] Confirmation email sent successfully");
+        }
+      } catch (emailError) {
+        console.error("[stripe-webhook] Error sending confirmation email:", emailError);
+        // Don't fail the webhook if email fails
+      }
     }
 
     return new Response(JSON.stringify({ received: true }), {
