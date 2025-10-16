@@ -266,6 +266,13 @@ const Courses = () => {
                   </ul>
                 </div>
 
+                {/* Passing Score */}
+                <div className="mb-6 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                  <p className="text-sm font-semibold text-center">
+                    📋 Passing Score Required: 70% or higher
+                  </p>
+                </div>
+
                 {/* CTA Button */}
                 <Button asChild className="w-full" size="lg">
                   <Link to={course.route} className="flex items-center gap-2">
