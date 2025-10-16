@@ -83,7 +83,8 @@ const CourseCheckout = () => {
         "Legal responsibilities of armed officers"
       ],
       priceId: "price_1SIuap2Lv7r2i0JXWjbkKkWm",
-      price: "$125.00"
+      price: "$125.00",
+      isLevel3: true
     },
     level4: {
       title: "Level 4: Personal Protection Officer",
@@ -208,11 +209,118 @@ const CourseCheckout = () => {
             </CardHeader>
 
             <CardContent className="p-8 space-y-8">
+              {/* Level 3 Important Information */}
+              {course.isLevel3 && (
+                <div className="bg-yellow-500/10 border-2 border-yellow-500/30 rounded-lg p-6 space-y-4">
+                  <h3 className="text-xl font-bold text-yellow-700 dark:text-yellow-500">⚠️ IMPORTANT LINKS YOU MUST READ:</h3>
+                  <div className="space-y-2">
+                    <a 
+                      href="https://www.dps.texas.gov/rsd/psb/" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="block text-primary hover:underline font-semibold"
+                    >
+                      → TEXAS PRIVATE SECURITY BOARD
+                    </a>
+                    <a 
+                      href="https://tops.portal.texas.gov/psp-self-service/login/auth" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="block text-primary hover:underline font-semibold"
+                    >
+                      → TEXAS ON-LINE PRIVATE SECURITY (TOPS)
+                    </a>
+                    <a 
+                      href="https://www.dps.texas.gov/rsd/psb/News/PSBWebFingerprintingInstr.htm" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="block text-primary hover:underline font-semibold"
+                    >
+                      → FINGERPRINTING INSTRUCTIONS
+                    </a>
+                    <a 
+                      href="https://www.dps.texas.gov/rsd/contact/psb.aspx" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="block text-primary hover:underline font-semibold"
+                    >
+                      → SUBMIT DOCUMENTS
+                    </a>
+                    <a 
+                      href="https://www.dps.texas.gov/rsd/psb/military.htm" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="block text-primary hover:underline font-semibold"
+                    >
+                      → MILITARY DISCOUNT INFORMATION
+                    </a>
+                    <a 
+                      href="https://www.dps.texas.gov/rsd/psb/News/peace_officer.htm" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="block text-primary hover:underline font-semibold"
+                    >
+                      → PEACE OFFICERS
+                    </a>
+                  </div>
+                  <p className="text-sm font-semibold">PSB CUSTOMER SERVICE – 512-424-7293</p>
+                </div>
+              )}
+
               {/* Course Overview */}
               <div>
                 <h3 className="text-xl font-semibold mb-4">Course Overview</h3>
                 <p className="text-muted-foreground leading-relaxed">{course.description}</p>
               </div>
+
+              {/* Level 3 Detailed Information */}
+              {course.isLevel3 && (
+                <div className="space-y-6 border-t pt-6">
+                  <div className="prose prose-sm max-w-none dark:prose-invert">
+                    <h3 className="text-lg font-bold mb-3">Eligibility Notice</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Please be advised under the Private Security Act (Occ. Code Chapter 1702) and Administrative Rule 35.4 (37 Tex. Admin. Code 1), 
+                      a criminal conviction may disqualify you from a registration, commission or license under the Act. You may wish to review Rule 35.4's 
+                      list of disqualifying offenses and the related periods of ineligibility, available on the{" "}
+                      <a href="http://www.dps.texas.gov/rsd/psb/index.htm" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        department's website
+                      </a>
+                      . You also have a right to request from the department a criminal history evaluation letter under Occupations Code Section 53.102.
+                    </p>
+
+                    <h3 className="text-lg font-bold mt-6 mb-3">Course Information</h3>
+                    <ul className="text-sm text-muted-foreground space-y-2">
+                      <li>✓ The Level III Training Course is required for all commissioned security officers and personal protection officers</li>
+                      <li>✓ This training course must be taken through a licensed Level III Training School and taught by a licensed Level III Instructor</li>
+                      <li>✓ This online course contains 35 hours of training material if presented in a lecture/demonstration presentation</li>
+                      <li>✓ Students are responsible for reading the online material, reviewing hyperlinks, and watching attached videos</li>
+                      <li>✓ Students must pass lesson quizzes with a 70-75% score</li>
+                      <li>✓ Students must pass the course final exam with a 75% or better</li>
+                    </ul>
+
+                    <h3 className="text-lg font-bold mt-6 mb-3">LEVEL III (PART 2) - In-Person Training Required</h3>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      After completion of the online training, students are required to complete <strong>Level III (Part 2)</strong>, which consists of 
+                      10-15 hours of firearms training/qualification and skills demonstrations.
+                    </p>
+                    <p className="text-sm font-semibold mb-2">Skills demonstrations include:</p>
+                    <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
+                      <li>Handcuffing</li>
+                      <li>OC (Pepper Spray)</li>
+                      <li>Expandable Baton</li>
+                      <li>Defensive Tactics</li>
+                      <li>Firearms</li>
+                    </ol>
+                    <p className="text-sm text-muted-foreground mt-4">
+                      After successful completion of the Theory-based portion, students receive a certificate of completion that can be printed and used as proof 
+                      of training. This certificate can be presented to another PSB training provider to complete the Skills portion of training.
+                    </p>
+                    <p className="text-sm font-semibold text-primary mt-4">
+                      Students will receive a Level III certificate of training (PSB-30) after successful completion of both Theory (Part 1) and Skills (Part 2) training.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Course Details */}
               <div className="flex gap-8 py-6 border-y">
