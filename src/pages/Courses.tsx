@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Clock, Award, Users, BookOpen, ArrowRight, LogOut, ShoppingCart } from "lucide-react";
+import { Shield, Clock, Award, Users, BookOpen, ArrowRight, LogOut, ShoppingCart, CheckCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
@@ -16,6 +16,7 @@ const Courses = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [enrollments, setEnrollments] = useState<any[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,6 +24,7 @@ const Courses = () => {
       setUser(user);
       if (user) {
         checkAdminStatus(user.id);
+        fetchEnrollments(user.id);
       }
     });
 
@@ -30,8 +32,10 @@ const Courses = () => {
       setUser(session?.user ?? null);
       if (session?.user) {
         checkAdminStatus(session.user.id);
+        fetchEnrollments(session.user.id);
       } else {
         setIsAdmin(false);
+        setEnrollments([]);
       }
     });
 
@@ -45,6 +49,17 @@ const Courses = () => {
     }
   };
 
+  const fetchEnrollments = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('enrollments')
+      .select('*')
+      .eq('user_id', userId);
+    
+    if (!error && data) {
+      setEnrollments(data);
+    }
+  };
+
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -55,7 +70,19 @@ const Courses = () => {
     }
   };
 
-  const handlePurchase = async (priceId: string) => {
+  const handlePurchase = async (priceId: string, courseType: string) => {
+    if (!user) {
+      toast.error("Please sign in to purchase courses");
+      navigate('/auth');
+      return;
+    }
+
+    // Check if already enrolled
+    if (enrollments.some(e => e.course_type === courseType && e.enrollment_status === 'enrolled')) {
+      toast.info("You already own this course");
+      return;
+    }
+
     setProcessingPayment(true);
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
@@ -175,22 +202,24 @@ const Courses = () => {
     }
   ];
 
+  const isEnrolled = (courseId: string) => {
+    return enrollments.some(e => e.course_type === courseId && e.enrollment_status === 'enrolled');
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
       {/* Header */}
-      <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b bg-background sticky top-0 z-50 backdrop-blur-sm bg-background/95">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               <img src={kairosLogo} alt="Kairos Security Academy" className="h-8 w-8" />
-              <h1 className="text-xl font-bold">Kairos Security Academy</h1>
+              <h1 className="text-2xl font-bold">Kairos Security Academy</h1>
             </Link>
-            <div className="flex items-center gap-2">
-              <BackButton />
-              <div className="flex items-center gap-4">
-                <Button variant="ghost" asChild>
-                  <Link to="/">Home</Link>
-                </Button>
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" asChild>
+                <Link to="/">Home</Link>
+              </Button>
               {user ? (
                 <>
                   <Button variant="ghost" asChild>
@@ -202,171 +231,128 @@ const Courses = () => {
                     </Button>
                   )}
                   <Button variant="outline" onClick={handleSignOut}>
-                    <LogOut className="h-4 w-4 mr-2" />
                     Sign Out
                   </Button>
                 </>
               ) : (
-                <Button variant="outline" asChild>
+                <Button asChild>
                   <Link to="/auth">Sign In</Link>
                 </Button>
               )}
-            </div>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-12">
-        {/* Page Header */}
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <BookOpen className="h-12 w-12 text-primary" />
-            <h1 className="text-4xl font-bold">Security Officer Certification Courses</h1>
+      {/* Main Content */}
+      <main className="flex-1 container mx-auto px-6 py-12">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold mb-4">Security Training Courses</h2>
+            <p className="text-xl text-muted-foreground">
+              Professional certification programs for security officers
+            </p>
           </div>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Choose the certification level that matches your career goals. Both courses provide industry-recognized 
-            training with comprehensive curriculum and final examinations.
-          </p>
-        </div>
 
-        {/* Hero Image */}
-        <div className="mb-16 rounded-lg overflow-hidden shadow-xl max-w-5xl mx-auto">
-          <img 
-            src={securityTrainingImage} 
-            alt="Security Training Courses" 
-            className="w-full h-auto object-cover"
-          />
-        </div>
+          {/* Hero Image */}
+          <div className="mb-12 rounded-lg overflow-hidden shadow-lg">
+            <img 
+              src={securityTrainingImage} 
+              alt="Security Training Courses" 
+              className="w-full h-[400px] object-cover"
+            />
+          </div>
 
-        {/* Course Cards */}
-        <div className="grid lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-          {courses.map((course) => (
-            <Card key={course.id} className="hover:shadow-xl transition-all duration-300 border-l-4 border-l-primary relative overflow-hidden">
-              <div className={`absolute top-0 right-0 w-32 h-32 ${course.color} opacity-10 transform rotate-45 translate-x-16 -translate-y-16`}></div>
+          {/* Course Grid */}
+          <div className="grid md:grid-cols-2 gap-8">
+            {courses.map((course) => {
+              const enrolled = isEnrolled(course.id);
               
-              <CardHeader className="relative">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-3 rounded-full ${course.color} text-white`}>
-                      <Shield className="h-6 w-6" />
+              return (
+                <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between mb-2">
+                      <Badge className={course.color}>{course.level}</Badge>
+                      {enrolled && (
+                        <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-green-500/20">
+                          ✓ Purchased
+                        </Badge>
+                      )}
                     </div>
+                    <CardTitle className="text-2xl">{course.title}</CardTitle>
+                    <CardDescription className="text-base">{course.subtitle}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <p className="text-muted-foreground">{course.description}</p>
+                    
+                    {/* Course Stats */}
+                    <div className="flex gap-6 text-sm">
+                      <div className="flex items-center gap-2">
+                        <BookOpen className="h-4 w-4 text-muted-foreground" />
+                        <span>{course.sections} sections</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span>{course.duration}</span>
+                      </div>
+                    </div>
+
+                    {/* Learning Objectives */}
                     <div>
-                      <Badge variant="secondary" className="mb-2">
-                        {course.level}
-                      </Badge>
-                      <CardTitle className="text-xl">{course.title}</CardTitle>
-                      <CardDescription className="text-lg font-medium text-primary">
-                        {course.subtitle}
-                      </CardDescription>
+                      <h4 className="font-semibold mb-3">What you'll learn:</h4>
+                      <ul className="space-y-2">
+                        {course.features.map((feature, idx) => (
+                          <li key={idx} className="flex items-start gap-2 text-sm">
+                            <CheckCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                  </div>
-                </div>
-                <p className="text-muted-foreground leading-relaxed">
-                  {course.description}
-                </p>
-                {course.id === "level3" && (
-                  <div className="mt-4 text-sm font-semibold text-primary bg-primary/10 p-3 rounded-lg border border-primary/20">
-                    ⚠️ Part 2 in-person training required for full armed certification
-                  </div>
-                )}
-              </CardHeader>
 
-              <CardContent className="relative">
-                {/* Course Stats */}
-                <div className="grid grid-cols-3 gap-4 mb-6">
-                  <div className="text-center p-3 bg-muted/50 rounded-lg">
-                    <BookOpen className="h-5 w-5 mx-auto mb-1 text-primary" />
-                    <div className="font-semibold">{course.sections}</div>
-                    <div className="text-xs text-muted-foreground">Sections</div>
-                  </div>
-                  <div className="text-center p-3 bg-muted/50 rounded-lg">
-                    <Clock className="h-5 w-5 mx-auto mb-1 text-primary" />
-                    <div className="font-semibold">{course.duration}</div>
-                    <div className="text-xs text-muted-foreground">Duration</div>
-                  </div>
-                  <div className="text-center p-3 bg-muted/50 rounded-lg">
-                    <Award className="h-5 w-5 mx-auto mb-1 text-primary" />
-                    <div className="font-semibold">Cert</div>
-                    <div className="text-xs text-muted-foreground">Included</div>
-                  </div>
-                </div>
-
-                {/* Features */}
-                <div className="mb-6">
-                  <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    What You'll Learn
-                  </h4>
-                  <ul className="space-y-2">
-                    {course.features.map((feature, index) => (
-                      <li key={index} className="flex items-center gap-2 text-sm">
-                        <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Passing Score */}
-                <div className="mb-6 p-3 bg-primary/10 rounded-lg border border-primary/20">
-                  <p className="text-sm font-semibold text-center">
-                    📋 Passing Score Required: 70% or higher
-                  </p>
-                </div>
-
-                {/* CTA Buttons */}
-                <div className="space-y-3">
-                  {course.priceId ? (
-                    <Button asChild className="w-full" size="lg" variant="default">
-                      <Link to={`${course.route}?enroll=true`} className="flex items-center gap-2">
-                        <ShoppingCart className="h-4 w-4 mr-2" />
-                        Purchase Course - {course.price}
-                      </Link>
-                    </Button>
-                  ) : null}
-
-                  {course.id === "level2" && (
-                    <Button
-                      className="w-full"
-                      size="lg"
-                      variant="secondary"
-                      onClick={() => navigate(`/auth?priceId=${encodeURIComponent("price_1SIuwK2Lv7r2i0JX3XIe7Oi0")}&course=level2`)}
-                      disabled={processingPayment}
-                    >
-                      <ShoppingCart className="h-4 w-4 mr-2" />
-                      Test Purchase - $1.00
-                    </Button>
-                  )}
-
-                  <Button asChild className="w-full" size="lg" variant={course.priceId ? "outline" : "default"}>
-                    <Link to={course.route} className="flex items-center gap-2">
-                      View Course Details
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Additional Info */}
-        <div className="mt-16 text-center">
-          <Card className="max-w-2xl mx-auto">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-center gap-3">
-                <Award className="h-6 w-6 text-primary" />
-                Industry Recognition
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Both certification levels are recognized by industry employers and meet professional standards 
-                for security officers. Complete the course materials and pass the final exam to earn your certificate.
-              </p>
-            </CardContent>
-          </Card>
+                    {/* Price and CTA */}
+                    <div className="pt-4 border-t">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <p className="text-2xl font-bold">{course.price}</p>
+                          <p className="text-xs text-muted-foreground">One-time payment</p>
+                        </div>
+                      </div>
+                      
+                      {enrolled ? (
+                        <div className="space-y-2">
+                          <Button asChild className="w-full" size="lg">
+                            <Link to={course.route}>
+                              Continue Course
+                              <ArrowRight className="ml-2 h-4 w-4" />
+                            </Link>
+                          </Button>
+                          <p className="text-xs text-center text-muted-foreground">
+                            You already own this course
+                          </p>
+                        </div>
+                      ) : user ? (
+                        <Button 
+                          className="w-full" 
+                          size="lg"
+                          onClick={() => handlePurchase(course.priceId || '', course.id)}
+                          disabled={processingPayment}
+                        >
+                          {processingPayment ? "Processing..." : "Purchase Course"}
+                        </Button>
+                      ) : (
+                        <Button asChild className="w-full" size="lg">
+                          <Link to="/auth">
+                            Sign In to Purchase
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
       </main>
 
