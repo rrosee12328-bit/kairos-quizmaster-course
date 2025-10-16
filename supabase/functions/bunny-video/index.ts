@@ -39,11 +39,13 @@ serve(async (req) => {
       );
 
       if (!response.ok) {
-        throw new Error(`Bunny.net API error: ${response.status}`);
+        const errorText = await response.text();
+        console.error(`Bunny.net API error (${response.status}):`, errorText);
+        throw new Error(`Bunny.net API error: ${response.status} - ${errorText}`);
       }
 
       const videoData = await response.json();
-      console.log('Video data retrieved:', videoData.guid);
+      console.log('Video data retrieved:', videoData.guid, 'Status:', videoData.status, 'Public:', videoData.isPublic);
 
       return new Response(JSON.stringify(videoData), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -92,11 +94,23 @@ serve(async (req) => {
       );
 
       if (!response.ok) {
-        throw new Error(`Bunny.net API error: ${response.status}`);
+        const errorText = await response.text();
+        console.error(`Bunny.net API error (${response.status}):`, errorText);
+        throw new Error(`Bunny.net API error: ${response.status} - ${errorText}`);
       }
 
       const videosData = await response.json();
       console.log(`Retrieved ${videosData.items?.length || 0} videos`);
+      
+      // Log video access settings for debugging
+      if (videosData.items?.length > 0) {
+        console.log('First video access check:', {
+          guid: videosData.items[0].guid,
+          status: videosData.items[0].status,
+          isPublic: videosData.items[0].isPublic,
+          hasMP4Fallback: videosData.items[0].hasMP4Fallback
+        });
+      }
 
       return new Response(JSON.stringify(videosData), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

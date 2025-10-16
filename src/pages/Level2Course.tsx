@@ -217,7 +217,8 @@ const Level2Course = () => {
         console.log('[Level2Course] Fetched videos:', videos?.map((v: any) => ({ 
           title: v?.title, 
           guid: v?.guid,
-          status: v?.status 
+          status: v?.status,
+          isPublic: v?.isPublic 
         })));
 
         if (!videos.length) {
