@@ -12,6 +12,7 @@ import level3SecurityImage from "@/assets/level3-security-professional.jpg";
 import level2SecurityImage from "@/assets/level2-security-vehicle.jpg";
 import level4BodyguardImage from "@/assets/level4-bodyguard.jpg";
 import pepperSprayHeroImage from "@/assets/pepper-spray-hero.jpg";
+import pepperSprayCanister from "@/assets/pepper-spray-canister.jpg";
 
 const CourseCheckout = () => {
   const { courseType } = useParams();
@@ -463,13 +464,24 @@ const CourseCheckout = () => {
               {course.isPepperSpray && (
                 <div className="space-y-6">
                   <div className="bg-orange-500/10 border-2 border-orange-500/30 rounded-lg p-6">
-                    <h3 className="text-xl font-bold text-orange-700 dark:text-orange-400 mb-4">Pepper Spray Training Course</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                      The Pepper Spray Training Course trains the student in the theory and practice of the effective use of pepper spray for a security officer in the State of Texas. Today's security professional faces a large variety of threats and challenges in the security profession. To face these threats effectively, he or she must be both well trained and well equipped. Pepper spray is an important and useful tool for the security officer. This additional tool enables greater flexibility in security detail to maintain order, along with a secure and safe environment.
-                    </p>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      This is a 2 hour course that is required by the Texas Department of Public Safety – Private Security Board. Students are not required to be sprayed. We will be using training pepper spray on dummy targets.
-                    </p>
+                    <div className="flex flex-col md:flex-row gap-6 items-start mb-4">
+                      <div className="flex-1">
+                        <h3 className="text-xl font-bold text-orange-700 dark:text-orange-400 mb-4">Pepper Spray Training Course</h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                          The Pepper Spray Training Course trains the student in the theory and practice of the effective use of pepper spray for a security officer in the State of Texas. Today's security professional faces a large variety of threats and challenges in the security profession. To face these threats effectively, he or she must be both well trained and well equipped. Pepper spray is an important and useful tool for the security officer. This additional tool enables greater flexibility in security detail to maintain order, along with a secure and safe environment.
+                        </p>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          This is a 2 hour course that is required by the Texas Department of Public Safety – Private Security Board. Students are not required to be sprayed. We will be using training pepper spray on dummy targets.
+                        </p>
+                      </div>
+                      <div className="w-full md:w-48 flex-shrink-0">
+                        <img 
+                          src={pepperSprayCanister}
+                          alt="Pepper spray canister for security training"
+                          className="w-full h-auto rounded-lg shadow-lg"
+                        />
+                      </div>
+                    </div>
                     
                     <div className="space-y-4">
                       <div>
