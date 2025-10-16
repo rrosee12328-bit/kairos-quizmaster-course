@@ -409,7 +409,7 @@ const Course = () => {
               </div>
               <div className="p-3 bg-primary/10 rounded-lg border border-primary/20">
                 <p className="text-sm font-semibold text-center">
-                  📋 Passing Score Required: 80% or higher
+                  📋 Passing Score Required: 70% or higher
                 </p>
               </div>
             </CardContent>

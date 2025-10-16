@@ -26,7 +26,7 @@ interface QuizProps {
   passingPercentage?: number;
 }
 
-const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercentage = 80 }: QuizProps) => {
+const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercentage = 70 }: QuizProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [questions] = useState(
@@ -240,8 +240,7 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
   const percentage = Math.round((score / questions.length) * 100);
 
   if (showResults) {
-    const passingScore = 75;
-    const passed = percentage >= passingScore;
+    const passed = percentage >= passingPercentage;
     
     // Save completion when results are shown (only once)
     const hasCompleted = sessionStorage.getItem(`quiz-completed-${courseType}`);
@@ -276,8 +275,8 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
             </div>
             <div className={`text-lg font-semibold ${passed ? 'text-green-600' : 'text-orange-600'}`}>
               {passed 
-                ? `Congratulations! You passed the ${courseType === 'level2' ? 'Level 2' : 'Level 3'} Security Officer Certification Exam!` 
-                : `You need ${passingScore}% to pass. Keep studying and try again!`}
+                ? `Congratulations! You passed the ${courseType === 'level2' ? 'Level 2' : courseType === 'level3' ? 'Level 3' : courseType === 'pepper-spray' ? 'Pepper Spray' : 'Level 4'} Certification Exam!` 
+                : `You need ${passingPercentage}% to pass. Keep studying and try again!`}
             </div>
             {passed && courseType === 'level2' && (
               <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border-2 border-green-500">
@@ -320,7 +319,7 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
             {!passed && (
               <div className="p-4 bg-orange-50 dark:bg-orange-950/20 rounded-lg">
                 <p className="text-sm text-orange-800 dark:text-orange-200">
-                  Review the course materials and retake the exam when you're ready. You'll need a score of 75% or higher to pass.
+                  Review the course materials and retake the exam when you're ready. You'll need a score of {passingPercentage}% or higher to pass.
                 </p>
               </div>
             )}
