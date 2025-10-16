@@ -29,9 +29,11 @@ type EnrollmentFormData = z.infer<typeof enrollmentSchema>;
 
 interface EnrollmentFormProps {
   onSuccess?: () => void;
+  priceId?: string;
+  defaultCourseType?: string;
 }
 
-const EnrollmentForm = ({ onSuccess }: EnrollmentFormProps) => {
+const EnrollmentForm = ({ onSuccess, priceId, defaultCourseType }: EnrollmentFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<EnrollmentFormData>({
@@ -43,7 +45,7 @@ const EnrollmentForm = ({ onSuccess }: EnrollmentFormProps) => {
       phoneNumber: "",
       identificationType: undefined,
       lastSixDigits: "",
-      courseType: "",
+      courseType: defaultCourseType || "",
       password: "",
     },
   });
@@ -71,21 +73,57 @@ const EnrollmentForm = ({ onSuccess }: EnrollmentFormProps) => {
       }
 
       if (authData.user) {
-        // Save pending enrollment to complete after email confirmation/sign-in
-        const pending = {
-          email: data.email,
-          first_name: data.firstName,
-          last_name: data.lastName,
-          phone_number: data.phoneNumber,
-          identification_type: data.identificationType,
-          last_six_digits: data.lastSixDigits,
-          course_type: data.courseType,
-          enrollment_status: 'enrolled',
-        };
+        // Save enrollment data
+        const { error: enrollmentError } = await supabase
+          .from('enrollments')
+          .insert({
+            user_id: authData.user.id,
+            email: data.email,
+            first_name: data.firstName,
+            last_name: data.lastName,
+            phone_number: data.phoneNumber,
+            identification_type: data.identificationType,
+            last_six_digits: data.lastSixDigits,
+            course_type: data.courseType,
+            enrollment_status: 'pending',
+          });
 
-        localStorage.setItem('pendingEnrollment', JSON.stringify(pending));
-        toast.success("Account created! Check your email to confirm, then sign in to finalize your enrollment automatically.");
-        // No navigation here; finalize after sign-in
+        if (enrollmentError) {
+          console.error('Enrollment error:', enrollmentError);
+          toast.error("Failed to save enrollment. Please try again.");
+          return;
+        }
+
+        // If there's a priceId, redirect to Stripe checkout
+        if (priceId) {
+          toast.success("Enrollment saved! Redirecting to payment...");
+          
+          // Get auth session for the checkout
+          const { data: { session } } = await supabase.auth.getSession();
+          
+          if (session) {
+            const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
+              body: { priceId }
+            });
+
+            if (checkoutError) {
+              console.error('Checkout error:', checkoutError);
+              toast.error("Failed to create checkout session");
+              return;
+            }
+
+            if (checkoutData?.url) {
+              window.open(checkoutData.url, '_blank');
+              toast.success("Payment window opened! Complete your purchase to access the course.");
+            }
+          }
+        } else {
+          toast.success("Enrollment completed successfully!");
+        }
+
+        if (onSuccess) {
+          onSuccess();
+        }
       }
     } catch (error) {
       console.error('Enrollment error:', error);
@@ -216,6 +254,8 @@ const EnrollmentForm = ({ onSuccess }: EnrollmentFormProps) => {
                     <SelectContent>
                       <SelectItem value="level2">Level 2 Security Officer (Unarmed)</SelectItem>
                       <SelectItem value="level3">Level 3 Security Officer (Armed)</SelectItem>
+                      <SelectItem value="level4">Level 4: Personal Protection Officer</SelectItem>
+                      <SelectItem value="pepper-spray">Pepper Spray Training</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

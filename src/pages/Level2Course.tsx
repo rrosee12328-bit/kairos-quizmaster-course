@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shield, ChevronLeft, ChevronRight, FileText, Download } from "lucide-react";
@@ -8,6 +9,7 @@ import ProgressTracker from "@/components/ProgressTracker";
 import Quiz from "@/components/Quiz";
 import CourseHeader from "@/components/CourseHeader";
 import VideoPlayer from "@/components/VideoPlayer";
+import EnrollmentForm from "@/components/EnrollmentForm";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -18,6 +20,9 @@ import {
 } from "@/components/ui/carousel";
 
 const Level2Course = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const showEnrollment = searchParams.get('enroll') === 'true';
   const [completedSections, setCompletedSections] = useState<number[]>([]);
   const [showQuiz, setShowQuiz] = useState(false);
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
@@ -333,17 +338,30 @@ const Level2Course = () => {
         <div className="mb-4">
           <BackButton fallbackPath="/courses" />
         </div>
-        
-        {/* Course Title */}
-        <div className="mb-6 text-center">
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <Shield className="h-6 w-6 text-primary" />
-            <h1 className="text-3xl font-bold">Level 2 Security Officer Certification</h1>
+
+        {showEnrollment ? (
+          /* Enrollment Form */
+          <div className="max-w-2xl mx-auto">
+            <EnrollmentForm 
+              priceId="price_1SIuLD2Lv7r2i0JXXk5P6dwi"
+              defaultCourseType="level2"
+              onSuccess={() => {
+                navigate('/course/level2');
+              }}
+            />
           </div>
-          <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-            Complete all 9 sections and pass the final exam to earn your certification.
-          </p>
-        </div>
+        ) : (
+          <>
+            {/* Course Title */}
+            <div className="mb-6 text-center">
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <Shield className="h-6 w-6 text-primary" />
+                <h1 className="text-3xl font-bold">Level 2 Security Officer Certification</h1>
+              </div>
+              <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
+                Complete all 9 sections and pass the final exam to earn your certification.
+              </p>
+            </div>
 
         {/* Course Carousel */}
         <div className="mb-6 animate-fade-in">
@@ -506,6 +524,8 @@ const Level2Course = () => {
           <div ref={quizRef}>
             <Quiz courseType="level2" />
           </div>
+        )}
+          </>
         )}
       </div>
 

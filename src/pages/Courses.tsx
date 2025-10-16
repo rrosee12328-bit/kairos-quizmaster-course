@@ -323,21 +323,17 @@ const Courses = () => {
 
                 {/* CTA Buttons */}
                 <div className="space-y-3">
-                  {course.priceId && (
-                    <Button 
-                      onClick={() => handlePurchase(course.priceId!)}
-                      disabled={processingPayment}
-                      className="w-full" 
-                      size="lg"
-                      variant="default"
-                    >
-                      <ShoppingCart className="h-4 w-4 mr-2" />
-                      {processingPayment ? "Processing..." : `Purchase Course - ${course.price}`}
+                  {course.priceId ? (
+                    <Button asChild className="w-full" size="lg" variant="default">
+                      <Link to={`${course.route}?enroll=true`} className="flex items-center gap-2">
+                        <ShoppingCart className="h-4 w-4 mr-2" />
+                        Purchase Course - {course.price}
+                      </Link>
                     </Button>
-                  )}
+                  ) : null}
                   <Button asChild className="w-full" size="lg" variant={course.priceId ? "outline" : "default"}>
                     <Link to={course.route} className="flex items-center gap-2">
-                      {course.priceId ? "View Course Details" : "Start Course"}
+                      View Course Details
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   </Button>
