@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { pepperSprayExamQuestions } from "@/data/pepperSprayExamQuestions";
 
 const LIBRARY_ID = "512130";
-const VIDEO_GUID = "02e75fb5-d4ac-4cff-9ff0-5f2e058d9287";
+const VIDEO_GUID = "9ccd2d12-bbcf-4fd7-a74f-15cf1188e453";
 
 const PepperSprayCourse = () => {
   const [completed, setCompleted] = useState(false);
