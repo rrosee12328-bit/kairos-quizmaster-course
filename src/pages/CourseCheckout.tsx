@@ -236,19 +236,63 @@ const CourseCheckout = () => {
 
               {/* Level 2 Important Information */}
               {course.isLevel2 && (
-                <div className="bg-blue-500/10 border-2 border-blue-500/30 rounded-lg p-6 space-y-4">
-                  <h3 className="text-xl font-bold text-blue-700 dark:text-blue-400">📋 Course Information</h3>
-                  <div className="space-y-3 text-sm">
-                    <p className="font-semibold">What you'll receive:</p>
-                    <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                      <li><strong>PSP-36 Certificate</strong> to submit to TOPS (Texas Online Private Security)</li>
-                    </ul>
-                    
-                    <div className="pt-4 border-t border-blue-500/20">
-                      <p className="font-semibold mb-2">Are you looking for a new career path?</p>
-                      <p className="text-muted-foreground">
-                        This course will teach individuals with little or no previous experience the basic principles of the security industry 
-                        using the State of Texas required materials.
+                <div className="space-y-6">
+                  <div className="bg-blue-500/10 border-2 border-blue-500/30 rounded-lg p-6">
+                    <h3 className="text-xl font-bold text-blue-700 dark:text-blue-400 mb-4">Texas Level 2 Security Certification</h3>
+                    <p className="text-base font-semibold mb-4">
+                      This online course will provide you the basic certification (to be submitted and approved by the State) to be able to work legally as an unarmed security officer in the State of Texas.
+                    </p>
+                    <div className="space-y-2">
+                      <p className="font-semibold">What you'll get:</p>
+                      <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                        <li><strong>PSP-36 Certificate to submit to TOPS</strong></li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="prose prose-sm max-w-none dark:prose-invert space-y-6">
+                    <div>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        On September 1, 2017, House Bill 1508 (85th Leg., Reg. Sess.) became effective. This bill placed requirements on entities offering 
+                        educational training programs that prepare an individual for an initial occupational license.
+                      </p>
+                      <p className="text-sm text-muted-foreground leading-relaxed mt-2">
+                        This includes level III and level IV training schools, as well as guard companies that offer in-house level II training.
+                      </p>
+                    </div>
+
+                    <div className="bg-yellow-500/10 border-2 border-yellow-500/30 rounded-lg p-6">
+                      <h4 className="font-bold text-base mb-3">THESE TRAINING PROVIDERS MUST NOTIFY EACH ENROLLEE OF THE FOLLOWING:</h4>
+                      <ul className="space-y-2 text-sm text-muted-foreground">
+                        <li>• The potential ineligibility of an individual who has been convicted of a criminal offense;</li>
+                        <li>• The department's current eligibility guidelines (the board's administrative rules) issued under Occupations Code, Section 53.025;</li>
+                        <li>• Any other state or local restriction or guideline used by the department to determine the eligibility of an individual who has been convicted of an offense; and</li>
+                        <li>• The right to request a criminal history evaluation under Occupations Code Section 53.102.</li>
+                      </ul>
+                      
+                      <div className="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded">
+                        <p className="text-sm font-bold text-red-700 dark:text-red-400">
+                          PURSUANT TO HB 1508, IF AN INDIVIDUAL IS DENIED AN OCCUPATIONAL LICENSE BASED ON THEIR CRIMINAL HISTORY AND THE 
+                          TRAINING PROVIDER FAILED TO PROVIDE THE INDIVIDUAL THE ABOVE INFORMATION, THE TRAINING PROVIDER WILL BE REQUIRED TO 
+                          REFUND THE AMOUNT OF ANY TUITION PAID AND CORRESPONDING APPLICATION AND EXAMINATION FEES.
+                        </p>
+                      </div>
+
+                      <p className="text-sm text-muted-foreground mt-4 leading-relaxed">
+                        For purposes of compliance with these requirements it is recommended training schools and other licensees that offer 
+                        in house level II training communicate the following text directly to the prospective applicant, whether by email or 
+                        other correspondence, or on the application for admission to a course.
+                      </p>
+                      
+                      <p className="text-sm italic text-muted-foreground mt-3 leading-relaxed">
+                        "Please be advised under the Private Security Act (Occ. Code Chapter 1702) and Administrative Rule 35.4 (37 Tex. Admin. Code 1), 
+                        a criminal conviction may disqualify you from a registration, commission or license under the Act. You may wish to review Rule 35.4's 
+                        list of disqualifying offenses and the related periods of ineligibility, available on the department's website at{" "}
+                        <a href="http://www.dps.texas.gov/rsd/psb/index.htm" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                          http://www.dps.texas.gov/rsd/psb/index.htm
+                        </a>{" "}
+                        (click on the link to Administrative Code). You also have a right to request from the department a criminal history evaluation 
+                        letter under Occupations Code Section 53.102."
                       </p>
                     </div>
                   </div>
@@ -322,64 +366,86 @@ const CourseCheckout = () => {
               {/* Level 2 Detailed Information */}
               {course.isLevel2 && (
                 <div className="space-y-6 border-t pt-6">
-                  <div className="prose prose-sm max-w-none dark:prose-invert">
-                    <h3 className="text-lg font-bold mb-3">Eligibility Notice</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                      Please be advised under the Private Security Act (Occ. Code Chapter 1702) and Administrative Rule 35.4 (37 Tex. Admin. Code 1), 
-                      a criminal conviction may disqualify you from a registration, commission or license under the Act. You may wish to review Rule 35.4's 
-                      list of disqualifying offenses and the related periods of ineligibility, available on the{" "}
-                      <a href="http://www.dps.texas.gov/rsd/psb/index.htm" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                        department's website
-                      </a>
-                      . You also have a right to request from the department a criminal history evaluation letter under Occupations Code Section 53.102.
-                    </p>
+                  <div className="prose prose-sm max-w-none dark:prose-invert space-y-6">
+                    <div>
+                      <h3 className="text-lg font-bold mb-3">ARE YOU LOOKING FOR A NEW CAREER PATH?</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        This course will teach individuals with little or no previous experience the basic principles of the security industry 
+                        using the State of Texas required materials.
+                      </p>
+                      <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                        <li>✓ This course provides the Level II training and certification as required by the State of Texas.</li>
+                        <li>✓ Once complete, you will be provided with the basic certification (to be submitted and approved by the State) 
+                        to be able to work legally as an unarmed security officer in the State of Texas.</li>
+                      </ul>
+                    </div>
 
-                    <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 my-4">
-                      <p className="text-sm font-semibold text-yellow-700 dark:text-yellow-500">
-                        ⚠️ PURSUANT TO HB 1508: If an individual is denied an occupational license based on their criminal history and the training 
-                        provider failed to provide the individual the above information, the training provider will be required to refund the amount 
-                        of any tuition paid and corresponding application and examination fees.
+                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                      <p className="text-sm font-bold mb-3">
+                        THE LEVEL II TRAINING COURSE AND TEST IS REQUIRED OF <span className="text-primary">ALL</span> NON-COMMISSIONED SECURITY 
+                        OFFICERS, COMMISSIONED SECURITY OFFICERS AND PERSONAL PROTECTION OFFICERS.
+                      </p>
+                      <ul className="space-y-2 text-sm text-muted-foreground">
+                        <li>• This training course must be administered by a licensed Level III or Level IV Training School and taught by a 
+                        licensed Level III or Level IV Instructor.</li>
+                        <li>• Additionally, this training may be administered by a licensed guard company and taught by the qualified manager 
+                        or the qualified manager's designee.</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h3 className="text-lg font-bold mb-3">CERTAIN PEACE OFFICERS MAY BE EXEMPT PER{" "}
+                        <a href="http://texreg.sos.state.tx.us/public/readtac$ext.TacPage?sl=R&app=9&p_dir=&p_rloc=&p_tloc=&p_ploc=&pg=1&p_tac=&ti=37&pt=1&ch=35&rl=141" 
+                           target="_blank" 
+                           rel="noopener noreferrer"
+                           className="text-primary hover:underline">
+                          TAC 35.141(B)
+                        </a>
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        Training includes: Laws and Regulations, Field Notes and Report Writing, Crime Scene, Cover and Concealment, Use of Force, 
+                        Conflict Resolution, and Ethics.
                       </p>
                     </div>
 
-                    <h3 className="text-lg font-bold mt-6 mb-3">Course Requirements</h3>
-                    <p className="text-sm font-semibold mb-2">THE LEVEL II TRAINING COURSE AND TEST IS REQUIRED OF ALL:</p>
-                    <ul className="text-sm text-muted-foreground space-y-2">
-                      <li>✓ Non-commissioned security officers</li>
-                      <li>✓ Commissioned security officers</li>
-                      <li>✓ Personal protection officers</li>
-                    </ul>
+                    <div>
+                      <h3 className="text-lg font-bold mb-2">PREREQUISITE</h3>
+                      <p className="text-sm text-muted-foreground">There are no prerequisites for this course.</p>
+                    </div>
 
-                    <h3 className="text-lg font-bold mt-6 mb-3">Training Topics Include:</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Laws and Regulations, Field Notes and Report Writing, Crime Scene, Cover and Concealment, Use of Force, Conflict Resolution, and Ethics.
-                    </p>
-
-                    <h3 className="text-lg font-bold mt-6 mb-3">Course Flexibility</h3>
-                    <ul className="text-sm text-muted-foreground space-y-2">
-                      <li>✓ This course can be taken at your leisure - <strong>no time limit</strong></li>
-                      <li>✓ Contains 8-10 hours of training material</li>
-                      <li>✓ Must pass each lesson exam with <strong>75% or better</strong> to proceed</li>
-                      <li>✓ Exams can be reset and lessons loop until passing grade is achieved</li>
-                    </ul>
-
-                    <h3 className="text-lg font-bold mt-6 mb-3">Prerequisites</h3>
-                    <p className="text-sm text-muted-foreground">
-                      <strong>None!</strong> There are no prerequisites for this course.
-                    </p>
-
-                    <h3 className="text-lg font-bold mt-6 mb-3">Equipment Needed</h3>
-                    <ul className="text-sm text-muted-foreground space-y-2">
-                      <li>✓ Computer with internet access</li>
-                      <li>✓ Broadband Internet connection</li>
-                      <li>✓ Recommended: Google Chrome</li>
-                    </ul>
-
-                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mt-6">
-                      <p className="text-sm font-semibold">
-                        🎓 Upon completion, you will receive the basic certification (PSP-36) to submit and be approved by the State to work 
-                        legally as an unarmed security officer in the State of Texas.
+                    <div>
+                      <h3 className="text-lg font-bold mb-3">REQUIREMENTS</h3>
+                      <p className="text-sm font-semibold mb-2">This course can be taken at your leisure.</p>
+                      <ul className="space-y-2 text-sm text-muted-foreground">
+                        <li>• There is no time limit.</li>
+                        <li>• Some students are already familiar with the laws and concepts and some students are not.</li>
+                        <li>• This Learning Management System is not timed.</li>
+                        <li>• However, there is enough training material found in the following lessons to adequately cover 8-10 hours of in-class training.</li>
+                      </ul>
+                      
+                      <p className="text-sm font-semibold mt-4">
+                        The student must pass each lesson exam with a <strong>75%</strong> or better to move to the next lesson.
                       </p>
+                      <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
+                        <li>• <strong>The exams can be reset and the lesson continue to loop until the student makes a passing grade.</strong></li>
+                        <li>• <strong>Learning is accomplished as the student successfully completes each lesson and exam.</strong></li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h3 className="text-lg font-bold mb-2">EQUIPMENT NEEDED</h3>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        To complete this course you are required to have a computer with internet access.
+                      </p>
+                      <ul className="space-y-1 text-sm text-muted-foreground">
+                        <li>• Broadband Internet connection</li>
+                        <li>• Recommended: Google Chrome</li>
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h3 className="text-lg font-bold mb-2">AUDIENCE</h3>
+                      <p className="text-sm text-muted-foreground">Non-commissioned security officers in the State of Texas</p>
                     </div>
                   </div>
                 </div>
