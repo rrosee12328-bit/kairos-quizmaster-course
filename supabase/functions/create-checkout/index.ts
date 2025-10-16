@@ -31,7 +31,7 @@ serve(async (req) => {
       }
     }
 
-    const { priceId } = await req.json();
+    const { priceId, email } = await req.json();
     if (!priceId) throw new Error("Price ID is required");
 
     console.log("[create-checkout] Starting for:", userEmail || "guest", priceId);
@@ -54,7 +54,7 @@ serve(async (req) => {
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      customer_email: customerId ? undefined : (userEmail || undefined),
+      customer_email: customerId ? undefined : (userEmail || (typeof email === 'string' ? email : undefined) || undefined),
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "payment",
       success_url: `${origin}/courses?payment=success`,

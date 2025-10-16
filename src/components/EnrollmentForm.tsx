@@ -100,40 +100,43 @@ const EnrollmentForm = ({ onSuccess, priceId, defaultCourseType }: EnrollmentFor
         return;
       }
 
-      // Ensure we have an active session (required for RLS policies)
+      // Ensure we have an active session (nice to have but not required for checkout)
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error("Please sign in (or confirm your email) before enrolling.");
-        return;
-      }
+      const hasSession = !!session;
 
       // Save enrollment data (RLS allows any authenticated user to insert)
-      const { error: enrollmentError } = await supabase
-        .from('enrollments')
-        .insert({
-          user_id: currentUser.id,
-          email: data.email,
-          first_name: data.firstName,
-          last_name: data.lastName,
-          phone_number: data.phoneNumber,
-          identification_type: data.identificationType,
-          last_six_digits: data.lastSixDigits,
-          course_type: data.courseType,
-          enrollment_status: 'pending',
-        });
+      if (hasSession) {
+        const { error: enrollmentError } = await supabase
+          .from('enrollments')
+          .insert({
+            user_id: currentUser.id,
+            email: data.email,
+            first_name: data.firstName,
+            last_name: data.lastName,
+            phone_number: data.phoneNumber,
+            identification_type: data.identificationType,
+            last_six_digits: data.lastSixDigits,
+            course_type: data.courseType,
+            enrollment_status: 'pending',
+          });
 
-      if (enrollmentError) {
-        console.error('Enrollment error:', enrollmentError);
-        const msg = (enrollmentError as any)?.message || 'Failed to save enrollment. Please try again.';
-        toast.error(msg);
-        return;
+        if (enrollmentError) {
+          console.error('Enrollment error:', enrollmentError);
+          const msg = (enrollmentError as any)?.message || 'Failed to save enrollment. Please try again.';
+          toast.error(msg);
+          // Don't block checkout; continue
+        } else {
+          toast.success("Enrollment saved!");
+        }
+      } else {
+        console.warn('No session yet; skipping enroll save before payment');
       }
 
       // If there's a priceId, redirect to Stripe checkout
       if (priceId) {
         toast.success("Enrollment saved! Redirecting to payment...");
         const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
-          body: { priceId }
+          body: { priceId, email: data.email }
         });
 
         if (checkoutError) {
