@@ -450,22 +450,17 @@ const CourseCheckout = () => {
               {course.isPepperSpray && (
                 <div className="space-y-6">
                   <div className="bg-orange-500/10 border-2 border-orange-500/30 rounded-lg p-6">
-                    <h3 className="text-xl font-bold text-orange-700 dark:text-orange-400 mb-4">Texas Pepper Spray Training Course</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      This is a 2 hour course that is required by the Texas Department of Public Safety – Private Security Board.
+                    <h3 className="text-xl font-bold text-orange-700 dark:text-orange-400 mb-4">Pepper Spray Training Course</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                      The Pepper Spray Training Course trains the student in the theory and practice of the effective use of pepper spray for a security officer in the State of Texas. Today's security professional faces a large variety of threats and challenges in the security profession. To face these threats effectively, he or she must be both well trained and well equipped. Pepper spray is an important and useful tool for the security officer. This additional tool enables greater flexibility in security detail to maintain order, along with a secure and safe environment.
                     </p>
-                    <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4 mb-4">
-                      <p className="text-sm font-semibold text-green-700 dark:text-green-400">
-                        ✓ Students are NOT required to be sprayed
-                      </p>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        We will be using training pepper spray on dummy targets.
-                      </p>
-                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      This is a 2 hour course that is required by the Texas Department of Public Safety – Private Security Board. Students are not required to be sprayed. We will be using training pepper spray on dummy targets.
+                    </p>
                     
                     <div className="space-y-4">
                       <div>
-                        <p className="font-semibold mb-2">Requirements:</p>
+                        <p className="font-semibold mb-2">Requirements</p>
                         <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                           {course.requirements?.map((req: string, index: number) => (
                             <li key={index}>{req}</li>
@@ -473,8 +468,8 @@ const CourseCheckout = () => {
                         </ul>
                       </div>
 
-                      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-                        <p className="font-semibold mb-2">Come prepared with the following gear:</p>
+                      <div>
+                        <p className="font-semibold mb-2">Come prepared to take this course with the following gear:</p>
                         <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                           {course.gearRequired?.map((gear: string, index: number) => (
                             <li key={index}>{gear}</li>
@@ -482,13 +477,22 @@ const CourseCheckout = () => {
                         </ul>
                       </div>
 
-                      <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
+                      <div>
                         <p className="font-semibold mb-2">The following is not required but recommended:</p>
                         <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                           {course.gearRecommended?.map((gear: string, index: number) => (
                             <li key={index}>{gear}</li>
                           ))}
                         </ul>
+                        <p className="text-sm font-semibold text-muted-foreground mt-2">
+                          Check the weather on the day of the course and dress appropriately.
+                        </p>
+                      </div>
+
+                      <div className="pt-4 border-t border-orange-500/30">
+                        <p className="text-lg font-bold text-center">
+                          Cost per student ${course.price.replace('$', '').replace('.00', '')}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -634,6 +638,25 @@ const CourseCheckout = () => {
                     <p className="text-sm font-semibold text-primary mt-4">
                       Students will receive a Level III certificate of training (PSB-30) after successful completion of both Theory (Part 1) and Skills (Part 2) training.
                     </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Pepper Spray Detailed Information */}
+              {course.isPepperSpray && (
+                <div className="space-y-6 border-t pt-6">
+                  <div className="prose prose-sm max-w-none dark:prose-invert">
+                    <h3 className="text-lg font-bold mb-4">Pepper Spray Training Course period of instruction, you will learn about:</h3>
+                    <ul className="space-y-2 text-sm text-muted-foreground">
+                      <li>• History of chemical weapons</li>
+                      <li>• Introduction to modern chemical weapons</li>
+                      <li>• OC Pepper spray</li>
+                      <li>• Understanding OC Spray</li>
+                      <li>• First Aid and decontamination</li>
+                      <li>• Side effects</li>
+                      <li>• Criminal and civil liability</li>
+                      <li>• Drills</li>
+                    </ul>
                   </div>
                 </div>
               )}
