@@ -62,10 +62,10 @@ const Profile = () => {
     }
 
     setUser(user);
-    await fetchUserData(user.id);
+    await fetchUserData(user.id, user.email || '');
   };
 
-  const fetchUserData = async (userId: string) => {
+  const fetchUserData = async (userId: string, userEmail: string) => {
     try {
       // Fetch profile
       const { data: profileData } = await supabase
@@ -76,12 +76,23 @@ const Profile = () => {
       
       setProfile(profileData);
 
-      // Fetch enrollments
+      // Fetch enrollments by user_id OR email
       const { data: enrollmentData } = await supabase
         .from('enrollments')
         .select('*')
-        .eq('user_id', userId)
+        .or(`user_id.eq.${userId},email.eq.${userEmail}`)
         .order('created_at', { ascending: false });
+      
+      // Update any enrollments that don't have user_id set but match email
+      if (enrollmentData) {
+        const enrollmentsToUpdate = enrollmentData.filter(e => !e.user_id && e.email === userEmail);
+        if (enrollmentsToUpdate.length > 0) {
+          await supabase
+            .from('enrollments')
+            .update({ user_id: userId })
+            .in('id', enrollmentsToUpdate.map(e => e.id));
+        }
+      }
       
       setEnrollments(enrollmentData || []);
 
