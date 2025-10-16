@@ -241,8 +241,9 @@ const CourseCheckout = () => {
                 <div className="rounded-lg overflow-hidden -mt-8 -mx-8 mb-6">
                   <img 
                     src={level4BodyguardImage} 
-                    alt="Professional Bodyguard" 
-                    className="w-full h-64 object-cover"
+                    alt="Professional bodyguard on duty with visible earpiece" 
+                    loading="lazy"
+                    className="w-full h-64 object-cover object-left"
                   />
                 </div>
               )}
