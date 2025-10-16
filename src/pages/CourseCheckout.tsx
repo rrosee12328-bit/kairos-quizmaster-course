@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import kairosLogo from "@/assets/kairos-logo.png";
 import level3SecurityImage from "@/assets/level3-security-professional.jpg";
 import level2SecurityImage from "@/assets/level2-security-vehicle.jpg";
+import level4BodyguardImage from "@/assets/level4-bodyguard.jpg";
 
 const CourseCheckout = () => {
   const { courseType } = useParams();
@@ -230,6 +231,17 @@ const CourseCheckout = () => {
                   <img 
                     src={level3SecurityImage} 
                     alt="Professional Security Officer" 
+                    className="w-full h-64 object-cover"
+                  />
+                </div>
+              )}
+
+              {/* Level 4 Hero Image */}
+              {courseType === 'level4' && (
+                <div className="rounded-lg overflow-hidden -mt-8 -mx-8 mb-6">
+                  <img 
+                    src={level4BodyguardImage} 
+                    alt="Professional Bodyguard" 
                     className="w-full h-64 object-cover"
                   />
                 </div>
