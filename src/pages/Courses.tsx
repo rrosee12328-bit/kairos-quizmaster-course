@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Clock, Award, Users, BookOpen, ArrowRight, LogOut } from "lucide-react";
+import { Shield, Clock, Award, Users, BookOpen, ArrowRight, LogOut, ShoppingCart } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
@@ -15,6 +15,7 @@ import securityTrainingImage from "@/assets/security-training-courses.jpg";
 const Courses = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [processingPayment, setProcessingPayment] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -54,7 +55,46 @@ const Courses = () => {
     }
   };
 
-  const courses = [
+  const handlePurchase = async (priceId: string) => {
+    if (!user) {
+      toast.error("Please sign in to purchase");
+      navigate("/auth");
+      return;
+    }
+
+    setProcessingPayment(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { priceId }
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast.error("Failed to create checkout session");
+    } finally {
+      setProcessingPayment(false);
+    }
+  };
+
+  const courses: Array<{
+    id: string;
+    title: string;
+    subtitle: string;
+    description: string;
+    duration: string;
+    sections: number;
+    level: string;
+    color: string;
+    features: string[];
+    route: string;
+    priceId?: string;
+    price?: string;
+  }> = [
     {
       id: "level2",
       title: "Level 2 Security Officer Certification",
@@ -72,7 +112,9 @@ const Courses = () => {
         "Emergency response (non-armed)",
         "Legal framework for unarmed officers"
       ],
-      route: "/course/level2"
+      route: "/course/level2",
+      priceId: "price_1SIuLD2Lv7r2i0JXXk5P6dwi",
+      price: "$65.00"
     },
     {
       id: "level3", 
@@ -273,13 +315,27 @@ const Courses = () => {
                   </p>
                 </div>
 
-                {/* CTA Button */}
-                <Button asChild className="w-full" size="lg">
-                  <Link to={course.route} className="flex items-center gap-2">
-                    Start Course
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
+                {/* CTA Buttons */}
+                <div className="space-y-3">
+                  {course.priceId && (
+                    <Button 
+                      onClick={() => handlePurchase(course.priceId!)}
+                      disabled={processingPayment}
+                      className="w-full" 
+                      size="lg"
+                      variant="default"
+                    >
+                      <ShoppingCart className="h-4 w-4 mr-2" />
+                      {processingPayment ? "Processing..." : `Purchase Course - ${course.price}`}
+                    </Button>
+                  )}
+                  <Button asChild className="w-full" size="lg" variant={course.priceId ? "outline" : "default"}>
+                    <Link to={course.route} className="flex items-center gap-2">
+                      {course.priceId ? "View Course Details" : "Start Course"}
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
