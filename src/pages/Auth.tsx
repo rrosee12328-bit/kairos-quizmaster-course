@@ -15,8 +15,9 @@ const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const priceIdFromUrl = params.get('priceId') || undefined;
+  const redirectPath = params.get('redirect') || '/profile';
   const courseFromUrl = params.get('course') || undefined;
+  const paymentSuccess = params.get('payment') === 'success';
 
   const processPendingEnrollment = async (sessionUser: User) => {
     try {
@@ -51,7 +52,7 @@ const Auth = () => {
       setUser(session?.user ?? null);
       if (session?.user) {
         await processPendingEnrollment(session.user);
-        navigate('/profile');
+        navigate(redirectPath);
       }
     };
 
@@ -64,7 +65,7 @@ const Auth = () => {
         if (event === 'SIGNED_IN' && session?.user) {
           setTimeout(async () => {
             await processPendingEnrollment(session.user!);
-            navigate('/profile');
+            navigate(redirectPath);
           }, 0);
         }
       }
@@ -74,7 +75,7 @@ const Auth = () => {
   }, [navigate]);
 
   const handleAuthSuccess = () => {
-    navigate('/profile');
+    navigate(redirectPath);
   };
 
   return (
@@ -87,8 +88,16 @@ const Auth = () => {
               <img src={kairosLogo} alt="Kairos Security Academy" className="h-8 w-8" />
               <h1 className="text-2xl font-bold">Kairos Security Academy</h1>
             </Link>
+            {paymentSuccess && (
+              <div className="mb-4 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                <p className="text-green-600 font-semibold">✓ Payment Successful!</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Create an account or sign in to access your course
+                </p>
+              </div>
+            )}
             <p className="text-muted-foreground">
-              Enroll in a course or sign in to continue your training
+              {paymentSuccess ? 'Complete your enrollment to access the course' : 'Enroll in a course or sign in to continue your training'}
             </p>
           </div>
 
@@ -99,7 +108,7 @@ const Auth = () => {
             </TabsList>
             
             <TabsContent value="enroll" className="mt-6">
-              <EnrollmentForm onSuccess={handleAuthSuccess} priceId={priceIdFromUrl} defaultCourseType={courseFromUrl} />
+              <EnrollmentForm onSuccess={handleAuthSuccess} defaultCourseType={courseFromUrl} />
             </TabsContent>
             
             <TabsContent value="signin" className="mt-6">

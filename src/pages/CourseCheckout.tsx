@@ -21,11 +21,18 @@ const CourseCheckout = () => {
       setUser(user);
       if (user) {
         fetchEnrollments(user.id);
-      } else {
-        navigate('/auth');
       }
     });
-  }, [navigate]);
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchEnrollments(session.user.id);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const fetchEnrollments = async (userId: string) => {
     const { data, error } = await supabase
@@ -138,13 +145,7 @@ const CourseCheckout = () => {
   );
 
   const handlePurchase = async () => {
-    if (!user) {
-      toast.error("Please sign in to purchase");
-      navigate('/auth');
-      return;
-    }
-
-    if (isEnrolled) {
+    if (isEnrolled && user) {
       toast.info("You already own this course");
       navigate(`/course/${courseType}`);
       return;
@@ -265,7 +266,7 @@ const CourseCheckout = () => {
                   <p className="text-sm text-muted-foreground">One-time payment • Lifetime access</p>
                 </div>
 
-                {isEnrolled ? (
+                {isEnrolled && user ? (
                   <div className="space-y-3">
                     <Button asChild className="w-full" size="lg">
                       <Link to={`/course/${courseType}`}>
@@ -277,19 +278,26 @@ const CourseCheckout = () => {
                     </p>
                   </div>
                 ) : (
-                  <Button 
-                    onClick={handlePurchase}
-                    disabled={processingPayment}
-                    className="w-full"
-                    size="lg"
-                  >
-                    {processingPayment ? "Processing..." : "Complete Purchase"}
-                  </Button>
+                  <>
+                    <Button 
+                      onClick={handlePurchase}
+                      disabled={processingPayment}
+                      className="w-full"
+                      size="lg"
+                    >
+                      {processingPayment ? "Processing..." : "Complete Purchase"}
+                    </Button>
+                    {user && (
+                      <p className="text-center text-xs text-muted-foreground">
+                        Logged in as {user.email}
+                      </p>
+                    )}
+                  </>
                 )}
 
                 <div className="pt-4 border-t border-border/50 space-y-2 text-sm text-center text-muted-foreground">
                   <p>✓ Secure payment via Stripe</p>
-                  <p>✓ Instant access after purchase</p>
+                  <p>✓ Create account after purchase</p>
                   <p>✓ Certificate upon completion</p>
                 </div>
               </div>

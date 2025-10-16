@@ -21,13 +21,17 @@ serve(async (req) => {
     // Auth is optional for guest checkout
     const authHeader = req.headers.get("Authorization");
     let userEmail: string | null = null;
+    let userId: string | null = null;
+    
     if (authHeader) {
       try {
         const token = authHeader.replace("Bearer ", "");
         const { data } = await supabaseClient.auth.getUser(token);
         userEmail = data.user?.email ?? null;
+        userId = data.user?.id ?? null;
       } catch (_) {
         userEmail = null;
+        userId = null;
       }
     }
 
@@ -57,10 +61,11 @@ serve(async (req) => {
       customer_email: customerId ? undefined : (userEmail || (typeof email === 'string' ? email : undefined) || undefined),
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "payment",
-      success_url: `${origin}/course/${courseType || 'level2'}?payment=success`,
+      success_url: `${origin}/auth?redirect=/course/${courseType || 'level2'}&payment=success&course=${courseType || 'level2'}`,
       cancel_url: `${origin}/checkout/${courseType || 'level2'}?payment=canceled`,
       metadata: {
-        courseType: courseType || 'unknown'
+        courseType: courseType || 'unknown',
+        userId: userId || 'guest'
       }
     });
 
