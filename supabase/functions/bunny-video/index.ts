@@ -6,6 +6,27 @@ const corsHeaders = {
 };
 
 const BUNNY_API_KEY = Deno.env.get('BUNNY_API_KEY');
+const BUNNY_VIDEO_LIBRARY_KEY = Deno.env.get('BUNNY_VIDEO_LIBRARY_KEY');
+
+async function generateSignedUrl(libraryId: string, videoId: string, expiresInHours: number = 24): Promise<string> {
+  if (!BUNNY_VIDEO_LIBRARY_KEY) {
+    throw new Error('BUNNY_VIDEO_LIBRARY_KEY not configured');
+  }
+
+  const expiryTimestamp = Math.floor(Date.now() / 1000) + (expiresInHours * 3600);
+  
+  // Create the signature string: libraryId + videoId + expiryTimestamp + securityKey
+  const signatureString = `${libraryId}${videoId}${expiryTimestamp}${BUNNY_VIDEO_LIBRARY_KEY}`;
+  
+  // Generate SHA256 hash
+  const encoder = new TextEncoder();
+  const data = encoder.encode(signatureString);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const token = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  
+  return `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?token=${token}&expires=${expiryTimestamp}`;
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -18,7 +39,7 @@ serve(async (req) => {
       throw new Error('BUNNY_API_KEY not configured');
     }
 
-    const { action, videoId, title, collectionId, libraryId } = await req.json();
+    const { action, videoId, title, collectionId, libraryId, expiresInHours } = await req.json();
     
     if (!libraryId) {
       throw new Error('libraryId is required');
@@ -113,6 +134,16 @@ serve(async (req) => {
       }
 
       return new Response(JSON.stringify(videosData), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Generate signed URL for a video
+    if (action === 'getSignedUrl' && videoId) {
+      const signedUrl = await generateSignedUrl(libraryId, videoId, expiresInHours || 24);
+      console.log(`Generated signed URL for video ${videoId}, expires in ${expiresInHours || 24} hours`);
+
+      return new Response(JSON.stringify({ signedUrl }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }

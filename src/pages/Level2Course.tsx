@@ -226,52 +226,71 @@ const Level2Course = () => {
           return;
         }
 
-        // Build updated sections with matched videos
-        setCourseSections((prev) => {
-          const updated = prev.map((section) => {
-            const sNorm = normalize(section.title);
+        // Build updated sections with matched videos and generate signed URLs
+        const updatedSectionsPromises = courseSections.map(async (section) => {
+          const sNorm = normalize(section.title);
 
-            // Try matching by leading number first (e.g., "1 - Welcome" matches section 1)
-            const byNumber = videos.find((video: any) => {
-              const num = leadingNumber(video?.title || '');
-              return num === section.id;
-            });
-
-            // Try matching by title keywords
-            const byTitle = videos.find((video: any) => {
-              const title = video?.title || '';
-              const vNorm = normalize(title);
-              // Check if section title is in video title or vice versa
-              return vNorm.includes(sNorm) || sNorm.includes(vNorm);
-            });
-
-            const matchingVideo = byNumber || byTitle;
-
-            if (matchingVideo?.guid) {
-              console.log(`[Level2Course] Matched section ${section.id} "${section.title}" to video "${matchingVideo.title}"`);
-              return {
-                ...section,
-                videoUrl: `https://iframe.mediadelivery.net/embed/510506/${matchingVideo.guid}`,
-              };
-            } else {
-              console.warn(`[Level2Course] No match for section ${section.id} "${section.title}"`);
-              return section;
-            }
+          // Try matching by leading number first
+          const byNumber = videos.find((video: any) => {
+            const num = leadingNumber(video?.title || '');
+            return num === section.id;
           });
 
-          const missing = updated.filter((s) => !s.videoUrl);
-          if (missing.length) {
-            console.error('[Level2Course] Missing videos for:', missing.map(m => `${m.id}: ${m.title}`));
-            toast.error(
-              `Could not load ${missing.length} video(s). Check console for details.`,
-              { duration: 5000 }
-            );
-          } else {
-            console.log('[Level2Course] All videos matched successfully!');
-          }
+          // Try matching by title keywords
+          const byTitle = videos.find((video: any) => {
+            const title = video?.title || '';
+            const vNorm = normalize(title);
+            return vNorm.includes(sNorm) || sNorm.includes(vNorm);
+          });
 
-          return updated;
+          const matchingVideo = byNumber || byTitle;
+
+          if (matchingVideo?.guid) {
+            console.log(`[Level2Course] Matched section ${section.id} "${section.title}" to video "${matchingVideo.title}"`);
+            
+            // Generate signed URL for private video
+            try {
+              const { data: signedData, error: signedError } = await supabase.functions.invoke('bunny-video', {
+                body: {
+                  action: 'getSignedUrl',
+                  libraryId: '510506',
+                  videoId: matchingVideo.guid,
+                  expiresInHours: 24
+                }
+              });
+
+              if (signedError) {
+                console.error(`[Level2Course] Failed to generate signed URL for ${matchingVideo.guid}:`, signedError);
+                return section;
+              }
+
+              return {
+                ...section,
+                videoUrl: signedData.signedUrl,
+              };
+            } catch (err) {
+              console.error(`[Level2Course] Error generating signed URL:`, err);
+              return section;
+            }
+          } else {
+            console.warn(`[Level2Course] No match for section ${section.id} "${section.title}"`);
+            return section;
+          }
         });
+
+        const updated = await Promise.all(updatedSectionsPromises);
+        setCourseSections(updated);
+
+        const missing = updated.filter((s) => !s.videoUrl);
+        if (missing.length) {
+          console.error('[Level2Course] Missing videos for:', missing.map(m => `${m.id}: ${m.title}`));
+          toast.error(
+            `Could not load ${missing.length} video(s). Check console for details.`,
+            { duration: 5000 }
+          );
+        } else {
+          console.log('[Level2Course] All videos matched and signed successfully!');
+        }
 
         setVideosLoaded(true);
       } catch (err) {
