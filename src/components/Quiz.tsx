@@ -146,6 +146,21 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
 
         if (!certError && certData) {
           registrationNumber = certData.registration_number;
+          
+          // Send certificate email
+          try {
+            await supabase.functions.invoke('send-certificate', {
+              body: {
+                name: fullName,
+                email: user.email,
+                date: new Date().toISOString().split('T')[0],
+                registrationNumber: certData.registration_number,
+              }
+            });
+            console.log('Certificate email sent successfully');
+          } catch (emailError) {
+            console.error('Error sending certificate email:', emailError);
+          }
         }
       } else {
         // For Level 3: Generate approval code instead of certificate
