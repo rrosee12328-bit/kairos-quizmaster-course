@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
   apiVersion: "2025-08-27.basil",
@@ -10,6 +11,15 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Input validation schema for enrollment data
+const enrollmentDataSchema = z.object({
+  email: z.string().email().max(255),
+  firstName: z.string().trim().min(1).max(100),
+  lastName: z.string().trim().min(1).max(100),
+  phone: z.string().regex(/^\d{10,15}$/).optional().or(z.literal("")),
+  courseType: z.enum(['level2', 'level3', 'level4', 'pepper-spray']),
+});
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -60,6 +70,25 @@ serve(async (req) => {
         });
       }
 
+      // Validate enrollment data before processing
+      const validatedData = enrollmentDataSchema.safeParse({
+        email: customerEmail,
+        firstName: session.customer_details?.name?.split(" ")[0] || "User",
+        lastName: session.customer_details?.name?.split(" ").slice(1).join(" ") || "Account",
+        phone: session.customer_details?.phone || "",
+        courseType: courseType,
+      });
+
+      if (!validatedData.success) {
+        console.error("[stripe-webhook] Validation failed:", validatedData.error);
+        return new Response(JSON.stringify({ error: "Invalid enrollment data", details: validatedData.error.issues }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        });
+      }
+
+      const enrollmentData = validatedData.data;
+
       // Check if enrollment already exists
       const { data: existingEnrollment } = await supabaseClient
         .from("enrollments")
@@ -77,8 +106,8 @@ serve(async (req) => {
             enrollment_status: "enrolled",
             user_id: userId || existingEnrollment.user_id 
           })
-          .eq("email", customerEmail)
-          .eq("course_type", courseType);
+          .eq("email", enrollmentData.email)
+          .eq("course_type", enrollmentData.courseType);
 
         if (updateError) {
           console.error("[stripe-webhook] Error updating enrollment:", updateError);
@@ -90,13 +119,13 @@ serve(async (req) => {
           .from("enrollments")
           .insert({
             user_id: userId,
-            email: customerEmail,
-            first_name: session.customer_details?.name?.split(" ")[0] || "User",
-            last_name: session.customer_details?.name?.split(" ").slice(1).join(" ") || "Account",
-            phone_number: session.customer_details?.phone || "0000000000",
+            email: enrollmentData.email,
+            first_name: enrollmentData.firstName,
+            last_name: enrollmentData.lastName,
+            phone_number: enrollmentData.phone || "0000000000",
             identification_type: "ssn",
             last_six_digits: "000000",
-            course_type: courseType,
+            course_type: enrollmentData.courseType,
             enrollment_status: "enrolled",
           });
 
@@ -119,10 +148,10 @@ serve(async (req) => {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              email: customerEmail,
-              firstName: session.customer_details?.name?.split(" ")[0] || "Student",
-              lastName: session.customer_details?.name?.split(" ").slice(1).join(" ") || "",
-              courseType: courseType,
+              email: enrollmentData.email,
+              firstName: enrollmentData.firstName,
+              lastName: enrollmentData.lastName,
+              courseType: enrollmentData.courseType,
             }),
           }
         );

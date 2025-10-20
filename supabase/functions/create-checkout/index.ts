@@ -1,11 +1,19 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Input validation schema for checkout request
+const checkoutRequestSchema = z.object({
+  priceId: z.string().regex(/^price_[a-zA-Z0-9]+$/, "Invalid Stripe price ID format"),
+  email: z.string().email().max(255).optional(),
+  courseType: z.enum(['level2', 'level3', 'level4', 'pepper-spray']),
+});
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -35,9 +43,20 @@ serve(async (req) => {
       }
     }
 
-    const { priceId, email, courseType } = await req.json();
-    if (!priceId) throw new Error("Price ID is required");
+    const requestBody = await req.json();
+    
+    // Validate input parameters
+    const validatedInput = checkoutRequestSchema.safeParse(requestBody);
+    
+    if (!validatedInput.success) {
+      console.error("[create-checkout] Validation failed:", validatedInput.error);
+      return new Response(
+        JSON.stringify({ error: "Invalid input parameters", details: validatedInput.error.issues }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+      );
+    }
 
+    const { priceId, email, courseType } = validatedInput.data;
     console.log("[create-checkout] Starting for:", userEmail || "guest", priceId, courseType);
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
