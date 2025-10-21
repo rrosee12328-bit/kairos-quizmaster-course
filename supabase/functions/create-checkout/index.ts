@@ -80,7 +80,7 @@ serve(async (req) => {
       customer_email: customerId ? undefined : (userEmail || (typeof email === 'string' ? email : undefined) || undefined),
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "payment",
-      success_url: `${origin}/auth?redirect=/course/${courseType || 'level2'}&payment=success&course=${courseType || 'level2'}`,
+      success_url: `${origin}/courses?payment=success&course=${courseType || 'level2'}`,
       cancel_url: `${origin}/checkout/${courseType || 'level2'}?payment=canceled`,
       metadata: {
         courseType: courseType || 'unknown',

@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Shield, Clock, Award, Users, BookOpen, ArrowRight, LogOut, ShoppingCart, CheckCircle } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
@@ -18,6 +18,47 @@ const Courses = () => {
   const [processingPayment, setProcessingPayment] = useState(false);
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+      if (user) {
+        checkAdminStatus(user.id);
+        fetchEnrollments(user.id);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        checkAdminStatus(session.user.id);
+        fetchEnrollments(session.user.id);
+      } else {
+        setIsAdmin(false);
+        setEnrollments([]);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Check for payment success and refresh enrollments
+  useEffect(() => {
+    const paymentStatus = searchParams.get('payment');
+    const course = searchParams.get('course');
+    
+    if (paymentStatus === 'success' && course) {
+      toast.success(`Payment successful! You now have access to ${course}`);
+      
+      // Refresh enrollments after a short delay to allow webhook to process
+      setTimeout(() => {
+        if (user) {
+          fetchEnrollments(user.id);
+        }
+      }, 2000);
+    }
+  }, [searchParams, user]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -50,13 +91,48 @@ const Courses = () => {
   };
 
   const fetchEnrollments = async (userId: string) => {
+    // Get user email first
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user?.email) return;
+
+    // Fetch enrollments by user_id OR email
     const { data, error } = await supabase
       .from('enrollments')
       .select('*')
-      .eq('user_id', userId);
+      .or(`user_id.eq.${userId},email.eq.${user.email}`);
     
-    if (!error && data) {
-      setEnrollments(data);
+    if (error) {
+      console.error('Error fetching enrollments:', error);
+      return;
+    }
+
+    if (data) {
+      // Update any enrollments that have this email but no user_id
+      const enrollmentsToUpdate = data.filter(e => !e.user_id && e.email === user.email);
+      
+      if (enrollmentsToUpdate.length > 0) {
+        console.log('Syncing enrollments with user account:', enrollmentsToUpdate.length);
+        
+        for (const enrollment of enrollmentsToUpdate) {
+          await supabase
+            .from('enrollments')
+            .update({ user_id: userId })
+            .eq('id', enrollment.id);
+        }
+        
+        // Refresh enrollments after update
+        const { data: updatedData } = await supabase
+          .from('enrollments')
+          .select('*')
+          .or(`user_id.eq.${userId},email.eq.${user.email}`);
+        
+        if (updatedData) {
+          setEnrollments(updatedData);
+        }
+      } else {
+        setEnrollments(data);
+      }
     }
   };
 
@@ -86,7 +162,10 @@ const Courses = () => {
     setProcessingPayment(true);
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { priceId }
+        body: { 
+          priceId,
+          courseType 
+        }
       });
 
       if (error) throw error;
@@ -254,6 +333,16 @@ const Courses = () => {
             <p className="text-xl text-muted-foreground">
               Professional certification programs for security officers
             </p>
+            {user && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => fetchEnrollments(user.id)}
+                className="mt-4"
+              >
+                Refresh My Courses
+              </Button>
+            )}
           </div>
 
           {/* Course Cards */}
