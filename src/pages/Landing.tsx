@@ -45,9 +45,6 @@ const Landing = () => {
               <h1 className="text-sm sm:text-xl font-bold truncate">Kairos Security Academy</h1>
             </div>
             <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-              <Button variant="ghost" asChild className="hidden sm:flex">
-                <Link to="/courses">Courses</Link>
-              </Button>
               {user ? (
                 <>
                   <Button variant="ghost" asChild size="sm" className="hidden sm:flex">
@@ -65,6 +62,9 @@ const Landing = () => {
                 <>
                   <Button variant="ghost" asChild size="sm" className="hidden md:flex">
                     <Link to="/admin">Admin</Link>
+                  </Button>
+                  <Button variant="ghost" asChild size="sm" className="hidden sm:flex">
+                    <Link to="/courses">Courses</Link>
                   </Button>
                   <Button variant="ghost" asChild size="sm">
                     <Link to="/auth">Sign In</Link>
