@@ -39,8 +39,8 @@ const Landing = () => {
       {/* Header */}
       <header className="border-b bg-background sticky top-0 z-50">
         <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-4">
-          <div className="flex items-center justify-between gap-4 sm:gap-2">
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 sm:gap-3 max-w-[60%] sm:max-w-none">
               <img src={kairosLogo} alt="Kairos Security Academy" className="h-6 sm:h-8 w-6 sm:w-8 flex-shrink-0" />
               <h1 className="text-sm sm:text-xl font-bold truncate">Kairos Security Academy</h1>
             </div>
