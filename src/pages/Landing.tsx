@@ -38,39 +38,39 @@ const Landing = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b bg-background sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img src={kairosLogo} alt="Kairos Security Academy" className="h-8 w-8" />
-              <h1 className="text-xl font-bold">Kairos Security Academy</h1>
+        <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <img src={kairosLogo} alt="Kairos Security Academy" className="h-6 sm:h-8 w-6 sm:w-8 flex-shrink-0" />
+              <h1 className="text-sm sm:text-xl font-bold truncate">Kairos Security Academy</h1>
             </div>
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" asChild>
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+              <Button variant="ghost" asChild className="hidden sm:flex">
                 <Link to="/courses">Courses</Link>
               </Button>
               {user ? (
                 <>
-                  <Button variant="ghost" asChild>
+                  <Button variant="ghost" asChild size="sm" className="hidden sm:flex">
                     <Link to="/profile">
-                      <User className="h-4 w-4 mr-2" />
-                      Profile
+                      <User className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Profile</span>
                     </Link>
                   </Button>
-                  <Button variant="outline" onClick={handleSignOut}>
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
+                  <Button variant="outline" onClick={handleSignOut} size="sm">
+                    <LogOut className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Sign Out</span>
                   </Button>
                 </>
               ) : (
                 <>
-                  <Button variant="ghost" asChild>
+                  <Button variant="ghost" asChild size="sm" className="hidden md:flex">
                     <Link to="/admin">Admin</Link>
                   </Button>
-                  <Button variant="ghost" asChild>
+                  <Button variant="ghost" asChild size="sm">
                     <Link to="/auth">Sign In</Link>
                   </Button>
-                  <Button asChild size="lg">
-                    <Link to="/courses">Register Now &gt;&gt;</Link>
+                  <Button asChild size="sm" className="text-xs sm:text-sm px-2 sm:px-4">
+                    <Link to="/courses">Register</Link>
                   </Button>
                 </>
               )}
@@ -81,12 +81,12 @@ const Landing = () => {
 
       <main>
         {/* Hero with Video Section */}
-        <section className="py-16 px-6 bg-background">
+        <section className="py-8 sm:py-12 md:py-16 px-4 sm:px-6 bg-background">
           <div className="container mx-auto max-w-5xl text-center">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 px-2">
               Training Security Officers for Excellence
             </h2>
-            <p className="text-xl text-muted-foreground mb-12 max-w-3xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 md:mb-12 max-w-3xl mx-auto px-2">
               At Kairos Security Academy, we combine expertise, innovation, and a passion for excellence to provide 
               security training that not only protects but also empowers.
             </p>
@@ -103,20 +103,20 @@ const Landing = () => {
               </div>
             </Card>
             
-            <Button size="lg" asChild className="text-lg px-8">
+            <Button size="lg" asChild className="text-sm sm:text-base md:text-lg px-4 sm:px-6 md:px-8">
               <Link to="/courses">Get Started Today &gt;&gt;</Link>
             </Button>
           </div>
         </section>
 
         {/* Level 2 Section */}
-        <section className="py-16 px-6 bg-background">
+        <section className="py-8 sm:py-12 md:py-16 px-4 sm:px-6 bg-background">
           <div className="container mx-auto max-w-4xl">
-            <div className="flex justify-center mb-8">
-              <ChevronDown className="h-6 w-6 text-primary" />
+            <div className="flex justify-center mb-4 sm:mb-6 md:mb-8">
+              <ChevronDown className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
             </div>
-            <h3 className="text-4xl font-bold mb-8 text-center">LEVEL 2</h3>
-            <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
+            <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 md:mb-8 text-center px-2">LEVEL 2</h3>
+            <div className="space-y-4 sm:space-y-6 text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed px-2">
               <p>
                 Begin your journey towards security excellence today by becoming a commissioned security officer. 
                 This certificate empowers you to work as an unarmed security guard at any venue across the state of Texas.
@@ -139,13 +139,13 @@ const Landing = () => {
         </section>
 
         {/* Try Our Courses Section */}
-        <section className="py-16 px-6 bg-muted/30">
+        <section className="py-8 sm:py-12 md:py-16 px-4 sm:px-6 bg-muted/30">
           <div className="container mx-auto max-w-4xl">
-            <div className="flex justify-center mb-8">
-              <ChevronDown className="h-6 w-6 text-primary" />
+            <div className="flex justify-center mb-4 sm:mb-6 md:mb-8">
+              <ChevronDown className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
             </div>
-            <h3 className="text-4xl font-bold mb-8 text-center">START YOUR JOURNEY TODAY</h3>
-            <p className="text-lg text-muted-foreground leading-relaxed mb-12 text-center">
+            <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 md:mb-8 text-center px-2">START YOUR JOURNEY TODAY</h3>
+            <p className="text-sm sm:text-base md:text-lg text-muted-foreground leading-relaxed mb-6 sm:mb-8 md:mb-12 text-center px-2">
               We want our security professionals to flourish. That's why we established Kairos Security Academy - 
               to help you advance your career through comprehensive training that prepares you for real-world challenges. 
               From event security and executive protection to crisis intervention, our training equips you with the skills 
@@ -190,7 +190,7 @@ const Landing = () => {
             </div>
             
             <div className="text-center">
-              <Button size="lg" asChild className="text-lg px-8">
+              <Button size="lg" asChild className="text-sm sm:text-base md:text-lg px-4 sm:px-6 md:px-8">
                 <Link to="/courses">Get Started Today &gt;&gt;</Link>
               </Button>
             </div>
@@ -198,12 +198,12 @@ const Landing = () => {
         </section>
 
         {/* Testimonials Section */}
-        <section className="py-16 px-6 bg-background">
+        <section className="py-8 sm:py-12 md:py-16 px-4 sm:px-6 bg-background">
           <div className="container mx-auto max-w-6xl">
-            <div className="flex justify-center mb-8">
-              <ChevronDown className="h-6 w-6 text-muted-foreground" />
+            <div className="flex justify-center mb-4 sm:mb-6 md:mb-8">
+              <ChevronDown className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
             </div>
-            <h3 className="text-4xl font-bold mb-12 text-center">WHAT OUR STUDENTS SAY</h3>
+            <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6 sm:mb-8 md:mb-12 text-center px-2">WHAT OUR STUDENTS SAY</h3>
             
             <div className="grid md:grid-cols-3 gap-8">
               <Card>
@@ -242,12 +242,12 @@ const Landing = () => {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-16 px-6 bg-background">
+        <section className="py-8 sm:py-12 md:py-16 px-4 sm:px-6 bg-background">
           <div className="container mx-auto max-w-4xl">
-            <div className="flex justify-center mb-8">
-              <ChevronDown className="h-6 w-6 text-muted-foreground" />
+            <div className="flex justify-center mb-4 sm:mb-6 md:mb-8">
+              <ChevronDown className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />
             </div>
-            <h3 className="text-4xl font-bold mb-12 text-center">Frequently Asked Questions (FAQs)</h3>
+            <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6 sm:mb-8 md:mb-12 text-center px-2">Frequently Asked Questions (FAQs)</h3>
             
             <Tabs defaultValue="general" className="w-full">
               <TabsList className="grid w-full grid-cols-3 mb-8">
@@ -342,14 +342,14 @@ const Landing = () => {
         </section>
 
         {/* CTA Section */}
-        <section className="py-20 px-6 bg-primary/5">
+        <section className="py-10 sm:py-16 md:py-20 px-4 sm:px-6 bg-primary/5">
           <div className="container mx-auto max-w-3xl text-center">
-            <h3 className="text-4xl font-bold mb-6">Elevate Your Security Career Today</h3>
-            <p className="text-xl text-muted-foreground mb-8">
+            <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6 px-2">Elevate Your Security Career Today</h3>
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 px-2">
               Join Kairos Security Academy and discover how we can help secure your future with training 
               that empowers you to protect and serve with excellence.
             </p>
-            <Button size="lg" asChild className="text-lg px-8">
+            <Button size="lg" asChild className="text-sm sm:text-base md:text-lg px-4 sm:px-6 md:px-8">
               <Link to="/courses">Explore Our Training Programs &gt;&gt;</Link>
             </Button>
           </div>
