@@ -112,6 +112,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
               
               <p>Your certificate has been issued and is now available for download from your student portal.</p>
               
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="https://cpjamwmwzrgqhfnirikz.supabase.co/functions/v1/download-certificate?registration=${registrationNumber}" class="button" style="color: white;">
+                  📄 Download Your Certificate
+                </a>
+              </div>
+              
+              <p style="font-size: 14px; color: #666;">You can also access your certificate anytime by logging into your account and visiting your profile page.</p>
+              
               <div class="footer">
                 <p><strong>Kairos Security Academy</strong></p>
                 <p>License #: F28623301</p>

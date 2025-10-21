@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.send-enrollment-confirmation]
 verify_jwt = false
+
+[functions.download-certificate]
+verify_jwt = false
