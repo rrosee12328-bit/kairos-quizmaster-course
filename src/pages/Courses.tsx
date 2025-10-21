@@ -17,6 +17,7 @@ const Courses = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [enrollments, setEnrollments] = useState<any[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -90,49 +91,71 @@ const Courses = () => {
     }
   };
 
-  const fetchEnrollments = async (userId: string) => {
-    // Get user email first
-    const { data: { user } } = await supabase.auth.getUser();
+  const fetchEnrollments = async (userId: string, showToast = false) => {
+    if (showToast) setRefreshing(true);
     
-    if (!user?.email) return;
-
-    // Fetch enrollments by user_id OR email
-    const { data, error } = await supabase
-      .from('enrollments')
-      .select('*')
-      .or(`user_id.eq.${userId},email.eq.${user.email}`);
-    
-    if (error) {
-      console.error('Error fetching enrollments:', error);
-      return;
-    }
-
-    if (data) {
-      // Update any enrollments that have this email but no user_id
-      const enrollmentsToUpdate = data.filter(e => !e.user_id && e.email === user.email);
+    try {
+      // Get user email first
+      const { data: { user } } = await supabase.auth.getUser();
       
-      if (enrollmentsToUpdate.length > 0) {
-        console.log('Syncing enrollments with user account:', enrollmentsToUpdate.length);
+      if (!user?.email) {
+        if (showToast) toast.error('No email found on your account');
+        return;
+      }
+
+      console.log('Fetching enrollments for:', user.email);
+
+      // Fetch enrollments by user_id OR email
+      const { data, error } = await supabase
+        .from('enrollments')
+        .select('*')
+        .or(`user_id.eq.${userId},email.eq.${user.email}`);
+      
+      if (error) {
+        console.error('Error fetching enrollments:', error);
+        if (showToast) toast.error('Failed to fetch enrollments');
+        return;
+      }
+
+      console.log('Found enrollments:', data?.length || 0);
+
+      if (data) {
+        // Update any enrollments that have this email but no user_id
+        const enrollmentsToUpdate = data.filter(e => !e.user_id && e.email === user.email);
         
-        for (const enrollment of enrollmentsToUpdate) {
-          await supabase
+        if (enrollmentsToUpdate.length > 0) {
+          console.log('Syncing enrollments with user account:', enrollmentsToUpdate.length);
+          if (showToast) toast.info(`Syncing ${enrollmentsToUpdate.length} course(s) with your account...`);
+          
+          for (const enrollment of enrollmentsToUpdate) {
+            await supabase
+              .from('enrollments')
+              .update({ user_id: userId })
+              .eq('id', enrollment.id);
+          }
+          
+          // Refresh enrollments after update
+          const { data: updatedData } = await supabase
             .from('enrollments')
-            .update({ user_id: userId })
-            .eq('id', enrollment.id);
-        }
-        
-        // Refresh enrollments after update
-        const { data: updatedData } = await supabase
-          .from('enrollments')
-          .select('*')
-          .or(`user_id.eq.${userId},email.eq.${user.email}`);
-        
-        if (updatedData) {
-          setEnrollments(updatedData);
+            .select('*')
+            .or(`user_id.eq.${userId},email.eq.${user.email}`);
+          
+          if (updatedData) {
+            setEnrollments(updatedData);
+            if (showToast) toast.success(`Successfully synced ${enrollmentsToUpdate.length} course(s)!`);
+          }
+        } else {
+          setEnrollments(data);
+          if (showToast) toast.success('Courses refreshed successfully');
         }
       } else {
-        setEnrollments(data);
+        if (showToast) toast.info('No enrollments found');
       }
+    } catch (error) {
+      console.error('Error in fetchEnrollments:', error);
+      if (showToast) toast.error('An error occurred while fetching enrollments');
+    } finally {
+      if (showToast) setRefreshing(false);
     }
   };
 
@@ -337,10 +360,11 @@ const Courses = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={() => fetchEnrollments(user.id)}
+                onClick={() => fetchEnrollments(user.id, true)}
+                disabled={refreshing}
                 className="mt-4"
               >
-                Refresh My Courses
+                {refreshing ? 'Refreshing...' : 'Refresh My Courses'}
               </Button>
             )}
           </div>
