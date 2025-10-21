@@ -91,7 +91,7 @@ const Landing = () => {
               security training that not only protects but also empowers.
             </p>
             
-            <Card className="overflow-hidden border-2 mb-8">
+            <Card className="overflow-hidden border-2 mb-6 sm:mb-8 -mx-4 sm:mx-0">
               <div className="relative aspect-video bg-black">
                 <iframe
                   className="w-full h-full"
