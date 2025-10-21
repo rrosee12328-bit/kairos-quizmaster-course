@@ -159,6 +159,9 @@ const Level2Course = () => {
       if (user) {
         setIsAuthenticated(true);
         checkAdminStatus(user.id);
+      } else {
+        // Redirect to login if not authenticated
+        navigate('/auth?redirect=/course/level2');
       }
     });
 
@@ -169,11 +172,13 @@ const Level2Course = () => {
       } else {
         setIsAuthenticated(false);
         setIsAdmin(false);
+        // Redirect to login if logged out
+        navigate('/auth?redirect=/course/level2');
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [isPageVisible]);
+  }, [isPageVisible, navigate]);
 
   useEffect(() => {
     if (showQuiz) {
