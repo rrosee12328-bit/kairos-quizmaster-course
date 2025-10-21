@@ -52,7 +52,7 @@ const handler = async (req: Request): Promise<Response> => {
     const fullName = `${firstName} ${lastName}`.trim();
 
     const emailResponse = await resend.emails.send({
-      from: "Kairos Security Academy <onboarding@resend.dev>",
+      from: "Kairos Security Academy <info@kairossecurityacademy.com>",
       to: [email],
       subject: `Welcome to ${course.name}!`,
       html: `

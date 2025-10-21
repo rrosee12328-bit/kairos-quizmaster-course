@@ -138,7 +138,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Kairos Security Academy <onboarding@resend.dev>",
+        from: "Kairos Security Academy <info@kairossecurityacademy.com>",
         to: adminEmails,
         subject: subject,
         html: html,

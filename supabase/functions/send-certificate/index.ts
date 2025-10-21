@@ -35,7 +35,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const resend = new Resend(RESEND_API_KEY);
 
     const { data, error } = await resend.emails.send({
-      from: "Kairos Security Academy <onboarding@resend.dev>",
+      from: "Kairos Security Academy <info@kairossecurityacademy.com>",
       to: [email],
       subject: "Your Level 2 Security Officer Certificate",
       html: `
