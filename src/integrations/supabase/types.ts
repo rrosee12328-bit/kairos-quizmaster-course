@@ -303,14 +303,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      generate_level3_approval_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_registration_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      generate_level3_approval_code: { Args: never; Returns: string }
+      generate_registration_number: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -318,10 +312,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_admin: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "security_admin" | "instructor" | "student"
