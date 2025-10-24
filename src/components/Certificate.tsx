@@ -41,8 +41,8 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
       </div>
       
       {/* Date of Completion */}
-      <div className="absolute top-[53.6%] left-[66.8%]">
-        <p className={`${exportMode ? 'text-[20pt]' : 'text-[1.125rem]'} font-normal text-foreground leading-none`} style={{ letterSpacing: '0.02em', transform: 'translateY(-18px)', textShadow: exportMode ? '0 0 1px rgba(0,0,0,0.1)' : 'none' }}>{formatDate(courseCompletionDate)}</p>
+      <div className="absolute top-[51.9%] left-[61.8%]">
+        <p className={`${exportMode ? 'text-[20pt]' : 'text-[1.125rem]'} font-normal text-foreground leading-none`} style={{ letterSpacing: '0.02em', transform: 'translateY(-10px)', textShadow: exportMode ? '0 0 1px rgba(0,0,0,0.1)' : 'none' }}>{formatDate(courseCompletionDate)}</p>
       </div>
     </div>
   );
