@@ -129,10 +129,15 @@ const CertificatePreview = () => {
         throw new Error('Certificate element not found');
       }
 
+      // Wait a bit to ensure fonts are loaded and rendered
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       const canvas = await html2canvas(certificateElement as HTMLElement, {
-        scale: 2,
+        scale: 3, // Increased scale for better quality
         backgroundColor: '#ffffff',
         logging: false,
+        useCORS: true,
+        allowTaint: true,
       });
 
       const imgData = canvas.toDataURL('image/png');
@@ -144,9 +149,10 @@ const CertificatePreview = () => {
         orientation: orientation as 'landscape' | 'portrait',
         unit: 'px',
         format: [width, height],
+        compress: true,
       });
 
-      pdf.addImage(imgData, 'PNG', 0, 0, width, height);
+      pdf.addImage(imgData, 'PNG', 0, 0, width, height, undefined, 'FAST');
       pdf.save(`certificate-${userName.replace(/\s+/g, '-')}.pdf`);
 
       toast({
