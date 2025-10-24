@@ -40,7 +40,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
 
     // Redirect to certificate preview page with auto-download flag
-    const appOrigin = req.headers.get('origin') || 'https://6f154051-1d90-4f63-8797-9c4db01924c2.lovableproject.com'
+    const appOriginParam = url.searchParams.get('o')
+    const appOrigin = appOriginParam || req.headers.get('origin') || 'https://6f154051-1d90-4f63-8797-9c4db01924c2.lovableproject.com'
     const redirectUrl = `${appOrigin}/certificate-preview?name=${encodeURIComponent(certificate.student_name)}&id=${encodeURIComponent(certificate.identification_type)}&lastSix=${encodeURIComponent(certificate.last_six_digits)}&date=${encodeURIComponent(certificate.completion_date)}&download=true`
 
     return new Response(null, {

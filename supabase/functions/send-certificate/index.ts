@@ -12,6 +12,7 @@ const certificateEmailSchema = z.object({
   email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters"),
   date: z.string().trim().min(1, "Date is required").max(50, "Date must be less than 50 characters"),
   registrationNumber: z.string().trim().min(1, "Registration number is required").max(50, "Registration number must be less than 50 characters").regex(/^[A-Z0-9-]+$/, "Invalid registration number format"),
+  appOrigin: z.string().trim().optional(),
 });
 
 Deno.serve(async (req: Request): Promise<Response> => {
@@ -37,7 +38,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    const { name, email, date, registrationNumber } = validation.data;
+    const { name, email, date, registrationNumber, appOrigin } = validation.data;
 
     const resend = new Resend(RESEND_API_KEY);
 
@@ -120,7 +121,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
               <p>Your certificate has been issued and is now available for download from your student portal.</p>
               
               <div style="text-align: center; margin: 30px 0;">
-                <a href="https://cpjamwmwzrgqhfnirikz.supabase.co/functions/v1/download-certificate?registration=${registrationNumber}" class="button" style="color: white;">
+                <a href="https://cpjamwmwzrgqhfnirikz.supabase.co/functions/v1/download-certificate?registration=${registrationNumber}${appOrigin ? `&o=${encodeURIComponent(appOrigin)}` : ''}" class="button" style="color: white;">
                   📄 Download Your Certificate
                 </a>
               </div>

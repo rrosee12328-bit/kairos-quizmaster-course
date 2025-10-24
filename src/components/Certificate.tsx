@@ -6,9 +6,11 @@ interface CertificateProps {
   courseCompletionDate?: string;
   idType?: string;
   lastSixDigits?: string;
+  exportMode?: boolean;
+  certificateId?: string;
 }
 
-const Certificate = ({ userName, registrationNumber, courseCompletionDate, idType, lastSixDigits }: CertificateProps) => {
+const Certificate = ({ userName, registrationNumber, courseCompletionDate, idType, lastSixDigits, exportMode, certificateId }: CertificateProps) => {
   // Format date to MM/DD/YYYY
   const formatDate = (dateString?: string) => {
     if (!dateString) return "MM/DD/YYYY";
@@ -26,11 +28,11 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
   };
 
   return (
-    <div id="certificate" className="w-full max-w-6xl mx-auto bg-white relative">
+      <div id={certificateId || "certificate"} className={`${exportMode ? "w-[1920px] h-[1080px]" : "w-full max-w-6xl"} mx-auto bg-white relative`}>
       <img 
         src={certificateTemplate} 
         alt="Security Training Certificate of Completion" 
-        className="w-full h-auto"
+        className="w-full h-full object-cover"
       />
       {/* Student Name and ID Number - on the same line */}
       <div className="absolute top-[32%] left-0 right-0 flex items-center justify-center gap-8">

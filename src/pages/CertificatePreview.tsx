@@ -121,25 +121,32 @@ const CertificatePreview = () => {
   const downloadCertificate = async () => {
     setIsDownloading(true);
     try {
-      const certificateElement = document.getElementById('certificate');
+      const exportEl = document.getElementById('certificate-export');
+      const displayEl = document.getElementById('certificate-display');
+      const fallbackEl = document.getElementById('certificate');
+      const certificateElement = exportEl || displayEl || fallbackEl;
       if (!certificateElement) {
         throw new Error('Certificate element not found');
       }
 
-      const canvas = await html2canvas(certificateElement, {
+      const canvas = await html2canvas(certificateElement as HTMLElement, {
         scale: 2,
         backgroundColor: '#ffffff',
         logging: false,
       });
 
       const imgData = canvas.toDataURL('image/png');
+      const width = canvas.width;
+      const height = canvas.height;
+      const orientation = width > height ? 'landscape' : 'portrait';
+
       const pdf = new jsPDF({
-        orientation: 'landscape',
+        orientation: orientation as 'landscape' | 'portrait',
         unit: 'px',
-        format: [1920, 1080],
+        format: [width, height],
       });
 
-      pdf.addImage(imgData, 'PNG', 0, 0, 1920, 1080);
+      pdf.addImage(imgData, 'PNG', 0, 0, width, height);
       pdf.save(`certificate-${userName.replace(/\s+/g, '-')}.pdf`);
 
       toast({
@@ -180,6 +187,7 @@ const CertificatePreview = () => {
           email: email,
           date: completionDate,
           registrationNumber: registrationNumber,
+          appOrigin: window.location.origin,
         },
       });
 
@@ -304,14 +312,27 @@ const CertificatePreview = () => {
             </CardContent>
           </Card>
 
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 relative">
             <Certificate
               userName={userName}
               registrationNumber={registrationNumber}
               courseCompletionDate={completionDate}
               idType={idType}
               lastSixDigits={lastSixDigits}
+              certificateId="certificate-display"
             />
+            {/* Hidden export-sized certificate for accurate PDF rendering */}
+            <div className="absolute -left-[9999px] top-0">
+              <Certificate
+                userName={userName}
+                registrationNumber={registrationNumber}
+                courseCompletionDate={completionDate}
+                idType={idType}
+                lastSixDigits={lastSixDigits}
+                certificateId="certificate-export"
+                exportMode
+              />
+            </div>
           </div>
         </div>
       </div>
