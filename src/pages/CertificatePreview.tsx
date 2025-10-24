@@ -313,14 +313,16 @@ const CertificatePreview = () => {
           </Card>
 
           <div className="lg:col-span-1 relative">
-            <Certificate
-              userName={userName}
-              registrationNumber={registrationNumber}
-              courseCompletionDate={completionDate}
-              idType={idType}
-              lastSixDigits={lastSixDigits}
-              certificateId="certificate-display"
-            />
+            <div className="w-full" style={{ aspectRatio: '16/9' }}>
+              <Certificate
+                userName={userName}
+                registrationNumber={registrationNumber}
+                courseCompletionDate={completionDate}
+                idType={idType}
+                lastSixDigits={lastSixDigits}
+                certificateId="certificate-display"
+              />
+            </div>
             {/* Hidden export-sized certificate for accurate PDF rendering */}
             <div className="absolute -left-[9999px] top-0">
               <Certificate
