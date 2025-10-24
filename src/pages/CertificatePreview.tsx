@@ -33,12 +33,38 @@ const CertificatePreview = () => {
 
   const loadCertificateData = async () => {
     try {
+      // Check if data is provided via query params (from email link)
+      const nameParam = searchParams.get('name');
+      const idParam = searchParams.get('id');
+      const lastSixParam = searchParams.get('lastSix');
+      const dateParam = searchParams.get('date');
+      const autoDownload = searchParams.get('download') === 'true';
+
+      // If all required params are present, use them directly (no auth needed)
+      if (nameParam && idParam && lastSixParam && dateParam) {
+        setUserName(nameParam);
+        setIdType(idParam === 'ssn' ? 'SSN' : 'Driver License');
+        setLastSixDigits(lastSixParam);
+        setCompletionDate(dateParam);
+        setRegistrationNumber(''); // Not needed for display
+        setLoading(false);
+
+        // Auto-download if requested
+        if (autoDownload) {
+          setTimeout(() => {
+            downloadCertificate();
+          }, 500);
+        }
+        return;
+      }
+
+      // Otherwise, require authentication and fetch from database
       const regNum = searchParams.get('registration');
       
       if (!regNum) {
         toast({
           title: "Error",
-          description: "Missing certificate registration number",
+          description: "Missing certificate information",
           variant: "destructive",
         });
         navigate('/profile');
