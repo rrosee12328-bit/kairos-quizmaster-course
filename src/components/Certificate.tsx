@@ -32,14 +32,10 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
         alt="Security Training Certificate of Completion" 
         className="w-full h-auto"
       />
-      {/* Student Name - positioned on the black line */}
-      <div className="absolute top-[32%] left-0 right-0 text-center">
+      {/* Student Name and ID Number - on the same line */}
+      <div className="absolute top-[32%] left-0 right-0 flex items-center justify-center gap-8">
         <p className="text-2xl font-bold text-foreground">{userName || "Student Name"}</p>
-      </div>
-      
-      {/* Identification Number */}
-      <div className="absolute top-[37%] left-[50%] -translate-x-1/2">
-        <p className="text-sm font-semibold text-foreground">{formatIdNumber()}</p>
+        <p className="text-xl font-semibold text-foreground">{formatIdNumber()}</p>
       </div>
       
       {/* Date of Completion */}
