@@ -36,13 +36,13 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
       />
       {/* Student Name and ID Number - on the same line */}
       <div className="absolute top-[32%] left-0 right-0 flex items-center justify-center gap-8">
-        <p className="text-2xl font-bold text-foreground">{userName || "Student Name"}</p>
-        <p className="text-xl font-semibold text-foreground">{formatIdNumber()}</p>
+        <p className="text-4xl font-bold text-foreground">{userName || "Student Name"}</p>
+        <p className="text-2xl font-semibold text-foreground">{formatIdNumber()}</p>
       </div>
       
       {/* Date of Completion */}
       <div className="absolute top-[48.3%] left-[57%]">
-        <p className="text-base font-semibold text-foreground">{formatDate(courseCompletionDate)}</p>
+        <p className="text-xl font-semibold text-foreground">{formatDate(courseCompletionDate)}</p>
       </div>
     </div>
   );
