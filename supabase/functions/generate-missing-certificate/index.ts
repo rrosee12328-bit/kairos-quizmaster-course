@@ -11,29 +11,28 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   try {
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Authentication required' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     
-    // Auth client to verify user
-    const supabaseAuth = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
+    // Create client with user's auth token
+    const authHeader = req.headers.get('Authorization')!
+    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } }
     })
     
-    const { data: { user }, error: userError } = await supabaseAuth.auth.getUser();
+    // Verify user authentication
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
+    
     if (userError || !user) {
+      console.error('User authentication failed:', userError)
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'Authentication failed', details: userError?.message }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      )
     }
+
+    console.log('User authenticated:', user.id)
 
     // Service client for database operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
