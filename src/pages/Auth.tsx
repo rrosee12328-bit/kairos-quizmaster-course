@@ -21,7 +21,7 @@ const Auth = () => {
 
   const processPendingEnrollment = async (sessionUser: User) => {
     try {
-      const raw = localStorage.getItem('pendingEnrollment');
+      const raw = sessionStorage.getItem('pendingEnrollment');
       if (!raw) return;
       const pending = JSON.parse(raw);
 
@@ -38,7 +38,7 @@ const Auth = () => {
         return;
       }
 
-      localStorage.removeItem('pendingEnrollment');
+      sessionStorage.removeItem('pendingEnrollment');
       toast.success('Enrollment completed! Welcome.');
     } catch (e) {
       console.error('Finalize enrollment unexpected error:', e);
