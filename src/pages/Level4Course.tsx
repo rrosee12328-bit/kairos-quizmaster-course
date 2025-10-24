@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shield, CheckCircle } from "lucide-react";
@@ -8,12 +9,14 @@ import CourseHeader from "@/components/CourseHeader";
 import VideoPlayer from "@/components/VideoPlayer";
 import Quiz from "@/components/Quiz";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { level4ExamQuestions } from "@/data/level4ExamQuestions";
 
 const LIBRARY_ID = "512706";
 const VIDEO_GUID = "f5fc34de-7c2a-445a-9a5b-cd36225549a2";
 
 const Level4Course = () => {
+  const navigate = useNavigate();
   const [completed, setCompleted] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -26,6 +29,7 @@ const Level4Course = () => {
       if (user) {
         setIsAuthenticated(true);
         checkAdminStatus(user.id);
+        checkEnrollmentStatus(user.id);
       }
     });
 
@@ -56,6 +60,30 @@ const Level4Course = () => {
     const { data, error } = await supabase.rpc('is_admin', { _user_id: userId });
     if (!error && data) {
       setIsAdmin(true);
+    }
+  };
+
+  const checkEnrollmentStatus = async (userId: string) => {
+    // Check if user is enrolled or has completed the course
+    const { data: enrollment } = await supabase
+      .from('enrollments')
+      .select('enrollment_status')
+      .eq('user_id', userId)
+      .eq('course_type', 'level4')
+      .maybeSingle();
+
+    const { data: completion } = await supabase
+      .from('course_completions')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('course_type', 'level4')
+      .eq('passed', true)
+      .maybeSingle();
+
+    // Allow access if enrolled OR completed (for review)
+    if (!enrollment && !completion && !isAdmin) {
+      toast.error('You need to enroll in this course first');
+      navigate('/courses');
     }
   };
 

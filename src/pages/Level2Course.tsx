@@ -159,6 +159,7 @@ const Level2Course = () => {
       if (user) {
         setIsAuthenticated(true);
         checkAdminStatus(user.id);
+        checkEnrollmentStatus(user.id);
       } else {
         // Redirect to login if not authenticated
         navigate('/auth?redirect=/course/level2');
@@ -329,6 +330,30 @@ const Level2Course = () => {
     const { data, error } = await supabase.rpc('is_admin', { _user_id: userId });
     if (!error && data) {
       setIsAdmin(true);
+    }
+  };
+
+  const checkEnrollmentStatus = async (userId: string) => {
+    // Check if user is enrolled or has completed the course
+    const { data: enrollment } = await supabase
+      .from('enrollments')
+      .select('enrollment_status')
+      .eq('user_id', userId)
+      .eq('course_type', 'level2')
+      .maybeSingle();
+
+    const { data: completion } = await supabase
+      .from('course_completions')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('course_type', 'level2')
+      .eq('passed', true)
+      .maybeSingle();
+
+    // Allow access if enrolled OR completed (for review)
+    if (!enrollment && !completion && !isAdmin) {
+      toast.error('You need to enroll in this course first');
+      navigate('/courses');
     }
   };
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Shield, ChevronLeft, ChevronRight, FileText, Download } from "lucide-react";
@@ -9,6 +10,7 @@ import Quiz from "@/components/Quiz";
 import CourseHeader from "@/components/CourseHeader";
 import VideoPlayer from "@/components/VideoPlayer";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   Carousel,
   CarouselContent,
@@ -30,6 +32,7 @@ const Course = () => {
       if (user) {
         setIsAuthenticated(true);
         checkAdminStatus(user.id);
+        checkEnrollmentStatus(user.id);
       }
     });
 
@@ -50,6 +53,30 @@ const Course = () => {
     const { data, error } = await supabase.rpc('is_admin', { _user_id: userId });
     if (!error && data) {
       setIsAdmin(true);
+    }
+  };
+
+  const checkEnrollmentStatus = async (userId: string) => {
+    // Check if user is enrolled or has completed the course
+    const { data: enrollment } = await supabase
+      .from('enrollments')
+      .select('enrollment_status')
+      .eq('user_id', userId)
+      .eq('course_type', 'level3')
+      .maybeSingle();
+
+    const { data: completion } = await supabase
+      .from('course_completions')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('course_type', 'level3')
+      .eq('passed', true)
+      .maybeSingle();
+
+    // Allow access if enrolled OR completed (for review)
+    if (!enrollment && !completion && !isAdmin) {
+      toast.error('You need to enroll in this course first');
+      navigate('/courses');
     }
   };
 

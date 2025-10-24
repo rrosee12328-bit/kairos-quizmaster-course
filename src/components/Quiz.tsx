@@ -164,6 +164,16 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
           .select()
           .single();
 
+        if (certError) {
+          console.error('CRITICAL: Certificate creation failed:', certError);
+          toast({
+            title: "Certificate Error",
+            description: "Your completion was saved but certificate generation failed. Please contact support with completion ID: " + completionData.id,
+            variant: "destructive",
+            duration: 10000,
+          });
+        }
+
         if (!certError && certData) {
           registrationNumber = certData.registration_number;
           

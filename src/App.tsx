@@ -17,6 +17,7 @@ import Settings from "./pages/Settings";
 import VideoMetadata from "./pages/VideoMetadata";
 import Admin from "./pages/Admin";
 import CertificatePreview from "./pages/CertificatePreview";
+import GenerateCertificate from "./pages/GenerateCertificate";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import NotFound from "./pages/NotFound";
@@ -44,6 +45,7 @@ const App = () => (
           <Route path="/admin" element={<Admin />} />
           <Route path="/video-metadata" element={<VideoMetadata />} />
           <Route path="/certificate-preview" element={<CertificatePreview />} />
+          <Route path="/generate-certificate" element={<GenerateCertificate />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
