@@ -120,29 +120,32 @@ const Courses = () => {
       console.log('Found enrollments:', data?.length || 0);
 
       if (data) {
-        // Update any enrollments that have this email but no user_id
+        // Check if there are enrollments to sync
         const enrollmentsToUpdate = data.filter(e => !e.user_id && e.email === user.email);
         
         if (enrollmentsToUpdate.length > 0) {
           console.log('Syncing enrollments with user account:', enrollmentsToUpdate.length);
           if (showToast) toast.info(`Syncing ${enrollmentsToUpdate.length} course(s) with your account...`);
           
-          for (const enrollment of enrollmentsToUpdate) {
-            await supabase
+          // Call server-side sync function for secure enrollment sync
+          const { data: syncResult, error: syncError } = await supabase.functions.invoke('sync-enrollment');
+          
+          if (syncError) {
+            console.error('Error syncing enrollments:', syncError);
+            if (showToast) toast.error('Failed to sync enrollments');
+          } else {
+            console.log('Sync result:', syncResult);
+            
+            // Refresh enrollments after sync
+            const { data: updatedData } = await supabase
               .from('enrollments')
-              .update({ user_id: userId })
-              .eq('id', enrollment.id);
-          }
-          
-          // Refresh enrollments after update
-          const { data: updatedData } = await supabase
-            .from('enrollments')
-            .select('*')
-            .or(`user_id.eq.${userId},email.eq.${user.email}`);
-          
-          if (updatedData) {
-            setEnrollments(updatedData);
-            if (showToast) toast.success(`Successfully synced ${enrollmentsToUpdate.length} course(s)!`);
+              .select('*')
+              .or(`user_id.eq.${userId},email.eq.${user.email}`);
+            
+            if (updatedData) {
+              setEnrollments(updatedData);
+              if (showToast) toast.success(`Successfully synced ${syncResult?.synced || enrollmentsToUpdate.length} course(s)!`);
+            }
           }
         } else {
           setEnrollments(data);

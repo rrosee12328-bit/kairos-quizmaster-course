@@ -1,9 +1,20 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schema
+const bunnyRequestSchema = z.object({
+  action: z.enum(['getVideo', 'createVideo', 'listVideos', 'getSignedUrl']),
+  videoId: z.string().regex(/^[a-zA-Z0-9-]+$/).optional(),
+  title: z.string().min(1).max(255).optional(),
+  collectionId: z.string().optional(),
+  libraryId: z.string().regex(/^\d+$/),
+  expiresInHours: z.number().min(1).max(720).optional() // Max 30 days
+});
 
 const BUNNY_API_KEY = Deno.env.get('BUNNY_API_KEY');
 const DEFAULT_SIGNING_KEY = Deno.env.get('BUNNY_VIDEO_LIBRARY_KEY');
@@ -46,12 +57,22 @@ serve(async (req) => {
       throw new Error('BUNNY_API_KEY not configured');
     }
 
-    const { action, videoId, title, collectionId, libraryId, expiresInHours } = await req.json();
+    const body = await req.json();
     
-    if (!libraryId) {
-      throw new Error('libraryId is required');
+    // Validate input
+    const validationResult = bunnyRequestSchema.safeParse(body);
+    if (!validationResult.success) {
+      console.error('Validation error:', validationResult.error);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Invalid request parameters', 
+          details: validationResult.error.issues 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
+    const { action, videoId, title, collectionId, libraryId, expiresInHours } = validationResult.data;
     console.log(`Bunny.net request - Action: ${action}, VideoId: ${videoId}`);
 
     // Get video details
