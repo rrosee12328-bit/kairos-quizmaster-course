@@ -22,7 +22,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
     if (idType === 'SSN' || idType === 'ssn') {
       return `***-**-${lastSixDigits}`;
     }
-    return `DL: ${lastSixDigits}`;
+    return lastSixDigits;
   };
 
   return (
@@ -37,13 +37,8 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
         <p className="text-2xl font-bold text-foreground">{userName || "Student Name"}</p>
       </div>
       
-      {/* Registration Number */}
-      <div className="absolute top-[32.5%] left-[60%]">
-        <p className="text-xl font-bold text-foreground">{registrationNumber || "REG-000000"}</p>
-      </div>
-      
       {/* Identification Number */}
-      <div className="absolute top-[37%] left-[60%]">
+      <div className="absolute top-[37%] left-[50%] -translate-x-1/2">
         <p className="text-sm font-semibold text-foreground">{formatIdNumber()}</p>
       </div>
       
