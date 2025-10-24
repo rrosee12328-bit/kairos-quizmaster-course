@@ -35,14 +35,14 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
         className="w-full h-full object-cover"
       />
       {/* Student Name and ID Number - on the same line */}
-      <div className="absolute top-[32%] left-0 right-0 flex items-center justify-center gap-8">
-        <p className="text-4xl font-bold text-foreground">{userName || "Student Name"}</p>
-        <p className="text-2xl font-semibold text-foreground">{formatIdNumber()}</p>
+      <div className="absolute top-[32%] left-0 right-0 flex items-center justify-center gap-12" style={{ letterSpacing: '0.02em' }}>
+        <p className={`${exportMode ? 'text-[28pt]' : 'text-[1.75rem]'} font-semibold text-foreground leading-none`}>{userName || "Student Name"}</p>
+        <p className={`${exportMode ? 'text-[18pt]' : 'text-[1.125rem]'} font-normal text-foreground leading-none`}>{formatIdNumber()}</p>
       </div>
       
       {/* Date of Completion */}
       <div className="absolute top-[48.3%] left-[57%]">
-        <p className="text-xl font-semibold text-foreground">{formatDate(courseCompletionDate)}</p>
+        <p className={`${exportMode ? 'text-[18pt]' : 'text-[1.125rem]'} font-normal text-foreground leading-none`} style={{ letterSpacing: '0.01em' }}>{formatDate(courseCompletionDate)}</p>
       </div>
     </div>
   );

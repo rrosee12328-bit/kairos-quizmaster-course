@@ -244,26 +244,26 @@ const CertificatePreview = () => {
               <CardDescription>Official enrollment and completion information</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
-                <div>
-                  <Label className="text-xs text-muted-foreground">Student Name (From Enrollment)</Label>
-                  <p className="text-lg font-semibold">{userName}</p>
+              <div className="space-y-4 p-4 bg-muted/50 rounded-lg max-w-[720px]">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-muted-foreground">Student Name (From Enrollment)</Label>
+                  <p className="text-lg lg:text-xl font-semibold leading-snug">{userName}</p>
                 </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Identification Type</Label>
-                  <p className="text-base font-medium">{idType}</p>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-muted-foreground">Identification Type</Label>
+                  <p className="text-base font-normal leading-snug">{idType}</p>
                 </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Last 6 Digits</Label>
-                  <p className="text-base font-mono font-medium">***-**-{lastSixDigits}</p>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-muted-foreground">Last 6 Digits</Label>
+                  <p className="text-base font-mono font-normal leading-snug">***-**-{lastSixDigits}</p>
                 </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Registration Number</Label>
-                  <p className="text-base font-mono font-medium">{registrationNumber}</p>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-muted-foreground">Registration Number</Label>
+                  <p className="text-base font-mono font-normal leading-snug">{registrationNumber}</p>
                 </div>
-                <div>
-                  <Label className="text-xs text-muted-foreground">Completion Date (Actual)</Label>
-                  <p className="text-base font-medium">{new Date(completionDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-muted-foreground">Completion Date (Actual)</Label>
+                  <p className="text-base font-normal leading-snug">{new Date(completionDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                 </div>
               </div>
 
