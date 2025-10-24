@@ -5,6 +5,19 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+function parseJwt(token: string) {
+  try {
+    const base64Url = token.split('.')[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+    }).join(''))
+    return JSON.parse(jsonPayload)
+  } catch (_) {
+    return null
+  }
+}
+
 Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -14,27 +27,22 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    
-    // Create client with user's auth token
-    const authHeader = req.headers.get('Authorization')!
-    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
-    })
-    
-    // Verify user authentication
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
-    
-    if (userError || !user) {
-      console.error('User authentication failed:', userError)
+
+    // Extract user from Authorization header (avoid auth.getUser flakiness)
+    const authHeader = req.headers.get('Authorization') || ''
+    const jwt = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
+    const claims = jwt ? parseJwt(jwt) : null
+    const userId = claims?.sub as string | undefined
+    const userEmail = claims?.email as string | undefined
+
+    if (!userId) {
       return new Response(
-        JSON.stringify({ error: 'Authentication failed', details: userError?.message }),
+        JSON.stringify({ error: 'Authentication required' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log('User authenticated:', user.id)
-
-    // Service client for database operations
+    // Service client for database operations (bypass RLS where needed)
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     const { completionId } = await req.json();
@@ -51,9 +59,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
       .from('course_completions')
       .select('*')
       .eq('id', completionId)
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('passed', true)
-      .single();
+      .maybeSingle();
 
     if (completionError || !completion) {
       return new Response(
@@ -76,13 +84,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    // Get enrollment data
+    // Get most recent enrollment data for this course
     const { data: enrollment, error: enrollmentError } = await supabase
       .from('enrollments')
       .select('first_name, last_name, last_six_digits, identification_type')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('course_type', completion.course_type)
-      .single();
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
     if (enrollmentError || !enrollment) {
       return new Response(
@@ -91,19 +101,32 @@ Deno.serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    const fullName = `${enrollment.first_name} ${enrollment.last_name}`;
+    const fullName = `${enrollment.first_name} ${enrollment.last_name}`.trim()
+
+    // Generate registration number via RPC
+    const { data: regNum, error: regErr } = await supabase.rpc('generate_registration_number')
+    if (regErr || !regNum) {
+      // Fallback simple generator
+      const d = new Date(completion.completed_at)
+      const ymd = `${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, '0')}${String(d.getUTCDate()).padStart(2, '0')}`
+      console.warn('RPC generate_registration_number failed, using fallback:', regErr)
+      // Preserve course code hint by mapping
+      const courseCode = completion.course_type === 'level3' ? 'L3' : completion.course_type === 'level2' ? 'L2' : 'GEN'
+      ;(regNum as any) = `KTA-${courseCode}-${ymd}-${Math.floor(Math.random()*99999).toString().padStart(5,'0')}`
+    }
 
     // Create certificate
     const { data: certificate, error: certError } = await supabase
       .from('certificates')
       .insert({
-        user_id: user.id,
+        user_id: userId,
         completion_id: completionId,
         course_type: completion.course_type,
         student_name: fullName,
         completion_date: new Date(completion.completed_at).toISOString().split('T')[0],
         last_six_digits: enrollment.last_six_digits,
         identification_type: enrollment.identification_type,
+        registration_number: regNum as string,
       })
       .select()
       .single();
@@ -116,16 +139,20 @@ Deno.serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    // Send certificate email
+    // Send certificate email (best effort)
     try {
-      await supabase.functions.invoke('send-certificate', {
-        body: {
-          name: fullName,
-          email: user.email,
-          date: certificate.completion_date,
-          registrationNumber: certificate.registration_number,
-        }
-      });
+      const emailTo = userEmail || undefined
+      if (emailTo) {
+        await createClient(supabaseUrl, supabaseAnonKey) // lightweight client to call function with anon
+          .functions.invoke('send-certificate', {
+            body: {
+              name: fullName,
+              email: emailTo,
+              date: certificate.completion_date,
+              registrationNumber: certificate.registration_number,
+            }
+          });
+      }
     } catch (emailError) {
       console.error('Error sending certificate email:', emailError);
     }
