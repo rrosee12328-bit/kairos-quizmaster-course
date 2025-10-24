@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/carousel";
 
 const Course = () => {
+  const navigate = useNavigate();
   const [completedSections, setCompletedSections] = useState<number[]>([]);
   const [showQuiz, setShowQuiz] = useState(false);
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
