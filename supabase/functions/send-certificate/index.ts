@@ -1,16 +1,17 @@
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface CertificateEmailRequest {
-  name: string;
-  email: string;
-  date: string;
-  registrationNumber: string;
-}
+const certificateEmailSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters").regex(/^[a-zA-Z\s'-]+$/, "Name contains invalid characters"),
+  email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters"),
+  date: z.string().trim().min(1, "Date is required").max(50, "Date must be less than 50 characters"),
+  registrationNumber: z.string().trim().min(1, "Registration number is required").max(50, "Registration number must be less than 50 characters").regex(/^[A-Z0-9-]+$/, "Invalid registration number format"),
+});
 
 Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -23,14 +24,19 @@ Deno.serve(async (req: Request): Promise<Response> => {
       throw new Error("RESEND_API_KEY not configured");
     }
 
-    const { name, email, date, registrationNumber }: CertificateEmailRequest = await req.json();
-
-    if (!email || !name) {
+    const body = await req.json();
+    
+    // Validate input
+    const validation = certificateEmailSchema.safeParse(body);
+    if (!validation.success) {
+      console.error("Validation error:", validation.error);
       return new Response(
-        JSON.stringify({ error: "Missing required fields: email or name" }),
+        JSON.stringify({ error: "Invalid input", details: validation.error.format() }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    const { name, email, date, registrationNumber } = validation.data;
 
     const resend = new Resend(RESEND_API_KEY);
 

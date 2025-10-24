@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -8,12 +9,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface EnrollmentConfirmationRequest {
-  email: string;
-  firstName: string;
-  lastName: string;
-  courseType: string;
-}
+const enrollmentSchema = z.object({
+  email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters"),
+  firstName: z.string().trim().min(1, "First name is required").max(50, "First name must be less than 50 characters").regex(/^[a-zA-Z\s'-]+$/, "First name contains invalid characters"),
+  lastName: z.string().trim().min(1, "Last name is required").max(50, "Last name must be less than 50 characters").regex(/^[a-zA-Z\s'-]+$/, "Last name contains invalid characters"),
+  courseType: z.enum(["level2", "level3", "level4", "pepper-spray"], { errorMap: () => ({ message: "Invalid course type" }) }),
+});
 
 const getCourseDetails = (courseType: string) => {
   const courses: Record<string, { name: string; description: string }> = {
@@ -44,7 +45,19 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, firstName, lastName, courseType }: EnrollmentConfirmationRequest = await req.json();
+    const body = await req.json();
+    
+    // Validate input
+    const validation = enrollmentSchema.safeParse(body);
+    if (!validation.success) {
+      console.error("Validation error:", validation.error);
+      return new Response(
+        JSON.stringify({ error: "Invalid input", details: validation.error.format() }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { email, firstName, lastName, courseType } = validation.data;
     
     console.log("[send-enrollment-confirmation] Sending email to:", email, "for course:", courseType);
 

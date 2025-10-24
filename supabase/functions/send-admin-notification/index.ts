@@ -1,22 +1,23 @@
 // @ts-nocheck
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface AdminNotificationRequest {
-  studentName: string;
-  studentEmail: string;
-  courseType: string;
-  score: number;
-  totalQuestions: number;
-  percentage: number;
-  passed: boolean;
-  registrationNumber?: string;
-  approvalCode?: string;
-  completedAt: string;
-}
+const adminNotificationSchema = z.object({
+  studentName: z.string().trim().min(1, "Student name is required").max(100, "Name must be less than 100 characters").regex(/^[a-zA-Z\s'-]+$/, "Name contains invalid characters"),
+  studentEmail: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters"),
+  courseType: z.enum(["level2", "level3", "level4", "pepper-spray"], { errorMap: () => ({ message: "Invalid course type" }) }),
+  score: z.number().int().min(0, "Score must be non-negative").max(1000, "Score exceeds maximum"),
+  totalQuestions: z.number().int().min(1, "Total questions must be at least 1").max(1000, "Total questions exceeds maximum"),
+  percentage: z.number().min(0, "Percentage must be at least 0").max(100, "Percentage must not exceed 100"),
+  passed: z.boolean(),
+  registrationNumber: z.string().trim().max(50, "Registration number too long").regex(/^[A-Z0-9-]+$/, "Invalid registration number format").optional(),
+  approvalCode: z.string().trim().max(50, "Approval code too long").regex(/^[A-Z0-9-]+$/, "Invalid approval code format").optional(),
+  completedAt: z.string().trim().min(1, "Completion date is required").max(100, "Completion date too long"),
+});
 
 Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
@@ -27,6 +28,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) {
       throw new Error("RESEND_API_KEY not configured");
+    }
+
+    const body = await req.json();
+    
+    // Validate input
+    const validation = adminNotificationSchema.safeParse(body);
+    if (!validation.success) {
+      console.error("Validation error:", validation.error);
+      return new Response(
+        JSON.stringify({ error: "Invalid input", details: validation.error.format() }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const { 
@@ -40,7 +53,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       registrationNumber,
       approvalCode,
       completedAt
-    }: AdminNotificationRequest = await req.json();
+    } = validation.data;
 
     console.log('Sending admin notification for:', studentEmail);
 

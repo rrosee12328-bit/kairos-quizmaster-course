@@ -1,22 +1,23 @@
 // @ts-nocheck
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface CourseCompletionEmailRequest {
-  email: string;
-  studentName: string;
-  courseType: string;
-  score: number;
-  totalQuestions: number;
-  percentage: number;
-  passed: boolean;
-  registrationNumber?: string;
-  approvalCode?: string;
-  approvalExpiresAt?: string;
-}
+const courseCompletionSchema = z.object({
+  email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters"),
+  studentName: z.string().trim().min(1, "Student name is required").max(100, "Name must be less than 100 characters").regex(/^[a-zA-Z\s'-]+$/, "Name contains invalid characters"),
+  courseType: z.enum(["level2", "level3", "level4", "pepper-spray"], { errorMap: () => ({ message: "Invalid course type" }) }),
+  score: z.number().int().min(0, "Score must be non-negative").max(1000, "Score exceeds maximum"),
+  totalQuestions: z.number().int().min(1, "Total questions must be at least 1").max(1000, "Total questions exceeds maximum"),
+  percentage: z.number().min(0, "Percentage must be at least 0").max(100, "Percentage must not exceed 100"),
+  passed: z.boolean(),
+  registrationNumber: z.string().trim().max(50, "Registration number too long").regex(/^[A-Z0-9-]+$/, "Invalid registration number format").optional(),
+  approvalCode: z.string().trim().max(50, "Approval code too long").regex(/^[A-Z0-9-]+$/, "Invalid approval code format").optional(),
+  approvalExpiresAt: z.string().trim().max(100, "Expiration date too long").optional(),
+});
 
 Deno.serve(async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
@@ -30,6 +31,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
       throw new Error("RESEND_API_KEY not configured");
     }
 
+    const body = await req.json();
+    
+    // Validate input
+    const validation = courseCompletionSchema.safeParse(body);
+    if (!validation.success) {
+      console.error("Validation error:", validation.error);
+      return new Response(
+        JSON.stringify({ error: "Invalid input", details: validation.error.format() }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { 
       email, 
       studentName, 
@@ -41,16 +54,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
       registrationNumber,
       approvalCode,
       approvalExpiresAt
-    }: CourseCompletionEmailRequest = await req.json();
+    } = validation.data;
 
     console.log('Sending course completion email to:', email);
-
-    if (!email || !studentName) {
-      return new Response(
-        JSON.stringify({ error: "Missing required fields: email or studentName" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
 
     const courseTitle = courseType === 'level2' 
       ? 'Level 2 Security Officer Certification' 
