@@ -43,6 +43,7 @@ interface Certificate {
   registration_number: string;
   completion_date: string;
   student_name: string;
+  completion_id: string;
 }
 
 const Profile = () => {
@@ -354,6 +355,26 @@ const Profile = () => {
             <CardDescription>Download and view your earned certificates anytime</CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Check for missing certificates */}
+            {completions.filter(c => c.passed && !certificates.find(cert => cert.completion_id === c.id)).length > 0 && (
+              <Alert className="mb-4 border-amber-500 bg-amber-50 dark:bg-amber-950/20">
+                <AlertTitle className="text-amber-800 dark:text-amber-200">Missing Certificates Detected</AlertTitle>
+                <AlertDescription className="text-amber-700 dark:text-amber-300">
+                  You have {completions.filter(c => c.passed && !certificates.find(cert => cert.completion_id === c.id)).length} completed course(s) without certificates.
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="ml-4 border-amber-500 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900"
+                    asChild
+                  >
+                    <Link to="/generate-certificate">
+                      Generate Missing Certificates
+                    </Link>
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
+            
             {certificates.length > 0 ? (
               <div className="space-y-4">
                 {certificates.map((cert) => (
