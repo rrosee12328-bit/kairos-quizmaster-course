@@ -11,29 +11,37 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   try {
-    // Verify authentication
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Authentication required' }),
-        { status: 401, headers: corsHeaders }
-      );
+    // Extract user from Authorization header via JWT claims
+    const authHeader = req.headers.get('Authorization') || ''
+    const jwt = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
+
+    function parseJwt(token: string) {
+      try {
+        const base64Url = token.split('.')[1]
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map((c) =>
+          '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+        ).join(''))
+        return JSON.parse(jsonPayload)
+      } catch (_) {
+        return null
+      }
     }
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
-    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
-    })
+    const claims = jwt ? parseJwt(jwt) : null
+    const userId = claims?.sub as string | undefined
 
-    // Verify user is authenticated
-    const { data: { user }, error: userError } = await supabaseAuth.auth.getUser();
-    if (userError || !user) {
+    if (!userId) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: corsHeaders }
-      );
+      )
     }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
 
     const url = new URL(req.url)
     const registrationNumber = url.searchParams.get('registration')
@@ -45,16 +53,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
       })
     }
 
-    // Use service role to fetch certificate
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseKey)
-
     // Look up the certificate and verify ownership
     const { data: certificate, error } = await supabase
       .from('certificates')
       .select('*')
       .eq('registration_number', registrationNumber)
-      .eq('user_id', user.id)  // Only allow users to download their own certificates
+      .eq('user_id', userId)  // Only allow users to download their own certificates
       .single()
 
     if (error || !certificate) {
@@ -65,7 +69,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
 
     // Redirect to certificate preview page with pre-filled data
-    const redirectUrl = `${url.origin}/certificate-preview?name=${encodeURIComponent(certificate.student_name)}&registration=${encodeURIComponent(certificate.registration_number)}&date=${encodeURIComponent(certificate.completion_date)}`
+    const appOrigin = req.headers.get('origin') || url.origin.replace('supabase.co','lovableproject.com')
+    const redirectUrl = `${appOrigin}/certificate-preview?name=${encodeURIComponent(certificate.student_name)}&registration=${encodeURIComponent(certificate.registration_number)}&date=${encodeURIComponent(certificate.completion_date)}`
 
     return new Response(null, {
       status: 302,

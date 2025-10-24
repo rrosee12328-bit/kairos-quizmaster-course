@@ -170,44 +170,9 @@ const Profile = () => {
 
   const downloadCertificate = async (cert: Certificate) => {
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData.session?.access_token;
-      if (!token) {
-        toast.error("You must be signed in to download certificates.");
-        return;
-      }
-
-      const url = `https://cpjamwmwzrgqhfnirikz.supabase.co/functions/v1/download-certificate?registration=${encodeURIComponent(cert.registration_number)}`;
-
-      const res = await fetch(url, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          apikey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNwamFtd213enJncWhmbmlyaWt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwMjI1NDUsImV4cCI6MjA3NDU5ODU0NX0.2WHNUtIfZTfL7-mE4Ibya-F6bo29G--Bt6Qs2L-h9T8',
-        }
-      });
-
-      if (res.status === 302) {
-        const location = res.headers.get('Location');
-        if (location) {
-          window.location.href = location;
-          return;
-        }
-      }
-
-      if (!res.ok) {
-        const msg = await res.text();
-        throw new Error(msg || 'Failed to start certificate download');
-      }
-
-      // If function returns JSON success for some reason
-      const data = await res.json();
-      if (data?.redirect) {
-        window.location.href = data.redirect;
-        return;
-      }
-
-      toast.error('Unexpected response while downloading certificate.');
+      // Navigate directly to the certificate preview with the certificate data
+      const url = `/certificate-preview?name=${encodeURIComponent(cert.student_name)}&registration=${encodeURIComponent(cert.registration_number)}&date=${encodeURIComponent(cert.completion_date)}`;
+      window.location.href = url;
     } catch (error) {
       console.error('Error downloading certificate:', error);
       toast.error("Failed to download certificate");
