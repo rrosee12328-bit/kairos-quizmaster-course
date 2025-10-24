@@ -75,36 +75,54 @@ export type Database = {
       }
       course_completions: {
         Row: {
+          attempt_number: number | null
           completed_at: string
           course_type: string
           created_at: string
+          duration_seconds: number | null
+          ended_at: string | null
           id: string
+          ip_address: string | null
           passed: boolean
           percentage: number
           score: number
+          started_at: string | null
           total_questions: number
+          user_agent: string | null
           user_id: string
         }
         Insert: {
+          attempt_number?: number | null
           completed_at?: string
           course_type: string
           created_at?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
           id?: string
+          ip_address?: string | null
           passed: boolean
           percentage: number
           score: number
+          started_at?: string | null
           total_questions: number
+          user_agent?: string | null
           user_id: string
         }
         Update: {
+          attempt_number?: number | null
           completed_at?: string
           course_type?: string
           created_at?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
           id?: string
+          ip_address?: string | null
           passed?: boolean
           percentage?: number
           score?: number
+          started_at?: string | null
           total_questions?: number
+          user_agent?: string | null
           user_id?: string
         }
         Relationships: []

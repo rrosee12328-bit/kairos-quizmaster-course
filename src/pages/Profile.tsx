@@ -29,6 +29,12 @@ interface Completion {
   percentage: number;
   passed: boolean;
   completed_at: string;
+  attempt_number?: number;
+  started_at?: string;
+  ended_at?: string;
+  duration_seconds?: number;
+  ip_address?: string;
+  user_agent?: string;
 }
 
 interface Certificate {
@@ -236,16 +242,16 @@ const Profile = () => {
         {/* Profile Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
-            <div className="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center">
-              <Shield className="h-8 w-8 text-primary" />
+            <div className="h-20 w-20 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center shadow-lg">
+              <Shield className="h-10 w-10 text-white" />
             </div>
             <div className="flex-1">
-              <h1 className="text-3xl font-bold">
+              <h1 className="text-4xl font-bold mb-1">
                 {profile?.full_name && profile.full_name !== user?.email 
                   ? profile.full_name 
                   : 'Welcome!'}
               </h1>
-              <p className="text-muted-foreground">{user?.email}</p>
+              <p className="text-sm text-muted-foreground">{user?.email}</p>
             </div>
           </div>
           <Button variant="outline" asChild>
@@ -338,28 +344,30 @@ const Profile = () => {
           </Card>
         )}
 
-        {/* Certificates */}
-        {certificates.length > 0 && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Award className="h-5 w-5 text-primary" />
-                My Certificates
-              </CardTitle>
-              <CardDescription>Download and view your earned certificates</CardDescription>
-            </CardHeader>
-            <CardContent>
+        {/* Certificates Section - Always visible */}
+        <Card className="mb-8 border-l-4 border-l-primary">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Award className="h-5 w-5 text-primary" />
+              My Certificates
+            </CardTitle>
+            <CardDescription>Download and view your earned certificates anytime</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {certificates.length > 0 ? (
               <div className="space-y-4">
                 {certificates.map((cert) => (
-                  <div key={cert.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
+                  <div key={cert.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="flex-1">
                       <h4 className="font-semibold">{getCourseTitle(cert.course_type)}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Registration: {cert.registration_number}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Issued: {format(new Date(cert.completion_date), 'MMMM d, yyyy')}
-                      </p>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
+                        <p className="text-sm text-muted-foreground">
+                          <span className="font-medium">Registration:</span> {cert.registration_number}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          <span className="font-medium">Issued:</span> {format(new Date(cert.completion_date), 'MMMM d, yyyy')}
+                        </p>
+                      </div>
                     </div>
                     <Button 
                       variant="outline" 
@@ -367,14 +375,87 @@ const Profile = () => {
                       onClick={() => downloadCertificate(cert)}
                     >
                       <Download className="h-4 w-4 mr-2" />
-                      Download
+                      Download PDF
                     </Button>
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
-        )}
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Award className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No certificates earned yet. Complete a course to earn your first certificate!</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Course History - Audit Log */}
+        <Card className="mb-8 border-l-4 border-l-blue-500">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-blue-500" />
+              My Course History
+            </CardTitle>
+            <CardDescription>Complete audit log of all your course attempts for regulatory review</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {completions.length > 0 ? (
+              <div className="space-y-3">
+                {completions.map((completion, idx) => (
+                  <div key={completion.id} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1">
+                        <h4 className="font-semibold">{getCourseTitle(completion.course_type)}</h4>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Attempt #{completion.attempt_number || idx + 1}
+                        </p>
+                      </div>
+                      <Badge variant={completion.passed ? "default" : "secondary"} className={completion.passed ? "bg-green-600" : ""}>
+                        {completion.passed ? (
+                          <>
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Passed
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="h-3 w-3 mr-1" />
+                            Failed
+                          </>
+                        )}
+                      </Badge>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                      <div>
+                        <p className="text-muted-foreground text-xs">Score</p>
+                        <p className="font-semibold">{completion.score}/{completion.total_questions} ({completion.percentage}%)</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground text-xs">Completed</p>
+                        <p className="font-medium">{format(new Date(completion.completed_at), 'MMM dd, yyyy')}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground text-xs">Time</p>
+                        <p className="font-medium">{format(new Date(completion.completed_at), 'h:mm a')}</p>
+                      </div>
+                      {completion.duration_seconds && (
+                        <div>
+                          <p className="text-muted-foreground text-xs">Duration</p>
+                          <p className="font-medium">{Math.floor(completion.duration_seconds / 60)} min</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No course attempts yet. Start a course to begin your learning journey!</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Browse More Courses */}
         <Card className="mb-8 bg-primary/5 border-primary/20">

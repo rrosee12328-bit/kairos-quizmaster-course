@@ -40,6 +40,7 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
   const [showResults, setShowResults] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState<string>("");
+  const [startTime] = useState(new Date().toISOString());
 
   const handleAnswerSelect = (value: string) => {
     setSelectedAnswer(value);
@@ -118,7 +119,10 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
       ? `${enrollment.first_name} ${enrollment.last_name}` 
       : 'Student';
 
-    // Save course completion
+    // Save course completion with attempt tracking
+    const endTime = new Date().toISOString();
+    const durationSeconds = Math.floor((new Date(endTime).getTime() - new Date(startTime).getTime()) / 1000);
+    
     const { data: completionData, error: completionError } = await supabase
       .from('course_completions')
       .insert({
@@ -127,7 +131,11 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
         score,
         total_questions: questions.length,
         percentage,
-        passed
+        passed,
+        started_at: startTime,
+        ended_at: endTime,
+        duration_seconds: durationSeconds,
+        user_agent: navigator.userAgent
       })
       .select()
       .single();
