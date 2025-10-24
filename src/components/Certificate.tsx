@@ -35,14 +35,14 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
         className="w-full h-full object-cover"
       />
       {/* Student Name and ID Number - on the same line */}
-      <div className="absolute top-[32%] left-0 right-0 flex items-center justify-center gap-12" style={{ letterSpacing: '0.03em' }}>
-        <p className={`${exportMode ? 'text-[36pt]' : 'text-[1.75rem]'} font-semibold text-foreground leading-none`} style={{ textShadow: exportMode ? '0 0 1px rgba(0,0,0,0.1)' : 'none' }}>{userName || "Student Name"}</p>
-        <p className={`${exportMode ? 'text-[24pt]' : 'text-[1.125rem]'} font-normal text-foreground leading-none`} style={{ textShadow: exportMode ? '0 0 1px rgba(0,0,0,0.1)' : 'none' }}>{formatIdNumber()}</p>
+      <div className="absolute top-[33.5%] left-0 right-0 flex items-baseline justify-center gap-12" style={{ letterSpacing: '0.03em', transform: 'translateY(-50%)' }}>
+        <p className={`${exportMode ? 'text-[26pt]' : 'text-[1.75rem]'} font-semibold text-foreground leading-none`} style={{ textShadow: exportMode ? '0 0 1px rgba(0,0,0,0.1)' : 'none' }}>{userName || "Student Name"}</p>
+        <p className={`${exportMode ? 'text-[20pt]' : 'text-[1.125rem]'} font-normal text-foreground leading-none`} style={{ textShadow: exportMode ? '0 0 1px rgba(0,0,0,0.1)' : 'none' }}>{formatIdNumber()}</p>
       </div>
       
       {/* Date of Completion */}
-      <div className="absolute top-[48.3%] left-[57%]">
-        <p className={`${exportMode ? 'text-[22pt]' : 'text-[1.125rem]'} font-normal text-foreground leading-none`} style={{ letterSpacing: '0.02em', textShadow: exportMode ? '0 0 1px rgba(0,0,0,0.1)' : 'none' }}>{formatDate(courseCompletionDate)}</p>
+      <div className="absolute top-[48.8%] left-[57%]" style={{ transform: 'translateY(-50%)' }}>
+        <p className={`${exportMode ? 'text-[20pt]' : 'text-[1.125rem]'} font-normal text-foreground leading-none`} style={{ letterSpacing: '0.02em', textShadow: exportMode ? '0 0 1px rgba(0,0,0,0.1)' : 'none' }}>{formatDate(courseCompletionDate)}</p>
       </div>
     </div>
   );
