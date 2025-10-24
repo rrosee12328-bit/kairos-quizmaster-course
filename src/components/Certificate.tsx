@@ -4,14 +4,25 @@ interface CertificateProps {
   userName?: string;
   registrationNumber?: string;
   courseCompletionDate?: string;
+  idType?: string;
+  lastSixDigits?: string;
 }
 
-const Certificate = ({ userName, registrationNumber, courseCompletionDate }: CertificateProps) => {
+const Certificate = ({ userName, registrationNumber, courseCompletionDate, idType, lastSixDigits }: CertificateProps) => {
   // Format date to MM/DD/YYYY
   const formatDate = (dateString?: string) => {
     if (!dateString) return "MM/DD/YYYY";
     const date = new Date(dateString);
     return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+  };
+
+  // Format ID number
+  const formatIdNumber = () => {
+    if (!lastSixDigits) return "";
+    if (idType === 'SSN' || idType === 'ssn') {
+      return `***-**-${lastSixDigits}`;
+    }
+    return `DL: ${lastSixDigits}`;
   };
 
   return (
@@ -26,12 +37,17 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate }: Cer
         <p className="text-2xl font-bold text-foreground">{userName || "Student Name"}</p>
       </div>
       
-      {/* Registration Number - positioned next to student name */}
+      {/* Registration Number */}
       <div className="absolute top-[32.5%] left-[60%]">
-        <p className="text-xl font-bold text-foreground">{registrationNumber || "123456"}</p>
+        <p className="text-xl font-bold text-foreground">{registrationNumber || "REG-000000"}</p>
       </div>
       
-      {/* Date of Completion - positioned at date field */}
+      {/* Identification Number */}
+      <div className="absolute top-[37%] left-[60%]">
+        <p className="text-sm font-semibold text-foreground">{formatIdNumber()}</p>
+      </div>
+      
+      {/* Date of Completion */}
       <div className="absolute top-[48.3%] left-[57%]">
         <p className="text-base font-semibold text-foreground">{formatDate(courseCompletionDate)}</p>
       </div>
