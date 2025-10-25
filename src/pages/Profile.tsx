@@ -54,6 +54,8 @@ const Profile = () => {
   const [completions, setCompletions] = useState<Completion[]>([]);
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [profile, setProfile] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [viewingAsAdmin, setViewingAsAdmin] = useState(false);
 
   useEffect(() => {
     checkUser();
@@ -69,7 +71,29 @@ const Profile = () => {
     }
 
     setUser(user);
-    await fetchUserData(user.id, user.email || '');
+
+    // Check if user is admin
+    const { data: adminCheck } = await supabase.rpc('is_admin', { _user_id: user.id });
+    setIsAdmin(adminCheck || false);
+
+    // Check for userId query parameter (admin viewing student profile)
+    const params = new URLSearchParams(window.location.search);
+    const targetUserId = params.get('userId');
+    
+    if (targetUserId && adminCheck) {
+      // Admin is viewing another user's profile
+      setViewingAsAdmin(true);
+      const { data: targetProfile } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('id', targetUserId)
+        .single();
+      
+      await fetchUserData(targetUserId, targetProfile?.email || '');
+    } else {
+      // Viewing own profile
+      await fetchUserData(user.id, user.email || '');
+    }
   };
 
   const fetchUserData = async (userId: string, userEmail: string) => {
@@ -242,6 +266,17 @@ const Profile = () => {
       </header>
 
       <main className="flex-1 container mx-auto px-6 py-12">
+        {/* Admin Viewing Banner */}
+        {viewingAsAdmin && (
+          <Alert className="mb-6 border-blue-500 bg-blue-50 dark:bg-blue-950">
+            <Shield className="h-4 w-4 text-blue-600" />
+            <AlertTitle className="text-blue-900 dark:text-blue-100">Admin View</AlertTitle>
+            <AlertDescription className="text-blue-800 dark:text-blue-200">
+              You are viewing {profile?.full_name || profile?.email}'s profile. This is what they see.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Profile Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">

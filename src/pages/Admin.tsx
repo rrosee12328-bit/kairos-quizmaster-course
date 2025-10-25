@@ -644,6 +644,18 @@ const Admin = () => {
           
           {userDetails && (
             <div className="mt-6 space-y-6">
+              {/* View as User Button */}
+              <Button
+                className="w-full"
+                variant="outline"
+                onClick={() => {
+                  window.open(`/profile?userId=${selectedUser}`, '_blank');
+                }}
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                View Student Profile
+              </Button>
+
               {/* Profile Info */}
               <div className="p-4 bg-muted rounded-lg">
                 <h3 className="font-semibold mb-2">Profile Information</h3>
@@ -660,10 +672,24 @@ const Admin = () => {
                 <div className="space-y-2">
                   {userDetails.certificates.map((cert: any) => (
                     <div key={cert.id} className="p-3 border rounded-lg text-sm">
-                      <p className="font-medium">{getCourseTitle(cert.course_type)}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {cert.registration_number} • {format(new Date(cert.completion_date), 'MMM dd, yyyy')}
-                      </p>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="font-medium">{getCourseTitle(cert.course_type)}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {cert.registration_number} • {format(new Date(cert.completion_date), 'MMM dd, yyyy')}
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            navigate(`/certificate-preview?name=${encodeURIComponent(cert.student_name)}&id=${encodeURIComponent(cert.identification_type)}&lastSix=${encodeURIComponent(cert.last_six_digits)}&date=${encodeURIComponent(cert.completion_date)}`);
+                          }}
+                        >
+                          <Download className="h-3 w-3 mr-1" />
+                          View
+                        </Button>
+                      </div>
                     </div>
                   ))}
                   {userDetails.certificates.length === 0 && (
