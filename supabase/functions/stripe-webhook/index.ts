@@ -140,24 +140,17 @@ serve(async (req) => {
       // Send enrollment confirmation email
       try {
         console.log("[stripe-webhook] Sending enrollment confirmation email");
-        const emailResponse = await fetch(
-          `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-enrollment-confirmation`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              email: enrollmentData.email,
-              firstName: enrollmentData.firstName,
-              lastName: enrollmentData.lastName,
-              courseType: enrollmentData.courseType,
-            }),
-          }
-        );
+        const emailResponse = await supabaseClient.functions.invoke('send-enrollment-confirmation', {
+          body: {
+            email: enrollmentData.email,
+            firstName: enrollmentData.firstName,
+            lastName: enrollmentData.lastName,
+            courseType: enrollmentData.courseType,
+          },
+        });
         
-        if (!emailResponse.ok) {
-          console.error("[stripe-webhook] Failed to send confirmation email:", await emailResponse.text());
+        if (emailResponse.error) {
+          console.error("[stripe-webhook] Failed to send confirmation email:", emailResponse.error);
         } else {
           console.log("[stripe-webhook] Confirmation email sent successfully");
         }
