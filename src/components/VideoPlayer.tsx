@@ -287,9 +287,9 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
         const dur = data?.duration ?? duration ?? 0;
         const percentRaw = typeof data?.percent === 'number' ? data.percent : null;
 
-        // Prevent forward seeking beyond watched + 10s
-        if (current > maxWatchedRef.current + 10) {
-          console.log('[Bunny] prevent seek forward', { current, max: maxWatchedRef.current });
+        // Prevent ANY forward seeking beyond watched position (strict mode)
+        if (current > maxWatchedRef.current + 0) {
+          console.log('[Bunny] strict mode: prevent forward seek', { current, max: maxWatchedRef.current });
           try { p.setCurrentTime(maxWatchedRef.current); } catch {}
           return;
         }
@@ -321,10 +321,10 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
       });
 
       p.on('seeked', () => {
-        // If user tries to seek forward, snap back
+        // If user tries to seek forward, snap back (strict mode with minimal buffer for timing)
         p.getCurrentTime((t: number) => {
-          if (t > maxWatchedRef.current + 0.5) {
-            console.log('[Bunny] seeked forward, snapping back', { t, max: maxWatchedRef.current });
+          if (t > maxWatchedRef.current + 0.1) {
+            console.log('[Bunny] strict mode: seeked forward, snapping back', { t, max: maxWatchedRef.current });
             try { p.setCurrentTime(maxWatchedRef.current); } catch {}
           }
         });
