@@ -201,23 +201,60 @@ const CertificatePreview = () => {
     }
   };
 
-  const printCertificate = () => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      toast({
-        title: "Error",
-        description: "Please allow pop-ups to print",
-        variant: "destructive",
-      });
-      return;
-    }
+  const printCertificate = async () => {
+    try {
+      const exportEl = document.getElementById('certificate-export');
+      const displayEl = document.getElementById('certificate-display');
+      const fallbackEl = document.getElementById('certificate');
+      const certificateElement = exportEl || displayEl || fallbackEl;
+      if (!certificateElement) {
+        throw new Error('Certificate element not found');
+      }
 
-    const exportEl = document.getElementById('certificate-export');
-    const displayEl = document.getElementById('certificate-display');
-    const certificateElement = exportEl || displayEl;
-    
-    if (certificateElement) {
-      const certificateHtml = certificateElement.outerHTML;
+      // Ensure fonts and images are fully loaded before rendering
+      try {
+        // @ts-ignore
+        if ((document as any).fonts && (document as any).fonts.ready) {
+          await (document as any).fonts.ready;
+        }
+      } catch {}
+
+      const imgs = Array.from((certificateElement as HTMLElement).querySelectorAll('img')) as HTMLImageElement[];
+      await Promise.all(
+        imgs.map((img) => {
+          if (img.complete) {
+            // @ts-ignore
+            return typeof img.decode === 'function' ? img.decode().catch(() => {}) : Promise.resolve();
+          }
+          return new Promise<void>((res) => {
+            img.onload = () => res();
+            img.onerror = () => res();
+          });
+        })
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      const canvas = await html2canvas(certificateElement as HTMLElement, {
+        scale: 3,
+        backgroundColor: '#ffffff',
+        logging: false,
+        useCORS: true,
+        allowTaint: true,
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        toast({
+          title: 'Error',
+          description: 'Please allow pop-ups to print',
+          variant: 'destructive',
+        });
+        return;
+      }
+
       printWindow.document.write(`
         <!DOCTYPE html>
         <html>
@@ -228,25 +265,45 @@ const CertificatePreview = () => {
                 body { margin: 0; padding: 0; }
                 @page { margin: 0; size: landscape; }
               }
-              body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+              * { box-sizing: border-box; }
+              html, body { height: 100%; }
+              body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #fff; }
+              img { max-width: 100vw; height: auto; display: block; }
             </style>
           </head>
           <body>
-            ${certificateHtml}
+            <img id="print-image" src="${imgData}" alt="Certificate Preview" />
             <script>
-              window.onload = function() {
-                setTimeout(function() {
-                  window.print();
-                  window.onafterprint = function() {
-                    window.close();
-                  };
-                }, 250);
-              };
+              (function() {
+                const img = document.getElementById('print-image');
+                function doPrint() {
+                  setTimeout(function() {
+                    window.print();
+                    window.onafterprint = function() { window.close(); };
+                  }, 150);
+                }
+                if (img && 'decode' in img) {
+                  // @ts-ignore
+                  img.decode().then(doPrint).catch(doPrint);
+                } else if (img) {
+                  img.onload = doPrint;
+                  img.onerror = doPrint;
+                } else {
+                  doPrint();
+                }
+              })();
             </script>
           </body>
         </html>
       `);
       printWindow.document.close();
+    } catch (error) {
+      console.error('Print error:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to prepare print preview',
+        variant: 'destructive',
+      });
     }
   };
 
