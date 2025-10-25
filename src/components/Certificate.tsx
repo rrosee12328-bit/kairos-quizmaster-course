@@ -41,7 +41,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
       </div>
       
       {/* Date of Completion */}
-      <div className="absolute top-[50.7%] left-[52.2%]">
+      <div className="absolute top-[50.7%] left-[53.4%]">
         <p className={`${exportMode ? 'text-[20pt]' : 'text-[1.125rem]'} font-normal text-foreground leading-none`} style={{ letterSpacing: '0.02em', transform: 'translateY(-14px)', textShadow: exportMode ? '0 0 1px rgba(0,0,0,0.1)' : 'none' }}>{formatDate(courseCompletionDate)}</p>
       </div>
     </div>
