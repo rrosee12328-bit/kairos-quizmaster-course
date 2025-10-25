@@ -56,12 +56,14 @@ serve(async (req) => {
 
     console.log(`Syncing enrollments for user: ${userId}, email: ${userEmail}`);
 
-    // Fetch enrollments that match the email but don't have a user_id
+    // Fetch enrollments that match the email and either:
+    // 1. Don't have a user_id (need to link)
+    // 2. Have a user_id but status is still "pending" (need to update status)
     const { data: enrollments, error: fetchError } = await supabase
       .from('enrollments')
       .select('*')
       .eq('email', userEmail)
-      .is('user_id', null);
+      .or('user_id.is.null,enrollment_status.eq.pending');
 
     if (fetchError) {
       console.error('Error fetching enrollments:', fetchError);
@@ -93,7 +95,10 @@ serve(async (req) => {
     
     const { error: updateError } = await supabaseAdmin
       .from('enrollments')
-      .update({ user_id: userId })
+      .update({ 
+        user_id: userId,
+        enrollment_status: 'enrolled'
+      })
       .in('id', enrollmentIds);
 
     if (updateError) {
