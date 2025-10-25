@@ -64,13 +64,15 @@ serve(async (req) => {
       );
     }
 
+    // Extract JWT token from "Bearer <token>" format
+    const token = authHeader.replace('Bearer ', '');
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: authHeader } } }
+      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     );
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
     if (userError || !user) {
       console.error('Auth error:', userError?.message || 'No user found');
       return new Response(
