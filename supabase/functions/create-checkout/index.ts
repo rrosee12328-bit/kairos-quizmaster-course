@@ -75,12 +75,17 @@ serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://";
 
+    // Redirect to auth page for new users (guest), courses page for logged-in users
+    const successUrl = userId 
+      ? `${origin}/courses?payment=success&course=${courseType || 'level2'}`
+      : `${origin}/auth?payment=success&course=${courseType || 'level2'}`;
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : (userEmail || (typeof email === 'string' ? email : undefined) || undefined),
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "payment",
-      success_url: `${origin}/courses?payment=success&course=${courseType || 'level2'}`,
+      success_url: successUrl,
       cancel_url: `${origin}/checkout/${courseType || 'level2'}?payment=canceled`,
       metadata: {
         courseType: courseType || 'unknown',
