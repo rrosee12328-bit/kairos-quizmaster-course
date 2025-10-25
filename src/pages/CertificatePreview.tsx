@@ -51,8 +51,13 @@ const CertificatePreview = () => {
 
         // Auto-download if requested
         if (autoDownload) {
-          setTimeout(() => {
-            downloadCertificate();
+          setTimeout(async () => {
+            await downloadCertificate();
+            // Show success message that user can close the window
+            toast({
+              title: "Download Complete",
+              description: "You can now close this window",
+            });
           }, 500);
         }
         return;
@@ -172,7 +177,52 @@ const CertificatePreview = () => {
   };
 
   const printCertificate = () => {
-    window.print();
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast({
+        title: "Error",
+        description: "Please allow pop-ups to print",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const exportEl = document.getElementById('certificate-export');
+    const displayEl = document.getElementById('certificate-display');
+    const certificateElement = exportEl || displayEl;
+    
+    if (certificateElement) {
+      const certificateHtml = certificateElement.outerHTML;
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Certificate - ${userName}</title>
+            <style>
+              @media print {
+                body { margin: 0; padding: 0; }
+                @page { margin: 0; size: landscape; }
+              }
+              body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+            </style>
+          </head>
+          <body>
+            ${certificateHtml}
+            <script>
+              window.onload = function() {
+                setTimeout(function() {
+                  window.print();
+                  window.onafterprint = function() {
+                    window.close();
+                  };
+                }, 250);
+              };
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
   };
 
   const sendCertificateEmail = async () => {
@@ -216,10 +266,16 @@ const CertificatePreview = () => {
     }
   };
 
+  // Show minimal UI when auto-downloading
+  const isAutoDownload = searchParams.get('download') === 'true';
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center">
-        <Shield className="h-12 w-12 animate-spin text-primary" />
+        <div className="text-center space-y-4">
+          <Shield className="h-12 w-12 animate-spin text-primary mx-auto" />
+          {isAutoDownload && <p className="text-lg">Preparing your certificate download...</p>}
+        </div>
       </div>
     );
   }
@@ -261,7 +317,7 @@ const CertificatePreview = () => {
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-muted-foreground">Last 6 Digits</Label>
-                  <p className="text-base font-mono font-normal leading-snug">***-**-{lastSixDigits}</p>
+                  <p className="text-base font-mono font-normal leading-snug">{lastSixDigits}</p>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-muted-foreground">Registration Number</Label>

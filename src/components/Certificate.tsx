@@ -21,9 +21,6 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
   // Format ID number
   const formatIdNumber = () => {
     if (!lastSixDigits) return "";
-    if (idType === 'SSN' || idType === 'ssn') {
-      return `***-**-${lastSixDigits}`;
-    }
     return lastSixDigits;
   };
 
