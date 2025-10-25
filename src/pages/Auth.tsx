@@ -15,9 +15,24 @@ const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const params = new URLSearchParams(location.search);
-  const redirectPath = params.get('redirect') || '/profile';
   const courseFromUrl = params.get('course') || undefined;
   const paymentSuccess = params.get('payment') === 'success';
+  
+  // If there's a course parameter, redirect to that course page after auth
+  const getCourseRedirectPath = () => {
+    if (courseFromUrl) {
+      const courseMap: Record<string, string> = {
+        'level2': '/level2',
+        'level3': '/level3',
+        'level4': '/level4',
+        'pepper-spray': '/pepper-spray'
+      };
+      return courseMap[courseFromUrl] || '/courses';
+    }
+    return params.get('redirect') || '/profile';
+  };
+  
+  const redirectPath = getCourseRedirectPath();
 
   const processPendingEnrollment = async (sessionUser: User) => {
     try {
