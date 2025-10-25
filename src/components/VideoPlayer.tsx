@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { SkipForward } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
+import { supabase } from "@/integrations/supabase/client";
 interface VideoPlayerProps {
   section: {
     id: number;
@@ -25,9 +25,10 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
   const isCompleteRef = useRef(false);
   const readyRef = useRef(false);
   const retryCountRef = useRef(0);
+  const signedRefreshesRef = useRef(0);
   const onCompleteRef = useRef(onComplete);
   const onNextRef = useRef(onNext);
-
+  const [overrideUrl, setOverrideUrl] = useState<string | null>(null);
   // Extract Bunny.net video ID from URL
   const getBunnyVideoId = (url: string) => {
     // Handle Bunny.net embed URLs like: https://iframe.mediadelivery.net/embed/{libraryId}/{videoId}
@@ -42,6 +43,7 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
 
   // Build iframe src using signed URL if provided (preserves token)
   const buildIframeSrc = () => {
+    if (overrideUrl) return `${overrideUrl}&ts=${Date.now()}&rt=${reloadTick}`;
     const uStr = section.videoUrl;
     if (uStr && uStr.startsWith('https://iframe.mediadelivery.net/embed/')) {
       try {
@@ -65,6 +67,32 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
       : '';
   };
   const iframeSrc = buildIframeSrc();
+
+  const handleIframeError = async () => {
+    console.error('[VideoPlayer] iframe load error for video:', videoId);
+    if (!videoId) return;
+    if (signedRefreshesRef.current >= 2) return;
+    try {
+      const { data, error } = await supabase.functions.invoke('bunny-video', {
+        body: {
+          action: 'getSignedUrl',
+          libraryId,
+          videoId,
+          expiresInHours: 24,
+        },
+      });
+      if (!error && data?.signedUrl) {
+        signedRefreshesRef.current += 1;
+        setOverrideUrl(data.signedUrl);
+        setReloadTick((t) => t + 1);
+        console.log('[VideoPlayer] refreshed signed URL');
+      } else {
+        console.error('[VideoPlayer] failed to refresh signed URL', error || data);
+      }
+    } catch (e) {
+      console.error('[VideoPlayer] error refreshing signed URL', e);
+    }
+  };
 
   useEffect(() => {
     onCompleteRef.current = onComplete;
@@ -312,9 +340,7 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
                 }}
                 allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
                 allowFullScreen
-                onError={(e) => {
-                  console.error('[VideoPlayer] iframe load error for video:', videoId);
-                }}
+                onError={handleIframeError}
               />
             </div>
           ) : isActive && !videoId && section.videoUrl ? (
