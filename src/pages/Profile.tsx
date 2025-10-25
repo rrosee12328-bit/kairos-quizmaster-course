@@ -558,7 +558,7 @@ const Profile = () => {
               <div className="space-y-4">
                 {enrollments.map((enrollment) => {
                   const completion = completions.find(c => c.course_type === enrollment.course_type);
-                  const canAccess = enrollment.enrollment_status === 'enrolled' && !completion;
+                  const canAccess = (enrollment.enrollment_status === 'enrolled' || enrollment.enrollment_status === 'pending') && !completion;
                   
                   return (
                     <div key={enrollment.id} className={`border rounded-lg p-4 ${canAccess ? 'cursor-pointer hover:border-primary hover:shadow-md' : ''} transition-all`}>
