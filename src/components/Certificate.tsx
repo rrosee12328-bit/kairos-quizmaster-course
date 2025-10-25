@@ -14,14 +14,23 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
   // Format date to MM/DD/YYYY
   const formatDate = (dateString?: string) => {
     if (!dateString) return "MM/DD/YYYY";
-    const date = new Date(dateString);
+    // Handle plain date strings (YYYY-MM-DD) without timezone shift
+    const isoDateMatch = /^\d{4}-\d{2}-\d{2}$/;
+    let date: Date;
+    if (isoDateMatch.test(dateString)) {
+      const [y, m, d] = dateString.split('-').map(Number);
+      date = new Date(y, (m || 1) - 1, d || 1);
+    } else {
+      date = new Date(dateString);
+    }
+    if (isNaN(date.getTime())) return "MM/DD/YYYY";
     return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
   };
-
-  // Format ID number
+  // Format ID number (digits only, last 6)
   const formatIdNumber = () => {
     if (!lastSixDigits) return "";
-    return lastSixDigits;
+    const digits = String(lastSixDigits).replace(/\D/g, "");
+    return digits.slice(-6);
   };
 
   return (

@@ -134,8 +134,33 @@ const CertificatePreview = () => {
         throw new Error('Certificate element not found');
       }
 
-      // Wait a bit to ensure fonts are loaded and rendered
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Ensure fonts and images are fully loaded before rendering
+      try {
+        // Wait for all fonts to be ready
+        // @ts-ignore
+        if ((document as any).fonts && (document as any).fonts.ready) {
+          await (document as any).fonts.ready;
+        }
+      } catch {}
+
+      // Wait for images inside the certificate to load
+      const imgs = Array.from((certificateElement as HTMLElement).querySelectorAll('img')) as HTMLImageElement[];
+      await Promise.all(
+        imgs.map((img) => {
+          if (img.complete) {
+            // decode() is more reliable when available
+            // @ts-ignore
+            return typeof img.decode === 'function' ? img.decode().catch(() => {}) : Promise.resolve();
+          }
+          return new Promise<void>((res) => {
+            img.onload = () => res();
+            img.onerror = () => res();
+          });
+        })
+      );
+
+      // Small extra delay to stabilize layout
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       const canvas = await html2canvas(certificateElement as HTMLElement, {
         scale: 3, // Increased scale for better quality
