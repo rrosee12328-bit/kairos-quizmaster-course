@@ -116,7 +116,9 @@ const Profile = () => {
       
       // Check if there are enrollments to sync
       if (enrollmentData) {
-        const enrollmentsToUpdate = enrollmentData.filter(e => !e.user_id && e.email === userEmail);
+        const enrollmentsToUpdate = enrollmentData.filter(e => 
+          e.email === userEmail && (!e.user_id || e.enrollment_status === 'pending')
+        );
         if (enrollmentsToUpdate.length > 0) {
           console.log('Syncing enrollments with user account:', enrollmentsToUpdate.length);
           
