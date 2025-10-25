@@ -40,6 +40,32 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
   const libraryIdMatch = section.videoUrl.match(/embed\/(\d+)\//);
   const libraryId = libraryIdMatch ? libraryIdMatch[1] : '510506';
 
+  // Build iframe src using signed URL if provided (preserves token)
+  const buildIframeSrc = () => {
+    const uStr = section.videoUrl;
+    if (uStr && uStr.startsWith('https://iframe.mediadelivery.net/embed/')) {
+      try {
+        const u = new URL(uStr);
+        u.searchParams.set('autoplay', 'false');
+        u.searchParams.set('preload', 'true');
+        u.searchParams.set('playsinline', 'true');
+        u.searchParams.set('showSpeed', 'false');
+        u.searchParams.set('rememberPosition', 'false');
+        u.searchParams.set('playerjs', '1');
+        u.searchParams.set('ts', String(Date.now()));
+        u.searchParams.set('rt', String(reloadTick));
+        return u.toString();
+      } catch {
+        return uStr; // fallback to provided URL
+      }
+    }
+    // Fallback (shouldn't be needed if signed URL exists)
+    return videoId
+      ? `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?autoplay=false&preload=true&playsinline=true&showSpeed=false&rememberPosition=false&playerjs=1&ts=${Date.now()}&rt=${reloadTick}`
+      : '';
+  };
+  const iframeSrc = buildIframeSrc();
+
   useEffect(() => {
     onCompleteRef.current = onComplete;
   }, [onComplete]);
@@ -274,7 +300,7 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
               <iframe
                 key={`${videoId}-${reloadTick}`}
                 ref={iframeRef}
-                src={`https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?autoplay=false&preload=true&playsinline=true&showSpeed=false&rememberPosition=false&playerjs=1&ts=${Date.now()}&rt=${reloadTick}`}
+                src={iframeSrc}
                 loading="lazy" scrolling="no"
                 style={{
                   border: 0,
