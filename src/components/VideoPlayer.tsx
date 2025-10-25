@@ -10,12 +10,13 @@ interface VideoPlayerProps {
     videoUrl: string;
     duration: string;
   };
+  courseType?: string;
   isActive?: boolean;
   onComplete: () => void;
   onNext: () => void;
 }
 
-const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlayerProps) => {
+const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext }: VideoPlayerProps) => {
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [reloadTick, setReloadTick] = useState(0);
@@ -29,6 +30,9 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
   const onCompleteRef = useRef(onComplete);
   const onNextRef = useRef(onNext);
   const [overrideUrl, setOverrideUrl] = useState<string | null>(null);
+  const videoStartTimeRef = useRef<number | null>(null);
+  const totalWatchTimeRef = useRef(0);
+  
   // Extract Bunny.net video ID from URL
   const getBunnyVideoId = (url: string) => {
     // Handle Bunny.net embed URLs like: https://iframe.mediadelivery.net/embed/{libraryId}/{videoId}
@@ -91,6 +95,50 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
       }
     } catch (e) {
       console.error('[VideoPlayer] error refreshing signed URL', e);
+    }
+  };
+
+  const saveVideoWatchTime = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !courseType) return;
+
+      const watchTimeSeconds = totalWatchTimeRef.current;
+      console.log('[VideoPlayer] Saving watch time:', watchTimeSeconds, 'seconds for section', section.id);
+
+      // Check if progress record exists
+      const { data: existing } = await supabase
+        .from('course_progress')
+        .select('id, video_started_at')
+        .eq('user_id', user.id)
+        .eq('course_type', courseType)
+        .eq('section_id', section.id)
+        .single();
+
+      if (existing) {
+        await supabase
+          .from('course_progress')
+          .update({
+            video_watch_time_seconds: watchTimeSeconds,
+            completed: true,
+            completed_at: new Date().toISOString()
+          })
+          .eq('id', existing.id);
+      } else {
+        await supabase
+          .from('course_progress')
+          .insert({
+            user_id: user.id,
+            course_type: courseType,
+            section_id: section.id,
+            video_started_at: new Date().toISOString(),
+            video_watch_time_seconds: watchTimeSeconds,
+            completed: true,
+            completed_at: new Date().toISOString()
+          });
+      }
+    } catch (error) {
+      console.error('[VideoPlayer] Error saving watch time:', error);
     }
   };
 
@@ -187,6 +235,8 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
         setIsComplete(false);
         isCompleteRef.current = false;
         maxWatchedRef.current = 0;
+        videoStartTimeRef.current = null;
+        totalWatchTimeRef.current = 0;
 
         const updateDuration = () => {
           if (!isMounted) return;
@@ -283,19 +333,46 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
       p.on('ended', () => {
         if (!isMounted) return;
         console.log('[Bunny] ended');
+        // Stop watch time tracking
+        if (videoStartTimeRef.current) {
+          totalWatchTimeRef.current += Math.floor((Date.now() - videoStartTimeRef.current) / 1000);
+          videoStartTimeRef.current = null;
+        }
         if (!isCompleteRef.current) {
           isCompleteRef.current = true;
           setIsComplete(true);
+          // Save watch time to database
+          saveVideoWatchTime();
           onCompleteRef.current?.();
           setTimeout(() => onNextRef.current?.(), 300);
         }
+      });
+
+      p.on('play', () => {
+        if (!isMounted) return;
+        if (!videoStartTimeRef.current) {
+          videoStartTimeRef.current = Date.now();
+          console.log('[Bunny] started watching');
+        }
+      });
+
+      p.on('pause', () => {
+        if (!isMounted || !videoStartTimeRef.current) return;
+        totalWatchTimeRef.current += Math.floor((Date.now() - videoStartTimeRef.current) / 1000);
+        videoStartTimeRef.current = null;
+        console.log('[Bunny] paused, total watch time:', totalWatchTimeRef.current);
       });
     };
 
     setup();
 
-    return () => {
+      return () => {
       isMounted = false;
+      // Save watch time before cleanup
+      if (videoStartTimeRef.current) {
+        totalWatchTimeRef.current += Math.floor((Date.now() - videoStartTimeRef.current) / 1000);
+        videoStartTimeRef.current = null;
+      }
       // Clear all intervals
       try { window.clearInterval(bootstrapPoll); } catch {}
       try { window.clearInterval(completionPoll); } catch {}
@@ -309,6 +386,8 @@ const VideoPlayer = ({ section, isActive = true, onComplete, onNext }: VideoPlay
           playerRef.current.off?.('timeupdate');
           playerRef.current.off?.('seeked');
           playerRef.current.off?.('ended');
+          playerRef.current.off?.('play');
+          playerRef.current.off?.('pause');
         } catch {}
         playerRef.current = null;
       }

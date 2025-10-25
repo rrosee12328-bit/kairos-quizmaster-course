@@ -118,6 +118,7 @@ const Level4Course = () => {
               videoUrl: videoUrl,
               duration: "Training Video",
             }}
+            courseType="level4"
             isActive={true}
             onComplete={handleComplete}
             onNext={() => {}}

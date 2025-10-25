@@ -264,10 +264,17 @@ const Admin = () => {
       .eq('id', userId)
       .single();
 
+    const { data: userProgress } = await supabase
+      .from('course_progress')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
     setUserDetails({
       profile: userProfile,
       completions: userCompletions || [],
       certificates: userCerts || [],
+      progress: userProgress || [],
     });
   };
 
@@ -730,6 +737,40 @@ const Admin = () => {
                   ))}
                 </div>
               </div>
+
+              {/* Video Watch Time */}
+              {userDetails.progress && userDetails.progress.length > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-3">Video Watch Time</h3>
+                  <div className="space-y-2">
+                    {userDetails.progress
+                      .filter((p: any) => p.video_watch_time_seconds)
+                      .map((p: any) => (
+                        <div key={p.id} className="p-3 border rounded-lg text-sm">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="font-medium">{getCourseTitle(p.course_type)}</p>
+                              <p className="text-xs text-muted-foreground">Section {p.section_id}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-semibold text-primary">
+                                {Math.floor(p.video_watch_time_seconds / 60)} min {p.video_watch_time_seconds % 60} sec
+                              </p>
+                              {p.video_started_at && (
+                                <p className="text-xs text-muted-foreground">
+                                  {format(new Date(p.video_started_at), 'MMM dd, h:mm a')}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    {userDetails.progress.filter((p: any) => p.video_watch_time_seconds).length === 0 && (
+                      <p className="text-sm text-muted-foreground">No video watch time recorded yet</p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </SheetContent>

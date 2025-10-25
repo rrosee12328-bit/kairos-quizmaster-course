@@ -137,6 +137,8 @@ export type Database = {
           section_id: number
           updated_at: string
           user_id: string
+          video_started_at: string | null
+          video_watch_time_seconds: number | null
         }
         Insert: {
           completed?: boolean | null
@@ -147,6 +149,8 @@ export type Database = {
           section_id: number
           updated_at?: string
           user_id: string
+          video_started_at?: string | null
+          video_watch_time_seconds?: number | null
         }
         Update: {
           completed?: boolean | null
@@ -157,6 +161,8 @@ export type Database = {
           section_id?: number
           updated_at?: string
           user_id?: string
+          video_started_at?: string | null
+          video_watch_time_seconds?: number | null
         }
         Relationships: []
       }

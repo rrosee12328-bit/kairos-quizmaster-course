@@ -323,6 +323,7 @@ const Course = () => {
                         videoUrl: section.videoUrl || "",
                         duration: section.duration,
                       }}
+                      courseType="level3"
                       isActive={currentSlide === idx}
                       onComplete={() => handleSectionComplete(section.id)}
                       onNext={handleNextSlide}

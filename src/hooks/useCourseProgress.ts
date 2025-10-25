@@ -36,7 +36,7 @@ export const useCourseProgress = (courseType: string, totalSections: number) => 
     }
   };
 
-  const markSectionComplete = async (sectionId: number) => {
+  const markSectionStart = async (sectionId: number) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -44,20 +44,64 @@ export const useCourseProgress = (courseType: string, totalSections: number) => 
       // Check if already exists
       const { data: existing } = await supabase
         .from('course_progress')
-        .select('id')
+        .select('id, video_started_at')
         .eq('user_id', user.id)
         .eq('course_type', courseType)
         .eq('section_id', sectionId)
         .single();
 
+      if (existing && !existing.video_started_at) {
+        // Update with start time
+        await supabase
+          .from('course_progress')
+          .update({
+            video_started_at: new Date().toISOString()
+          })
+          .eq('id', existing.id);
+      } else if (!existing) {
+        // Insert new with start time
+        await supabase
+          .from('course_progress')
+          .insert({
+            user_id: user.id,
+            course_type: courseType,
+            section_id: sectionId,
+            video_started_at: new Date().toISOString()
+          });
+      }
+    } catch (error) {
+      console.error('Error marking section start:', error);
+    }
+  };
+
+  const markSectionComplete = async (sectionId: number, watchTimeSeconds?: number) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Check if already exists
+      const { data: existing } = await supabase
+        .from('course_progress')
+        .select('id, video_started_at')
+        .eq('user_id', user.id)
+        .eq('course_type', courseType)
+        .eq('section_id', sectionId)
+        .single();
+
+      const updateData: any = {
+        completed: true,
+        completed_at: new Date().toISOString()
+      };
+
+      if (watchTimeSeconds) {
+        updateData.video_watch_time_seconds = watchTimeSeconds;
+      }
+
       if (existing) {
         // Update existing
         const { error } = await supabase
           .from('course_progress')
-          .update({
-            completed: true,
-            completed_at: new Date().toISOString()
-          })
+          .update(updateData)
           .eq('id', existing.id);
 
         if (error) throw error;
@@ -69,8 +113,8 @@ export const useCourseProgress = (courseType: string, totalSections: number) => 
             user_id: user.id,
             course_type: courseType,
             section_id: sectionId,
-            completed: true,
-            completed_at: new Date().toISOString()
+            video_started_at: new Date().toISOString(),
+            ...updateData
           });
 
         if (error) throw error;
@@ -91,6 +135,7 @@ export const useCourseProgress = (courseType: string, totalSections: number) => 
   return {
     completedSections,
     loading,
+    markSectionStart,
     markSectionComplete,
     progressPercentage,
     allSectionsComplete

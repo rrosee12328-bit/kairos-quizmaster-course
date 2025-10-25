@@ -95,6 +95,7 @@ const PepperSprayCourse = () => {
               videoUrl: videoUrl,
               duration: "Training Video",
             }}
+            courseType="pepper_spray"
             isActive={true}
             onComplete={handleComplete}
             onNext={() => {}}
