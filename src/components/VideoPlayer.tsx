@@ -80,6 +80,8 @@ const VideoPlayer = ({
   const lastPlayingStateRef = useRef(false);
   const suppressNextTimeupdateRef = useRef(false);
   const lastPlaybackTimeRef = useRef(0);
+  // Suppress anti-skip corrections during initial startup per section
+  const startupSuppressUntilRef = useRef(0);
   // Extract Bunny.net video ID from URL
   const getBunnyVideoId = (url: string) => {
     // Handle Bunny.net embed URLs like: https://iframe.mediadelivery.net/embed/{libraryId}/{videoId}
@@ -306,6 +308,8 @@ const VideoPlayer = ({
         videoStartTimeRef.current = null;
         totalWatchTimeRef.current = 0;
         lastTimeUpdateRef.current = 0;
+        startupSuppressUntilRef.current = Date.now() + 3000;
+        try { p.setCurrentTime(0); } catch {}
 
         const updateDuration = () => {
           if (!isMounted) return;
@@ -356,6 +360,7 @@ const VideoPlayer = ({
         // Watchdog: Check every 300ms for unauthorized forward jumps with hysteresis + cooldown (clamp-seek, no pause)
         watchdogInterval = window.setInterval(() => {
           if (!isMounted || !readyRef.current || isCorrectingRef.current) return;
+          if (Date.now() < startupSuppressUntilRef.current) return;
           try {
             p.getCurrentTime((t: number) => {
               const now = Date.now();
