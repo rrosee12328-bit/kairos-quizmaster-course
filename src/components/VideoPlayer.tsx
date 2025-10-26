@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { SkipForward } from "lucide-react";
+import { SkipForward, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import VideoDebugPanel from "./VideoDebugPanel";
+import { useToast } from "@/hooks/use-toast";
 interface VideoPlayerProps {
   section: {
     id: number;
@@ -18,15 +19,18 @@ interface VideoPlayerProps {
 }
 
 const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext }: VideoPlayerProps) => {
+  const { toast } = useToast();
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [reloadTick, setReloadTick] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [autoAdvance] = useState(false); // Default: no auto-advance
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const playerRef = useRef<any>(null);
   const maxWatchedRef = useRef(0);
   const isCompleteRef = useRef(false);
+  const completionPostedRef = useRef(false);
   const readyRef = useRef(false);
   const retryCountRef = useRef(0);
   const signedRefreshesRef = useRef(0);
@@ -35,6 +39,7 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
   const [overrideUrl, setOverrideUrl] = useState<string | null>(null);
   const videoStartTimeRef = useRef<number | null>(null);
   const totalWatchTimeRef = useRef(0);
+  const lastTimeUpdateRef = useRef(0);
   
   // Extract Bunny.net video ID from URL
   const getBunnyVideoId = (url: string) => {
@@ -159,6 +164,7 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
     let completionPoll: any = null;
     let durationUpdateInterval: any = null;
     let fallbackTimeout: any = null;
+    let watchdogInterval: any = null;
     
     if (!isActive || !videoId) {
       // Reset state when inactive
@@ -249,9 +255,11 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
         setProgress(0);
         setIsComplete(false);
         isCompleteRef.current = false;
+        completionPostedRef.current = false;
         maxWatchedRef.current = 0;
         videoStartTimeRef.current = null;
         totalWatchTimeRef.current = 0;
+        lastTimeUpdateRef.current = 0;
 
         const updateDuration = () => {
           if (!isMounted) return;
@@ -294,6 +302,40 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
           try { window.clearInterval(completionPoll); } catch {}
         };
         p.on('ended', clearOnComplete);
+
+        // Watchdog: Check every 300ms for unauthorized forward jumps
+        watchdogInterval = window.setInterval(() => {
+          if (!isMounted || !readyRef.current) return;
+          try {
+            p.getCurrentTime((t: number) => {
+              const allowedMax = maxWatchedRef.current + 5;
+              if (t > allowedMax) {
+                console.log('[Bunny] WATCHDOG: Correcting unauthorized jump', {
+                  currentTime: t,
+                  maxWatched: maxWatchedRef.current,
+                  snappingTo: allowedMax
+                });
+                try { p.setCurrentTime(allowedMax); } catch {}
+              }
+            });
+          } catch {}
+        }, 300);
+
+        // Rate guard: prevent playback speed > 1.25x
+        p.on('ratechange', () => {
+          if (!isMounted) return;
+          try {
+            p.getPlaybackRate?.((rate: number) => {
+              if (rate > 1.25) {
+                console.log('[Bunny] RATE GUARD: Preventing speed-run', { 
+                  attemptedRate: rate, 
+                  enforcedRate: 1.0 
+                });
+                try { p.setPlaybackRate?.(1.0); } catch {}
+              }
+            });
+          } catch {}
+        });
       });
 
       p.on('timeupdate', (data: any) => {
@@ -302,23 +344,31 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
         const dur = data?.duration ?? duration ?? 0;
         const percentRaw = typeof data?.percent === 'number' ? data.percent : null;
 
+        // Throttled logging (every 2 seconds)
+        const now = Date.now();
+        if (now - lastTimeUpdateRef.current > 2000) {
+          console.log('[Bunny] EVENT: timeupdate (throttled)', { 
+            current: current.toFixed(2), 
+            maxWatched: maxWatchedRef.current.toFixed(2),
+            percent: percentRaw 
+          });
+          lastTimeUpdateRef.current = now;
+        }
+
         // Update state for debug panel
         setCurrentTime(current);
         setDuration(dur);
 
-        // Anti-skip: Allow 5 second grace buffer for forward seeking
-        const allowedSeek = maxWatchedRef.current + 5;
-        if (current > allowedSeek) {
-          console.log('[Bunny] SEEK GUARD: Prevented forward skip', { 
-            attempted: current, 
-            max: maxWatchedRef.current, 
-            snappedTo: allowedSeek 
-          });
-          try { p.setCurrentTime(allowedSeek); } catch {}
-          return;
-        }
-        if (current > maxWatchedRef.current) {
+        // Only increase maxWatched on normal forward playback (not big jumps)
+        const timeDiff = current - maxWatchedRef.current;
+        if (timeDiff > 0 && timeDiff < 2) {
+          // Normal playback: small incremental increase
           maxWatchedRef.current = current;
+        } else if (current <= maxWatchedRef.current + 5) {
+          // Within allowed buffer
+          if (current > maxWatchedRef.current) {
+            maxWatchedRef.current = current;
+          }
         }
 
         let pct: number | null = null;
@@ -332,10 +382,10 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
           setProgress(pct);
           // Completion at 90% threshold
           const durSafe = dur || 0;
-          const epsilon = Math.max(0.25, durSafe * 0.01); // 0.25s or 1% of duration
-          if (!isCompleteRef.current && durSafe > 0 && (current >= durSafe - epsilon || pct >= 90)) {
+          const epsilon = Math.max(0.25, durSafe * 0.01);
+          if (!isCompleteRef.current && durSafe > 0 && (maxWatchedRef.current >= durSafe - epsilon || pct >= 90)) {
             console.log('[Bunny] 90% COMPLETION THRESHOLD REACHED', { 
-              current, 
+              maxWatched: maxWatchedRef.current, 
               duration: durSafe, 
               percent: pct,
               sectionId: section.id,
@@ -343,23 +393,33 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
             });
             isCompleteRef.current = true;
             setIsComplete(true);
-            // Save to database
-            saveVideoWatchTime();
-            onCompleteRef.current?.();
-            // Auto-advance to next section after marking complete
-            setTimeout(() => onNextRef.current?.(), 300);
+            
+            // Save to database (debounced)
+            if (!completionPostedRef.current) {
+              completionPostedRef.current = true;
+              saveVideoWatchTime();
+              onCompleteRef.current?.();
+              
+              // Show completion notification
+              showCompletionNotification();
+            }
           }
         }
       });
 
       p.on('seeked', () => {
+        if (!isMounted) return;
         // Anti-skip: snap back if user seeks beyond allowed buffer (handles keyboard shortcuts 0-9, arrows)
         p.getCurrentTime((t: number) => {
           const allowedSeek = maxWatchedRef.current + 5;
+          console.log('[Bunny] EVENT: seeked', { 
+            seekedTo: t.toFixed(2), 
+            maxWatched: maxWatchedRef.current.toFixed(2),
+            allowed: allowedSeek.toFixed(2)
+          });
           if (t > allowedSeek) {
-            console.log('[Bunny] SEEK GUARD (seeked event): Snapping back', { 
+            console.log('[Bunny] SEEK GUARD: Snapping back from seeked event', { 
               seekedTo: t, 
-              max: maxWatchedRef.current, 
               snappedTo: allowedSeek 
             });
             try { p.setCurrentTime(allowedSeek); } catch {}
@@ -381,10 +441,16 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
         if (!isCompleteRef.current) {
           isCompleteRef.current = true;
           setIsComplete(true);
+          
           // Save watch time to database
-          saveVideoWatchTime();
-          onCompleteRef.current?.();
-          setTimeout(() => onNextRef.current?.(), 300);
+          if (!completionPostedRef.current) {
+            completionPostedRef.current = true;
+            saveVideoWatchTime();
+            onCompleteRef.current?.();
+            
+            // Show completion notification
+            showCompletionNotification();
+          }
         }
       });
 
@@ -420,6 +486,7 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
       try { window.clearInterval(bootstrapPoll); } catch {}
       try { window.clearInterval(completionPoll); } catch {}
       try { window.clearInterval(durationUpdateInterval); } catch {}
+      try { window.clearInterval(watchdogInterval); } catch {}
       try { clearTimeout(fallbackTimeout); } catch {}
       readyRef.current = false;
       // Destroy player
@@ -431,11 +498,51 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
           playerRef.current.off?.('ended');
           playerRef.current.off?.('play');
           playerRef.current.off?.('pause');
+          playerRef.current.off?.('ratechange');
         } catch {}
         playerRef.current = null;
       }
     };
   }, [section.videoUrl, isActive, videoId, reloadTick]);
+
+  const showCompletionNotification = () => {
+    const handleContinue = () => {
+      if (autoAdvance) {
+        // Auto-advance with countdown
+        let countdown = 5;
+        
+        const countdownInterval = setInterval(() => {
+          countdown--;
+          if (countdown > 0) {
+            toast({
+              title: "✅ Section Complete!",
+              description: `Auto-advancing in ${countdown} seconds...`,
+              duration: 1000,
+            });
+          } else {
+            clearInterval(countdownInterval);
+            onNextRef.current?.();
+          }
+        }, 1000);
+        
+        toast({
+          title: "✅ Section Complete!",
+          description: `Auto-advancing in 5 seconds...`,
+          duration: 5000,
+        });
+      } else {
+        // Immediate navigation
+        onNextRef.current?.();
+      }
+    };
+
+    // Show completion toast with actions
+    toast({
+      title: "✅ Section Complete!",
+      description: "You've watched ≥90% of this lesson. Click 'Continue to Next' button below the video or the Next button in navigation.",
+      duration: 10000,
+    });
+  };
 
   const recheckCompletion = async () => {
     if (!courseType) return;
@@ -530,22 +637,16 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
               {progress > 0 ? `Progress: ${progress}% complete` : 'Ready to watch'}
             </div>
             <div className="flex gap-2">
-              {!isComplete && progress >= 80 && (
-                <Button onClick={() => {
-                  if (!isCompleteRef.current) {
-                    isCompleteRef.current = true;
-                    setIsComplete(true);
-                    onCompleteRef.current?.();
-                  }
-                }} size="sm" variant="outline">
-                  Mark Complete
-                </Button>
-              )}
               {isComplete && (
                 <Button onClick={onNext} size="sm">
                   <SkipForward className="h-4 w-4 mr-2" />
-                  Next Section
+                  Continue to Next
                 </Button>
+              )}
+              {!isComplete && (
+                <span className="text-xs text-muted-foreground">
+                  Watch ≥90% to unlock Next
+                </span>
               )}
             </div>
           </div>
