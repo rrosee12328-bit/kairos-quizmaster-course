@@ -82,6 +82,8 @@ const VideoPlayer = ({
   const lastPlaybackTimeRef = useRef(0);
   // Suppress anti-skip corrections during initial startup per section
   const startupSuppressUntilRef = useRef(0);
+  // Queue a play request if user clicks before player is ready
+  const queuedPlayRef = useRef(false);
   // Extract Bunny.net video ID from URL
   const getBunnyVideoId = (url: string) => {
     // Handle Bunny.net embed URLs like: https://iframe.mediadelivery.net/embed/{libraryId}/{videoId}
@@ -310,6 +312,12 @@ const VideoPlayer = ({
         lastTimeUpdateRef.current = 0;
         startupSuppressUntilRef.current = Date.now() + 7000;
         try { p.setCurrentTime(0); } catch {}
+
+        // If user clicked play before ready, honor it now
+        if (queuedPlayRef.current) {
+          try { p.play?.(); } catch {}
+          queuedPlayRef.current = false;
+        }
 
         const updateDuration = () => {
           if (!isMounted) return;
@@ -807,6 +815,31 @@ const VideoPlayer = ({
                 allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
                 allowFullScreen
                 onError={handleIframeError}
+              />
+              <div
+                className="absolute inset-0 z-10 cursor-pointer"
+                style={{ pointerEvents: 'auto' }}
+                title="Click to play/pause. Seeking is disabled."
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const p = playerRef.current;
+                  try {
+                    if (!p) return;
+                    if (lastPlayingStateRef.current) {
+                      p.pause?.();
+                    } else {
+                      if (readyRef.current) {
+                        p.play?.();
+                      } else {
+                        queuedPlayRef.current = true;
+                      }
+                    }
+                  } catch {}
+                }}
+                onDoubleClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
               />
               {/* Scrubber overlay - only covers thin progress bar strip while playing */}
               {isPlaying && (
