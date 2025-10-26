@@ -32,6 +32,21 @@ const Level2Course = () => {
   const [videosLoaded, setVideosLoaded] = useState(false);
   const [isPageVisible, setIsPageVisible] = useState(true);
   const quizRef = useRef<HTMLDivElement>(null);
+  // Server-truth gating (dev instrumentation)
+  const [debugUserId, setDebugUserId] = useState<string | null>(null);
+  const [local90Reached, setLocal90Reached] = useState(false);
+  const [postStatus, setPostStatus] = useState<number | null>(null);
+  const [serverCompleted, setServerCompleted] = useState(false);
+  const [graceTimerDone, setGraceTimerDone] = useState(false);
+  const [bypassGate, setBypassGate] = useState(false); // dev only
+
+  // Server-truth gating
+  const [debugUserId, setDebugUserId] = useState<string | null>(null);
+  const [serverCompleted, setServerCompleted] = useState(false);
+  const [graceTimerDone, setGraceTimerDone] = useState(false);
+  const [bypassGate, setBypassGate] = useState(false); // dev only
+  const [postStatus, setPostStatus] = useState<number | null>(null); // surfaced from child if needed
+
   const [courseSections, setCourseSections] = useState([
     {
       id: 1,
@@ -158,6 +173,7 @@ const Level2Course = () => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
         setIsAuthenticated(true);
+        setDebugUserId(user.id);
         checkAdminStatus(user.id);
         checkEnrollmentStatus(user.id);
       } else {

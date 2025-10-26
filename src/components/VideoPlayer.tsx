@@ -17,6 +17,9 @@ interface VideoPlayerProps {
   isActive?: boolean;
   onComplete: () => void;
   onNext: () => void;
+  // Instrumentation callbacks (dev-only)
+  onLocal90Reached?: (reached: boolean) => void;
+  onPostStatus?: (status: number | null) => void;
 }
 
 const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext }: VideoPlayerProps) => {
