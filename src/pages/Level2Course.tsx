@@ -42,6 +42,8 @@ const Level2Course = () => {
   const [bypassGate, setBypassGate] = useState(false); // dev only
   const [showAutoAdvanceModal, setShowAutoAdvanceModal] = useState(false);
   const [completedSectionTitle, setCompletedSectionTitle] = useState("");
+  const [highestCompletedIndex, setHighestCompletedIndex] = useState(0);
+  
   const [courseSections, setCourseSections] = useState([
     {
       id: 1,
@@ -374,6 +376,29 @@ const Level2Course = () => {
     if (!enrollment && !completion && !isAdmin) {
       toast.error('You need to enroll in this course first');
       navigate('/courses');
+      return;
+    }
+
+    // Check highest completed section for navigation guard
+    const { data: progressData } = await supabase
+      .from('course_progress')
+      .select('section_id, section_completed')
+      .eq('user_id', userId)
+      .eq('course_type', 'level2')
+      .eq('section_completed', true)
+      .order('section_id', { ascending: false })
+      .limit(1);
+
+    if (progressData && progressData.length > 0) {
+      const highestSection = progressData[0].section_id;
+      const highestIndex = courseSections.findIndex(s => s.id === highestSection);
+      setHighestCompletedIndex(highestIndex);
+      
+      console.log('GUARD - Highest completed section:', {
+        highestSection,
+        highestIndex,
+        allowedUpToIndex: highestIndex + 1
+      });
     }
   };
 
@@ -392,45 +417,82 @@ const Level2Course = () => {
       courseType: 'level2'
     });
 
-    // Re-fetch progress from server to ensure we have latest state
+    // CRITICAL: Re-fetch progress from server to ensure we have latest state (no stale cache)
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       const { data: progressData } = await supabase
         .from('course_progress')
-        .select('section_completed')
+        .select('section_completed, video_completed, quiz_passed')
         .eq('user_id', user.id)
         .eq('course_type', 'level2')
         .eq('section_id', sectionId)
         .maybeSingle();
 
+      console.log('POST_OK - Fresh server data:', { 
+        sectionId, 
+        serverData: progressData 
+      });
+
       if (progressData?.section_completed) {
+        console.log('SERVER_SECTION_COMPLETED', { sectionId });
+        
         const completedSection = courseSections.find(s => s.id === sectionId);
         if (completedSection) {
           setCompletedSectionTitle(completedSection.title);
           setShowAutoAdvanceModal(true);
         }
         handleSectionComplete(sectionId);
+        
+        // Update highest completed index
+        const sectionIndex = courseSections.findIndex(s => s.id === sectionId);
+        if (sectionIndex > highestCompletedIndex) {
+          setHighestCompletedIndex(sectionIndex);
+          console.log('HIGHEST_COMPLETED_INDEX updated:', sectionIndex);
+        }
       }
     }
   };
 
+  const handleNextSection = () => {
+    if (!nextSectionId) {
+      console.log('NEXT_CLICK_NAV - Final section, no next');
+      toast.success("Course Complete! All sections finished.");
+      return;
+    }
+
+    console.log('NEXT_CLICK_NAV', {
+      from: { sectionId: currentSectionId, index: currentIndex },
+      to: { sectionId: nextSectionId, index: nextIndex }
+    });
+
+    // Navigate via carousel
+    handleNextSlide();
+  };
+
+  const handleDevBypass = () => {
+    if (!nextSectionId) {
+      toast.error("Already on final section");
+      return;
+    }
+    
+    console.log('DEV_BYPASS_NAV', {
+      from: currentSectionId,
+      to: nextSectionId
+    });
+    
+    handleNextSlide();
+  };
+
   const handleAutoAdvance = () => {
     setShowAutoAdvanceModal(false);
-    
-    // Check if this is the final section
-    const isFinalSection = currentSlide >= courseSections.length - 1;
-    if (isFinalSection) {
-      navigate('/profile');
-    } else {
-      handleNextSlide();
-    }
+    handleNextSection();
   };
+
 
   const handleCancelAutoAdvance = () => {
     setShowAutoAdvanceModal(false);
     toast.info("Staying on current section. Click Next when ready.");
   };
-
 
   const handleNextSlide = () => {
     if (!carouselApi) return;
@@ -481,11 +543,43 @@ const Level2Course = () => {
   const totalSections = courseSections.length;
   const progressPercentage = (completedSections.length / totalSections) * 100;
   const allSectionsComplete = completedSections.length === totalSections;
+  
+  // IDs logged once on mount
+  const userId = debugUserId;
+  const courseId = "level2";
+  const currentIndex = currentSlide;
+  const nextIndex = currentSlide + 1;
   const currentSectionId = courseSections[currentSlide]?.id;
+  const nextSectionId = courseSections[nextIndex]?.id;
   const isCurrentSectionComplete = currentSectionId ? completedSections.includes(currentSectionId) : false;
   
   // canProceed: server truth + grace + bypass
   const canProceed = bypassGate || (serverCompleted && graceTimerDone);
+  
+  // Log IDs once on mount
+  useEffect(() => {
+    if (debugUserId && courseSections.length > 0) {
+      console.log('IDS_LOGGED_ON_MOUNT', {
+        userId: debugUserId,
+        courseId,
+        currentSectionId,
+        nextSectionId,
+        currentIndex,
+        nextIndex,
+        totalSections: courseSections.length
+      });
+    }
+  }, [debugUserId, currentSectionId, nextSectionId, currentIndex, nextIndex, courseSections.length]);
+
+  // Log when grace timer completes
+  useEffect(() => {
+    if (graceTimerDone && !canProceed) {
+      console.log('GRACE_DONE', { graceTimerDone, serverCompleted, canProceed });
+    }
+    if (canProceed) {
+      console.log('CAN_PROCEED_TRUE', { serverCompleted, graceTimerDone, bypassGate });
+    }
+  }, [graceTimerDone, canProceed, serverCompleted, bypassGate]);
   
   console.log('[Level2Course] GATING CHECK', {
     courseType: 'level2',
@@ -565,6 +659,7 @@ const Level2Course = () => {
 
             {/* Navigation Controls */}
             <div className="flex items-center justify-between mt-6">
+              {/* Navigation Buttons */}
               <Button
                 variant="outline"
                 onClick={handlePrevSlide}
@@ -578,25 +673,48 @@ const Level2Course = () => {
                 Section {currentSlide + 1} of {totalSections}
               </div>
 
-              <Button
-                onClick={() => {
-                  console.log('[FLOW] NEXT_BUTTON_CLICK', { canProceed, currentSlide, nextSlide: currentSlide + 1 });
-                  if (canProceed && currentSlide < totalSections - 1) {
-                    handleNextSlide();
-                  }
-                }}
+              {/* Real Next Button with proper click handler */}
+              <button
+                id="nextBtn"
+                data-testid="btn-next"
                 disabled={currentSlide === totalSections - 1 || !canProceed}
                 aria-disabled={currentSlide === totalSections - 1 || !canProceed}
+                onClick={() => {
+                  console.log('CAN_PROCEED_TRUE - NEXT_CLICK_NAV', { 
+                    canProceed, 
+                    currentSectionId, 
+                    nextSectionId,
+                    currentIndex,
+                    nextIndex
+                  });
+                  handleNextSection();
+                }}
                 title={!canProceed ? "Finish previous lesson to unlock" : ""}
-                className="relative"
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90"
                 style={{ 
-                  outline: import.meta.env.DEV ? (canProceed ? '2px solid lime' : '2px solid red') : undefined 
+                  outline: import.meta.env.DEV ? (canProceed ? '3px solid lime' : '3px solid red') : undefined,
+                  zIndex: 10000,
+                  pointerEvents: 'auto'
                 }}
               >
                 Next
-                <ChevronRight className="h-4 w-4 ml-2" />
-              </Button>
+                <ChevronRight className="h-4 w-4" />
+              </button>
             </div>
+
+            {/* Dev Bypass Button */}
+            {import.meta.env.DEV && (
+              <div className="text-center mt-2">
+                <button
+                  data-testid="btn-dev-bypass"
+                  onClick={handleDevBypass}
+                  className="px-3 py-1 text-xs bg-orange-500 text-white rounded hover:bg-orange-600"
+                  style={{ zIndex: 10000 }}
+                >
+                  🔧 Dev Bypass → Next
+                </button>
+              </div>
+            )}
 
             <div className="text-center mt-4 space-y-4">
               <Button
