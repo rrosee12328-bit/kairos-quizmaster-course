@@ -454,8 +454,8 @@ const VideoPlayer = ({
 
         p.getCurrentTime((t: number) => {
           const now = Date.now();
-          const dynGrace = Math.max(10, ((duration || 0) * 0.1));
-          const allowedEnd = maxWatchedRef.current + dynGrace;
+          // Strict grace: only allow 2 seconds forward to prevent progress bar skipping
+          const allowedEnd = maxWatchedRef.current + 2;
           const hystWindow = allowedEnd + HYST;
 
           console.log('[Bunny] EVENT: seeked', {
@@ -463,7 +463,6 @@ const VideoPlayer = ({
             maxWatched: maxWatchedRef.current.toFixed(2),
             allowedEnd: allowedEnd.toFixed(2),
             hystWindow: hystWindow.toFixed(2),
-            dynGrace,
           });
 
           // Cooldown check
