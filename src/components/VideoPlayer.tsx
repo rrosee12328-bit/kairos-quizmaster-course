@@ -22,7 +22,15 @@ interface VideoPlayerProps {
   onPostStatus?: (status: number | null) => void;
 }
 
-const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext }: VideoPlayerProps) => {
+const VideoPlayer = ({ 
+  section, 
+  courseType, 
+  isActive = true, 
+  onComplete, 
+  onNext,
+  onLocal90Reached,
+  onPostStatus,
+}: VideoPlayerProps) => {
   const { toast } = useToast();
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false); // nextEnabled gating
@@ -436,8 +444,9 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
           const durSafe = dur || 0;
           const ninetyReached = durSafe > 0 && (maxWatchedRef.current / durSafe) >= 0.9;
           if (ninetyReached && !localCompleted) {
-            console.log('[FLOW] LOCAL_90', { courseType, sectionId: section.id });
+            console.log('[FLOW] LOCAL_90', { courseType, sectionId: section.id, maxWatched: maxWatchedRef.current, duration: durSafe });
             setLocalCompleted(true);
+            onLocal90Reached?.(true);
             handleCompletionTrigger();
           }
         }
@@ -573,12 +582,13 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
     };
   }, [section.videoUrl, isActive, videoId, reloadTick]);
 
-  // Completion flow: save to server, verify, then enable after 2s and show modal
+  // Poll server to confirm completion (up to 10 attempts = ~5s)
   const waitForServerCompletion = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user || !courseType) return;
-      for (let i = 0; i < 5; i++) {
+      if (!user || !courseType) return false;
+      
+      for (let i = 0; i < 10; i++) {
         const { data } = await supabase
           .from('course_progress')
           .select('completed')
@@ -586,32 +596,86 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
           .eq('course_type', courseType)
           .eq('section_id', section.id)
           .maybeSingle();
-        if (data?.completed) return;
-        await new Promise((r) => setTimeout(r, 400));
+        
+        console.log('[FLOW] VERIFY_AFTER_POST', { 
+          attempt: i + 1, 
+          userId: user.id, 
+          courseId: courseType, 
+          sectionId: section.id, 
+          found: !!data?.completed 
+        });
+        
+        if (data?.completed) return true;
+        await new Promise((r) => setTimeout(r, 500));
       }
+      return false;
     } catch (e) {
       console.error('[VideoPlayer] waitForServerCompletion error', e);
+      return false;
     }
   };
 
   const handleCompletionTrigger = async () => {
     if (completionPostedRef.current) return;
     completionPostedRef.current = true;
-    console.log('[VideoPlayer] COMPLETION POST: sending to Supabase');
+
     try {
-      await saveVideoWatchTime();
-      console.log('[VideoPlayer] COMPLETION POST: success');
-    } catch (e) {
-      console.error('[VideoPlayer] COMPLETION POST: failed', e);
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      const payload = {
+        course_id: courseType,
+        section_id: section.id,
+        seconds_watched: totalWatchTimeRef.current,
+      };
+      
+      console.log('[FLOW] POST_SENT', { 
+        userId: user?.id, 
+        courseId: courseType, 
+        sectionId: section.id, 
+        payload 
+      });
+      
+      const { data, error } = await supabase.functions.invoke('progress-complete', {
+        body: payload,
+      });
+      
+      if (error) {
+        const status = (error as any)?.context?.status ?? 500;
+        setPostStatus(status);
+        onPostStatus?.(status);
+        console.error('[FLOW] POST_ERROR', { status, message: error.message });
+        return;
+      }
+      
+      setPostStatus(200);
+      onPostStatus?.(200);
+      console.log('[FLOW] POST_OK', { courseId: courseType, sectionId: section.id });
+    } catch (e: any) {
+      setPostStatus(500);
+      onPostStatus?.(500);
+      console.error('[FLOW] POST_ERROR', e?.message || e);
+      return;
     }
 
-    await waitForServerCompletion();
-
-    setTimeout(() => {
-      setIsComplete(true);
-      onCompleteRef.current?.();
-      showCompletionNotification();
-    }, 2000);
+    // Poll for server confirmation
+    const ok = await waitForServerCompletion();
+    if (ok) {
+      setServerCompleted(true);
+      console.log('[FLOW] SERVER_CONFIRMED', { courseId: courseType, sectionId: section.id });
+      
+      setTimeout(() => {
+        setGraceTimerDone(true);
+        console.log('[FLOW] GRACE_DONE');
+        setIsComplete(true);
+        console.log('[FLOW] NEXT_ENABLED');
+        onCompleteRef.current?.();
+        showCompletionNotification();
+      }, 2000);
+    } else {
+      console.warn('[FLOW] SERVER_CONFIRM_TIMEOUT', { courseId: courseType, sectionId: section.id });
+    }
   };
 
   const showCompletionNotification = () => {
@@ -633,15 +697,24 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
         .eq('section_id', section.id)
         .maybeSingle();
 
-      console.log('[FLOW] RECHECK', { courseType, sectionId: section.id, found: !!data?.completed, error });
+      console.log('[FLOW] RECHECK', { 
+        userId: user.id, 
+        courseId: courseType, 
+        sectionId: section.id, 
+        found: !!data?.completed, 
+        error 
+      });
 
       if (data?.completed) {
         setServerCompleted(true);
+        console.log('[FLOW] SERVER_CONFIRMED (from recheck)');
         if (!isComplete) {
-          // Grace then enable next if not already
           setTimeout(() => {
             setGraceTimerDone(true);
+            console.log('[FLOW] GRACE_DONE (from recheck)');
             setIsComplete(true);
+            console.log('[FLOW] NEXT_ENABLED (from recheck)');
+            onCompleteRef.current?.();
           }, 2000);
         }
       }

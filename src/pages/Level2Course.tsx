@@ -39,14 +39,6 @@ const Level2Course = () => {
   const [serverCompleted, setServerCompleted] = useState(false);
   const [graceTimerDone, setGraceTimerDone] = useState(false);
   const [bypassGate, setBypassGate] = useState(false); // dev only
-
-  // Server-truth gating
-  const [debugUserId, setDebugUserId] = useState<string | null>(null);
-  const [serverCompleted, setServerCompleted] = useState(false);
-  const [graceTimerDone, setGraceTimerDone] = useState(false);
-  const [bypassGate, setBypassGate] = useState(false); // dev only
-  const [postStatus, setPostStatus] = useState<number | null>(null); // surfaced from child if needed
-
   const [courseSections, setCourseSections] = useState([
     {
       id: 1,
@@ -433,6 +425,19 @@ const Level2Course = () => {
   const allSectionsComplete = completedSections.length === totalSections;
   const currentSectionId = courseSections[currentSlide]?.id;
   const isCurrentSectionComplete = currentSectionId ? completedSections.includes(currentSectionId) : false;
+  
+  // canProceed: server truth + grace + bypass
+  const canProceed = bypassGate || (serverCompleted && graceTimerDone);
+  
+  console.log('[Level2Course] GATING CHECK', {
+    courseType: 'level2',
+    currentSectionId,
+    serverCompleted,
+    graceTimerDone,
+    canProceed,
+    bypassGate,
+    completedSections,
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
@@ -488,6 +493,8 @@ const Level2Course = () => {
                       isActive={currentSlide === idx}
                       onComplete={() => handleSectionComplete(section.id)}
                       onNext={handleNextSlide}
+                      onLocal90Reached={(reached) => setLocal90Reached(reached)}
+                      onPostStatus={(status) => setPostStatus(status)}
                     />
                   </CarouselItem>
                 ))}
@@ -512,14 +519,17 @@ const Level2Course = () => {
               <Button
                 onClick={handleNextSlide}
                 disabled={currentSlide === totalSections - 1 || !isCurrentSectionComplete}
+                aria-disabled={currentSlide === totalSections - 1 || !isCurrentSectionComplete}
                 title={!isCurrentSectionComplete ? "Complete current section to unlock next" : ""}
+                className="relative"
+                style={{ outline: import.meta.env.DEV ? '2px solid red' : undefined }}
               >
                 Next
                 <ChevronRight className="h-4 w-4 ml-2" />
               </Button>
             </div>
 
-            <div className="text-center mt-4">
+            <div className="text-center mt-4 space-y-4">
               <Button
                 onClick={() => {
                   setShowQuiz(true);
@@ -528,6 +538,36 @@ const Level2Course = () => {
               >
                 Go to Final Exam
               </Button>
+              
+              {/* Dev Panel (page-level gating state) */}
+              {!import.meta.env.PROD && (
+                <Card className="border-orange-500 bg-orange-50 dark:bg-orange-950/20 text-xs">
+                  <CardHeader className="py-2">
+                    <CardTitle className="text-sm">🔧 Page Gating Debug (Dev Only)</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2 font-mono">
+                    <div><strong>User ID:</strong> {debugUserId || 'N/A'}</div>
+                    <div><strong>Course ID:</strong> level2</div>
+                    <div><strong>Current Section ID:</strong> {currentSectionId}</div>
+                    <div><strong>local90Reached:</strong> {String(local90Reached)}</div>
+                    <div><strong>postStatus:</strong> {postStatus ?? 'N/A'}</div>
+                    <div><strong>serverCompleted:</strong> {String(serverCompleted)}</div>
+                    <div><strong>graceTimerDone:</strong> {String(graceTimerDone)}</div>
+                    <div><strong>canProceed:</strong> {String(canProceed)}</div>
+                    <div><strong>isCurrentSectionComplete:</strong> {String(isCurrentSectionComplete)}</div>
+                    <div className="pt-2 border-t">
+                      <label className="flex items-center gap-2">
+                        <input 
+                          type="checkbox" 
+                          checked={bypassGate} 
+                          onChange={(e) => setBypassGate(e.target.checked)}
+                        />
+                        <span>Bypass Gate (dev only)</span>
+                      </label>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
 
