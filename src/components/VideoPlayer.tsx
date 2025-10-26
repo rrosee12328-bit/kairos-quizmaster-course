@@ -22,10 +22,17 @@ interface VideoPlayerProps {
 const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext }: VideoPlayerProps) => {
   const { toast } = useToast();
   const [progress, setProgress] = useState(0);
-  const [isComplete, setIsComplete] = useState(false);
+  const [isComplete, setIsComplete] = useState(false); // nextEnabled gating
   const [reloadTick, setReloadTick] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  // Debug/instrumentation
+  const [debugUserId, setDebugUserId] = useState<string | null>(null);
+  const [localCompleted, setLocalCompleted] = useState(false);
+  const [serverCompleted, setServerCompleted] = useState(false);
+  const [postStatus, setPostStatus] = useState<number | null>(null);
+  const [graceTimerDone, setGraceTimerDone] = useState(false);
+
   const [autoAdvance] = useState(false); // Default: no auto-advance
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -168,6 +175,11 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
   useEffect(() => {
     onNextRef.current = onNext;
   }, [onNext]);
+
+  useEffect(() => {
+    // Capture current user id for debug panel
+    supabase.auth.getUser().then(({ data }) => setDebugUserId(data.user?.id ?? null));
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -408,6 +420,7 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
         lastPlaybackTimeRef.current = current;
 
         // Compute percent
+        // Compute percent
         let pct: number | null = null;
         if (percentRaw !== null) {
           pct = percentRaw <= 1 ? Math.round(percentRaw * 100) : Math.round(percentRaw);
@@ -419,15 +432,9 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
           setProgress(pct);
           const durSafe = dur || 0;
           const ninetyReached = durSafe > 0 && (maxWatchedRef.current / durSafe) >= 0.9;
-          if (ninetyReached && !completionPostedRef.current) {
-            console.log('[Bunny] 90% COMPLETION THRESHOLD REACHED', {
-              maxWatched: maxWatchedRef.current,
-              duration: durSafe,
-              percent: pct,
-              sectionId: section.id,
-              courseType,
-            });
-            // Trigger completion flow (server truth + 2s grace)
+          if (ninetyReached && !localCompleted) {
+            console.log('[FLOW] LOCAL_90', { courseType, sectionId: section.id });
+            setLocalCompleted(true);
             handleCompletionTrigger();
           }
         }
@@ -615,7 +622,7 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('course_progress')
         .select('completed')
         .eq('user_id', user.id)
@@ -623,15 +630,17 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
         .eq('section_id', section.id)
         .maybeSingle();
 
+      console.log('[FLOW] RECHECK', { courseType, sectionId: section.id, found: !!data?.completed, error });
+
       if (data?.completed) {
-        console.log('[VideoPlayer] RECHECK: Section is completed in DB', { sectionId: section.id });
-        if (!isCompleteRef.current) {
-          isCompleteRef.current = true;
-          setIsComplete(true);
-          onCompleteRef.current?.();
+        setServerCompleted(true);
+        if (!isComplete) {
+          // Grace then enable next if not already
+          setTimeout(() => {
+            setGraceTimerDone(true);
+            setIsComplete(true);
+          }, 2000);
         }
-      } else {
-        console.log('[VideoPlayer] RECHECK: Section NOT completed in DB', { sectionId: section.id });
       }
     } catch (error) {
       console.error('[VideoPlayer] Error rechecking completion:', error);
@@ -728,6 +737,11 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
         sectionId={section.id}
         courseType={courseType}
         onRecheck={recheckCompletion}
+        userId={debugUserId}
+        localCompleted={localCompleted}
+        serverCompleted={serverCompleted}
+        postStatus={postStatus}
+        graceTimerDone={graceTimerDone}
       />
     </div>
   );

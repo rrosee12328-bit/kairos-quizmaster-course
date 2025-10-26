@@ -12,7 +12,14 @@ interface VideoDebugPanelProps {
   sectionId: number;
   courseType?: string;
   onRecheck: () => void;
+  // New instrumentation
+  userId?: string | null;
+  localCompleted?: boolean;
+  serverCompleted?: boolean;
+  postStatus?: number | null;
+  graceTimerDone?: boolean;
 }
+
 
 const VideoDebugPanel = ({
   currentTime,
@@ -23,6 +30,11 @@ const VideoDebugPanel = ({
   sectionId,
   courseType,
   onRecheck,
+  userId,
+  localCompleted,
+  serverCompleted,
+  postStatus,
+  graceTimerDone,
 }: VideoDebugPanelProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -50,50 +62,54 @@ const VideoDebugPanel = ({
         <CardContent className="pt-0 space-y-2 text-xs font-mono">
           <div className="grid grid-cols-2 gap-2">
             <div>
+              <span className="font-semibold">Course ID:</span> {courseType || 'N/A'}
+            </div>
+            <div>
               <span className="font-semibold">Section ID:</span> {sectionId}
             </div>
             <div>
-              <span className="font-semibold">Course Type:</span> {courseType || "N/A"}
+              <span className="font-semibold">User ID:</span> {userId || 'N/A'}
             </div>
             <div>
-              <span className="font-semibold">Current Time:</span>{" "}
-              {currentTime.toFixed(2)}s
+              <span className="font-semibold">Current Time:</span> {currentTime.toFixed(2)}s
             </div>
             <div>
-              <span className="font-semibold">Max Watched:</span>{" "}
-              {maxWatched.toFixed(2)}s
+              <span className="font-semibold">Max Watched:</span> {maxWatched.toFixed(2)}s
             </div>
             <div>
-              <span className="font-semibold">Duration:</span>{" "}
-              {duration.toFixed(2)}s
+              <span className="font-semibold">Duration:</span> {duration.toFixed(2)}s
             </div>
             <div>
-              <span className="font-semibold">% Watched:</span>{" "}
-              {percentWatched.toFixed(1)}%
+              <span className="font-semibold">% Watched:</span> {percentWatched.toFixed(1)}%
+            </div>
+            <div>
+              <span className="font-semibold">localCompleted:</span> {localCompleted ? 'true' : 'false'}
+            </div>
+            <div>
+              <span className="font-semibold">serverCompleted:</span> {serverCompleted ? 'true' : 'false'}
+            </div>
+            <div>
+              <span className="font-semibold">postStatus:</span> {postStatus ?? 'n/a'}
+            </div>
+            <div>
+              <span className="font-semibold">graceTimerDone:</span> {graceTimerDone ? 'true' : 'false'}
             </div>
             <div className="col-span-2">
-              <span className="font-semibold">Completed (DB):</span>{" "}
-              <span
-                className={
-                  isComplete ? "text-green-600 font-bold" : "text-red-600"
-                }
-              >
-                {isComplete ? "✓ YES" : "✗ NO"}
+              <span className="font-semibold">nextEnabled:</span>{' '}
+              <span className={isComplete ? 'text-green-600 font-bold' : 'text-red-600'}>
+                {isComplete ? 'true' : 'false'}
               </span>
             </div>
             <div className="col-span-2">
-              <span className="font-semibold">Seek Guard:</span> Max +5s buffer
+              <span className="font-semibold">Seek Guard:</span> Clamp to max+5s with 1.5s hysteresis; cooldown 1200ms
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={onRecheck}
-          >
-            <RefreshCw className="h-3 w-3 mr-2" />
-            Recheck Completion Status
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="w-full" onClick={onRecheck}>
+              <RefreshCw className="h-3 w-3 mr-2" />
+              Recheck Completion Status
+            </Button>
+          </div>
         </CardContent>
       )}
     </Card>
