@@ -417,6 +417,25 @@ const VideoPlayer = ({
           return;
         }
 
+        // Enforce anti-skip in case 'seeked' didn't fire
+        if (Date.now() >= startupSuppressUntilRef.current && !isCorrectingRef.current) {
+          const allowedEnd = maxWatchedRef.current + 2;
+          const hystWindow = allowedEnd + HYST;
+          if (current > hystWindow && now - lastCorrectionAtRef.current >= CORRECTION_COOLDOWN_MS) {
+            console.log('[Bunny] TIMEUPDATE CLAMP', { current, maxWatched: maxWatchedRef.current, snappingTo: allowedEnd });
+            isCorrectingRef.current = true;
+            suppressNextTimeupdateRef.current = true;
+            lastCorrectionAtRef.current = now;
+            try { p.setCurrentTime(allowedEnd); } catch {}
+            setTimeout(() => {
+              isCorrectingRef.current = false;
+              suppressNextTimeupdateRef.current = false;
+            }, 300);
+            lastPlaybackTimeRef.current = allowedEnd;
+            return;
+          }
+        }
+
         // Only increase maxWatched on natural forward playback (not during correction cooldown)
         const inCooldown = now - lastCorrectionAtRef.current < CORRECTION_COOLDOWN_MS;
         const delta = current - lastPlaybackTimeRef.current;
@@ -791,7 +810,7 @@ const VideoPlayer = ({
               {/* Scrubber overlay - only covers thin progress bar strip while playing */}
               {isPlaying && (
                 <div
-                  className="absolute inset-x-0 bottom-0 h-3 z-10 cursor-not-allowed"
+                  className="absolute inset-x-0 bottom-0 h-8 z-10 cursor-not-allowed"
                   style={{
                     pointerEvents: 'auto'
                   }}
