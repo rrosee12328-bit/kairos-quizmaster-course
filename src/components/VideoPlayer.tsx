@@ -262,7 +262,18 @@ const VideoPlayer = ({
               if (dSafe > 0 && t >= dSafe - epsilon) {
                 console.log('[Bunny] bootstrap poll reached end', { t, d: dSafe });
                 try { window.clearInterval(bootstrapPoll); } catch {}
-
+                if (!localCompleted) {
+                  setLocalCompleted(true);
+                  onLocal90Reached?.(true);
+                  console.log('[FLOW] LOCAL_90 (from bootstrap)');
+                }
+                if (!isCompleteRef.current) {
+                  setIsComplete(true);
+                  isCompleteRef.current = true;
+                  console.log('[FLOW] NEXT_ENABLED (bootstrap)');
+                  onCompleteRef.current?.();
+                }
+                handleCompletionTrigger();
               }
             });
           });
@@ -322,6 +333,18 @@ const VideoPlayer = ({
               if (d > 0 && t >= d - pollEpsilon()) {
                 console.log('[Bunny] completion poll reached end', { t, d });
                 try { window.clearInterval(completionPoll); } catch {}
+                if (!localCompleted) {
+                  setLocalCompleted(true);
+                  onLocal90Reached?.(true);
+                  console.log('[FLOW] LOCAL_90 (from poll end)');
+                }
+                if (!isCompleteRef.current) {
+                  setIsComplete(true);
+                  isCompleteRef.current = true;
+                  console.log('[FLOW] NEXT_ENABLED (poll end)');
+                  onCompleteRef.current?.();
+                }
+                handleCompletionTrigger();
               }
             });
           } catch {}
@@ -447,6 +470,14 @@ const VideoPlayer = ({
             console.log('[FLOW] LOCAL_90', { courseType, sectionId: section.id, maxWatched: maxWatchedRef.current, duration: durSafe });
             setLocalCompleted(true);
             onLocal90Reached?.(true);
+            // Enable Next immediately on local 90%
+            if (!isCompleteRef.current) {
+              setIsComplete(true);
+              isCompleteRef.current = true;
+              console.log('[FLOW] NEXT_ENABLED (local)');
+              // Mark section complete in parent immediately so top-level Next unlocks
+              onCompleteRef.current?.();
+            }
             handleCompletionTrigger();
           }
         }
