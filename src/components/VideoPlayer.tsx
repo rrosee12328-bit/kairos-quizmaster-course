@@ -646,10 +646,13 @@ const VideoPlayer = ({
     completionPostedRef.current = true;
 
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData.session?.access_token;
       const { data: { user } } = await supabase.auth.getUser();
       
+      if (!user) {
+        console.error('[FLOW] POST_ERROR: No authenticated user');
+        return;
+      }
+
       const payload = {
         course_id: courseType,
         section_id: section.id,
@@ -664,16 +667,28 @@ const VideoPlayer = ({
         payload 
       });
       
+      // Get a fresh session token
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        console.error('[FLOW] POST_ERROR: No session token available');
+        setPostStatus(401);
+        onPostStatus?.(401);
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('progress-video-complete', {
         body: payload,
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
       });
       
       if (error) {
         const status = (error as any)?.context?.status ?? 500;
         setPostStatus(status);
         onPostStatus?.(status);
-        console.error('[FLOW] POST_ERROR', { status, message: error.message });
+        console.error('[FLOW] POST_ERROR', { status, message: error.message, error });
         return;
       }
       

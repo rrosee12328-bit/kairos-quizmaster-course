@@ -13,7 +13,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   try {
     const authHeader = req.headers.get('Authorization');
+    console.log('[progress-video-complete] Auth header present:', !!authHeader);
+    
     if (!authHeader) {
+      console.error('[progress-video-complete] No Authorization header');
       return new Response(JSON.stringify({ error: 'Authentication required' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -27,12 +30,20 @@ Deno.serve(async (req: Request): Promise<Response> => {
     );
 
     const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
+    
+    if (userError) {
+      console.error('[progress-video-complete] Auth error:', userError.message);
+    }
+    
+    if (!user) {
+      console.error('[progress-video-complete] No user found');
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    console.log('[progress-video-complete] Authenticated user:', user.id);
 
     const body = await req.json();
     const course_id = String(body?.course_id || '').trim();
