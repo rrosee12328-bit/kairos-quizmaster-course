@@ -357,44 +357,8 @@ const VideoPlayer = ({
         };
         p.on('ended', clearOnComplete);
 
-        // Watchdog: Check every 300ms for unauthorized forward jumps with hysteresis + cooldown (clamp-seek, no pause)
-        watchdogInterval = window.setInterval(() => {
-          if (!isMounted || !readyRef.current || isCorrectingRef.current) return;
-          if (Date.now() < startupSuppressUntilRef.current) return;
-          try {
-            p.getCurrentTime((t: number) => {
-              const now = Date.now();
-              const allowedEnd = maxWatchedRef.current + GRACE;
-              const hystWindow = allowedEnd + HYST;
-
-              // Cooldown check
-              if (now - lastCorrectionAtRef.current < CORRECTION_COOLDOWN_MS) return;
-
-              // Ignore backward seeks and tolerate small overshoot
-              if (t <= maxWatchedRef.current || t <= hystWindow) return;
-
-              // True skip ahead detected — clamp once
-              console.log('[Bunny] WATCHDOG: CORRECT (snapback)', {
-                currentTime: t,
-                maxWatched: maxWatchedRef.current,
-                allowedEnd,
-              });
-
-              isCorrectingRef.current = true;
-              suppressNextTimeupdateRef.current = true;
-              lastCorrectionAtRef.current = now;
-
-              try {
-                p.setCurrentTime(allowedEnd);
-              } catch {}
-
-              setTimeout(() => {
-                isCorrectingRef.current = false;
-                suppressNextTimeupdateRef.current = false;
-              }, 300);
-            });
-          } catch {}
-        }, 300);
+        // Anti-skip watchdog disabled; using 'seeked' handler for enforcement to prevent repeat loops
+        // (previous watchdog removed to avoid false-positive clamping on some videos).
 
         // Rate guard: prevent playback speed > 1.25x
         p.on('ratechange', () => {
@@ -490,7 +454,8 @@ const VideoPlayer = ({
 
         p.getCurrentTime((t: number) => {
           const now = Date.now();
-          const allowedEnd = maxWatchedRef.current + GRACE;
+          const dynGrace = Math.max(10, ((duration || 0) * 0.1));
+          const allowedEnd = maxWatchedRef.current + dynGrace;
           const hystWindow = allowedEnd + HYST;
 
           console.log('[Bunny] EVENT: seeked', {
@@ -498,6 +463,7 @@ const VideoPlayer = ({
             maxWatched: maxWatchedRef.current.toFixed(2),
             allowedEnd: allowedEnd.toFixed(2),
             hystWindow: hystWindow.toFixed(2),
+            dynGrace,
           });
 
           // Cooldown check
