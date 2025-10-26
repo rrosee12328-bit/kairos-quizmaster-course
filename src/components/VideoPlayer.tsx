@@ -776,10 +776,10 @@ const VideoPlayer = ({
                 allowFullScreen
                 onError={handleIframeError}
               />
-              {/* Scrubber overlay - only covers progress bar at bottom while playing */}
+              {/* Scrubber overlay - only covers thin progress bar strip while playing */}
               {isPlaying && (
                 <div
-                  className="absolute inset-x-0 bottom-0 h-10 z-10 cursor-not-allowed"
+                  className="absolute inset-x-0 bottom-0 h-6 z-10 cursor-not-allowed"
                   style={{
                     pointerEvents: 'auto',
                     outline: import.meta.env.DEV ? '2px solid red' : undefined
