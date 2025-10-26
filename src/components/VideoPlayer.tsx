@@ -373,29 +373,7 @@ const VideoPlayer = ({
         };
         p.on('ended', clearOnComplete);
 
-        // Reinstate anti-skip watchdog: hard-clamp any forward jumps very quickly
-        watchdogInterval = window.setInterval(() => {
-          if (!isMounted || !readyRef.current || isCorrectingRef.current) return;
-          if (Date.now() < startupSuppressUntilRef.current) return;
-          try {
-            p.getCurrentTime((t: number) => {
-              const now = Date.now();
-              const allowedEnd = maxWatchedRef.current + FORWARD_GRACE;
-              const hystWindow = allowedEnd + HYST;
-              if (t > hystWindow && now - lastCorrectionAtRef.current >= 400) {
-                console.log('[Bunny] WATCHDOG CLAMP', { t, maxWatched: maxWatchedRef.current, snappingTo: allowedEnd });
-                isCorrectingRef.current = true;
-                suppressNextTimeupdateRef.current = true;
-                lastCorrectionAtRef.current = now;
-                try { p.setCurrentTime(allowedEnd); } catch {}
-                setTimeout(() => {
-                  isCorrectingRef.current = false;
-                  suppressNextTimeupdateRef.current = false;
-                }, 200);
-              }
-            });
-          } catch {}
-        }, 150);
+        // Watchdog disabled per request; relying on 'seeked' and guarded 'timeupdate' clamps only.
 
         // Rate guard: prevent playback speed > 1.25x
         p.on('ratechange', () => {
@@ -853,6 +831,20 @@ const VideoPlayer = ({
                 allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
                 allowFullScreen
                 onError={handleIframeError}
+              />
+              {/* Scrubber blocker: prevent interacting with the progress bar while keeping native controls usable */}
+              <div
+                className="absolute inset-x-0 bottom-0 h-5 z-10 cursor-not-allowed"
+                style={{ pointerEvents: 'auto' }}
+                aria-hidden
+                title="Seeking is disabled"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onMouseUp={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onPointerUp={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onTouchMove={(e) => { e.preventDefault(); e.stopPropagation(); }}
               />
               
             </div>
