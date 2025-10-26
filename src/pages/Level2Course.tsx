@@ -580,6 +580,18 @@ const Level2Course = () => {
       console.log('CAN_PROCEED_TRUE', { serverCompleted, graceTimerDone, bypassGate });
     }
   }, [graceTimerDone, canProceed, serverCompleted, bypassGate]);
+
+  // Reset gating states when section changes
+  useEffect(() => {
+    console.log('SECTION_CHANGED - Resetting gating states', { 
+      currentSectionId, 
+      currentSlide 
+    });
+    setServerCompleted(false);
+    setGraceTimerDone(false);
+    setLocal90Reached(false);
+    setPostStatus(null);
+  }, [currentSectionId, currentSlide]);
   
   console.log('[Level2Course] GATING CHECK', {
     courseType: 'level2',
