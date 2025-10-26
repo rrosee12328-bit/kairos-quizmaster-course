@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { SkipForward, CheckCircle2 } from "lucide-react";
+import { SkipForward, CheckCircle2, Play, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
@@ -84,6 +84,13 @@ const VideoPlayer = ({
   const startupSuppressUntilRef = useRef(0);
   // Queue a play request if user clicks before player is ready
   const queuedPlayRef = useRef(false);
+  // Format seconds to M:SS for display
+  const fmt = (s: number) => {
+    const v = Math.max(0, Math.floor(s || 0));
+    const m = Math.floor(v / 60);
+    const sec = String(v % 60).padStart(2, '0');
+    return `${m}:${sec}`;
+  };
   // Extract Bunny.net video ID from URL
   const getBunnyVideoId = (url: string) => {
     // Handle Bunny.net embed URLs like: https://iframe.mediadelivery.net/embed/{libraryId}/{videoId}
@@ -854,6 +861,42 @@ const VideoPlayer = ({
                   onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
                 />
               )}
+              {/* Controls overlay: play/pause + time (seeking disabled) */}
+              <div className="absolute inset-x-0 bottom-0 z-20 pointer-events-none">
+                <div className="m-2 rounded-md bg-background/80 backdrop-blur border pointer-events-auto px-3 py-2 flex items-center justify-between">
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    aria-label={isPlaying ? 'Pause' : 'Play'}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const p = playerRef.current;
+                      try {
+                        if (!p) return;
+                        if (isPlaying) {
+                          p.pause?.();
+                        } else {
+                          if (readyRef.current) {
+                            p.play?.();
+                          } else {
+                            queuedPlayRef.current = true;
+                          }
+                        }
+                      } catch {}
+                    }}
+                  >
+                    {isPlaying ? (
+                      <Pause className="h-4 w-4" />
+                    ) : (
+                      <Play className="h-4 w-4" />
+                    )}
+                  </Button>
+                  <div className="text-xs text-muted-foreground tabular-nums ml-3">
+                    {fmt(currentTime)} / {fmt(duration)} • –{fmt((duration || 0) - currentTime)}
+                  </div>
+                </div>
+              </div>
             </div>
           ) : isActive && !videoId && section.videoUrl ? (
             <div className="relative bg-destructive/10 border border-destructive/50 rounded-lg overflow-hidden aspect-video mb-4">
