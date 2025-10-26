@@ -779,10 +779,9 @@ const VideoPlayer = ({
               {/* Scrubber overlay - only covers thin progress bar strip while playing */}
               {isPlaying && (
                 <div
-                  className="absolute inset-x-0 bottom-0 h-6 z-10 cursor-not-allowed"
+                  className="absolute inset-x-0 bottom-0 h-3 z-10 cursor-not-allowed"
                   style={{
-                    pointerEvents: 'auto',
-                    outline: import.meta.env.DEV ? '2px solid red' : undefined
+                    pointerEvents: 'auto'
                   }}
                   title="Seeking ahead is disabled while the lesson is playing."
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
