@@ -10,6 +10,7 @@ interface AutoAdvanceModalProps {
   onAdvance: () => void;
   onCancel: () => void;
   countdownSeconds?: number;
+  isFinalSection?: boolean;
 }
 
 const AutoAdvanceModal = ({
@@ -18,6 +19,7 @@ const AutoAdvanceModal = ({
   onAdvance,
   onCancel,
   countdownSeconds = 5,
+  isFinalSection = false,
 }: AutoAdvanceModalProps) => {
   const [secondsLeft, setSecondsLeft] = useState(countdownSeconds);
 
@@ -27,59 +29,124 @@ const AutoAdvanceModal = ({
       return;
     }
 
+    // Log modal shown
+    console.log('MODAL_SHOWN', { sectionTitle, isFinalSection });
+
+    // Don't auto-advance if final section
+    if (isFinalSection) return;
+
     const interval = setInterval(() => {
       setSecondsLeft((prev) => {
-        if (prev <= 1) {
+        const newValue = prev - 1;
+        console.log('COUNTDOWN_TICK:', newValue);
+        
+        if (newValue <= 0) {
           clearInterval(interval);
+          console.log('AUTO_ADVANCE_NAV', { from: sectionTitle });
           onAdvance();
           return 0;
         }
-        return prev - 1;
+        return newValue;
       });
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isOpen, countdownSeconds, onAdvance]);
+  }, [isOpen, countdownSeconds, onAdvance, isFinalSection, sectionTitle]);
 
   const progress = ((countdownSeconds - secondsLeft) / countdownSeconds) * 100;
 
+  const handleContinue = () => {
+    console.log('CONTINUE_NOW_CLICK', { sectionTitle });
+    onAdvance();
+  };
+
+  const handleStay = () => {
+    console.log('STAY_HERE_CLICK', { sectionTitle });
+    onCancel();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onCancel()}>
-      <DialogContent className="sm:max-w-md">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleStay()}>
+      <DialogContent 
+        className="sm:max-w-md" 
+        data-testid="complete-modal"
+        role="dialog"
+        aria-labelledby="complete-modal-title"
+      >
         <DialogHeader>
-          <div className="flex items-center gap-2 mb-2">
-            <CheckCircle2 className="h-6 w-6 text-green-500" />
-            <DialogTitle>Section Complete!</DialogTitle>
-          </div>
-          <DialogDescription>
-            You've completed "{sectionTitle}". 
-            <div className="mt-2 font-semibold">
-              Auto-advancing to next section in {secondsLeft} seconds...
+          <div className="flex items-center gap-3 mb-2">
+            <CheckCircle2 
+              className="h-6 w-6 text-green-500" 
+              data-testid="complete-icon"
+            />
+            <div className="flex-1">
+              <DialogTitle 
+                id="complete-modal-title"
+                data-testid="complete-title"
+                className="text-xl"
+              >
+                {isFinalSection ? "Course Complete!" : "Section Complete!"}
+              </DialogTitle>
+              <p 
+                className="text-sm text-muted-foreground mt-1"
+                data-testid="complete-section-title"
+              >
+                {sectionTitle}
+              </p>
             </div>
-          </DialogDescription>
+          </div>
         </DialogHeader>
 
-        <div className="space-y-4">
-          <Progress value={progress} className="h-2" />
-        </div>
+        {!isFinalSection && (
+          <>
+            <div className="space-y-2">
+              <p 
+                className="text-sm font-semibold text-center"
+                data-testid="complete-countdown-label"
+              >
+                Continuing in {secondsLeft}...
+              </p>
+              <Progress 
+                value={progress} 
+                className="h-2" 
+                data-testid="complete-progress"
+              />
+            </div>
 
-        <DialogFooter className="flex-col sm:flex-row gap-2">
-          <Button
-            variant="outline"
-            onClick={onCancel}
-            className="w-full sm:w-auto"
-          >
-            <X className="h-4 w-4 mr-2" />
-            Stay Here
-          </Button>
-          <Button
-            onClick={onAdvance}
-            className="w-full sm:w-auto"
-          >
-            Continue Now
-            <ArrowRight className="h-4 w-4 ml-2" />
-          </Button>
-        </DialogFooter>
+            <DialogFooter className="flex-col sm:flex-row gap-2">
+              <Button
+                variant="outline"
+                onClick={handleStay}
+                className="w-full sm:w-auto hover:bg-muted"
+                data-testid="btn-stay-here"
+              >
+                <X className="h-4 w-4 mr-2" />
+                Stay Here
+              </Button>
+              <Button
+                onClick={handleContinue}
+                className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
+                data-testid="btn-continue-now"
+              >
+                Continue Now
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </DialogFooter>
+          </>
+        )}
+
+        {isFinalSection && (
+          <DialogFooter>
+            <Button
+              onClick={handleContinue}
+              className="w-full bg-green-600 hover:bg-green-700"
+              data-testid="btn-continue-now"
+            >
+              View Certificate / Dashboard
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );

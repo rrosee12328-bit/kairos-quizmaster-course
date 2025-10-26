@@ -385,22 +385,44 @@ const Level2Course = () => {
     });
   };
 
-  const handleSectionCompleted = (sectionId: number) => {
-    console.log('[Level2Course] SECTION_COMPLETED callback', { sectionId });
-    const section = courseSections.find(s => s.id === sectionId);
-    if (section) {
-      setCompletedSectionTitle(section.title);
-      setShowAutoAdvanceModal(true);
-      handleSectionComplete(sectionId);
+  const handleSectionCompleted = async (sectionId: number) => {
+    console.log('SERVER_CONFIRMED_SECTION_COMPLETE', { 
+      sectionId, 
+      userId: debugUserId,
+      courseType: 'level2'
+    });
+
+    // Re-fetch progress from server to ensure we have latest state
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: progressData } = await supabase
+        .from('course_progress')
+        .select('section_completed')
+        .eq('user_id', user.id)
+        .eq('course_type', 'level2')
+        .eq('section_id', sectionId)
+        .maybeSingle();
+
+      if (progressData?.section_completed) {
+        const completedSection = courseSections.find(s => s.id === sectionId);
+        if (completedSection) {
+          setCompletedSectionTitle(completedSection.title);
+          setShowAutoAdvanceModal(true);
+        }
+        handleSectionComplete(sectionId);
+      }
     }
   };
 
   const handleAutoAdvance = () => {
     setShowAutoAdvanceModal(false);
-    if (currentSlide < totalSections - 1) {
-      handleNextSlide();
+    
+    // Check if this is the final section
+    const isFinalSection = currentSlide >= courseSections.length - 1;
+    if (isFinalSection) {
+      navigate('/profile');
     } else {
-      toast.success("Course Complete! All sections finished.");
+      handleNextSlide();
     }
   };
 
@@ -730,6 +752,7 @@ const Level2Course = () => {
         onAdvance={handleAutoAdvance}
         onCancel={handleCancelAutoAdvance}
         countdownSeconds={5}
+        isFinalSection={currentSlide >= courseSections.length - 1}
       />
 
       <Footer />
