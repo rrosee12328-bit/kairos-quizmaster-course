@@ -308,7 +308,7 @@ const VideoPlayer = ({
         videoStartTimeRef.current = null;
         totalWatchTimeRef.current = 0;
         lastTimeUpdateRef.current = 0;
-        startupSuppressUntilRef.current = Date.now() + 3000;
+        startupSuppressUntilRef.current = Date.now() + 7000;
         try { p.setCurrentTime(0); } catch {}
 
         const updateDuration = () => {
@@ -442,6 +442,11 @@ const VideoPlayer = ({
         setCurrentTime(current);
         setDuration(dur);
 
+        // During startup suppression window, keep maxWatched in sync to avoid false corrections
+        if (Date.now() < startupSuppressUntilRef.current) {
+          maxWatchedRef.current = Math.max(maxWatchedRef.current, current);
+        }
+
         // Skip logic during suppression window after a clamp correction
         if (suppressNextTimeupdateRef.current) {
           lastPlaybackTimeRef.current = current;
@@ -480,6 +485,7 @@ const VideoPlayer = ({
 
       p.on('seeked', () => {
         if (!isMounted || isCorrectingRef.current) return;
+        if (Date.now() < startupSuppressUntilRef.current) return;
 
         p.getCurrentTime((t: number) => {
           const now = Date.now();
