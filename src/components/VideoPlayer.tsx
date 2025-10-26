@@ -822,28 +822,15 @@ const VideoPlayer = ({
                 allowFullScreen
                 onError={handleIframeError}
               />
-              {/* Thin overlay over progress bar only - blocks seeking but allows play/pause */}
               <div
-                className="absolute inset-x-0 bottom-0 h-12 z-10 cursor-not-allowed"
+                className="absolute inset-x-0 bottom-0 h-3 z-10 cursor-not-allowed"
                 style={{ pointerEvents: 'auto' }}
                 title="Seeking is disabled. Use play/pause controls above."
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
                 onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
                 onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
               />
-              {/* Scrubber overlay - only covers thin progress bar strip while playing */}
-              {isPlaying && (
-                <div
-                  className="absolute inset-x-0 bottom-0 h-8 z-10 cursor-not-allowed"
-                  style={{
-                    pointerEvents: 'auto'
-                  }}
-                  title="Seeking ahead is disabled while the lesson is playing."
-                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                  onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                  onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                />
-              )}
+              
             </div>
           ) : isActive && !videoId && section.videoUrl ? (
             <div className="relative bg-destructive/10 border border-destructive/50 rounded-lg overflow-hidden aspect-video mb-4">
