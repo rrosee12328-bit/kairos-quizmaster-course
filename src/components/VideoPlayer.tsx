@@ -20,6 +20,9 @@ interface VideoPlayerProps {
   // Instrumentation callbacks (dev-only)
   onLocal90Reached?: (reached: boolean) => void;
   onPostStatus?: (status: number | null) => void;
+  // Gating state up to parent
+  onServerCompletedChange?: (val: boolean) => void;
+  onGraceTimerDoneChange?: (val: boolean) => void;
 }
 
 const VideoPlayer = ({ 
@@ -30,6 +33,8 @@ const VideoPlayer = ({
   onNext,
   onLocal90Reached,
   onPostStatus,
+  onServerCompletedChange,
+  onGraceTimerDoneChange,
 }: VideoPlayerProps) => {
   const { toast } = useToast();
   const [progress, setProgress] = useState(0);
@@ -60,6 +65,7 @@ const VideoPlayer = ({
   const videoStartTimeRef = useRef<number | null>(null);
   const totalWatchTimeRef = useRef(0);
   const lastTimeUpdateRef = useRef(0);
+  const [isPlaying, setIsPlaying] = useState(false);
   
   // Anti-skip constants
   const GRACE = 5; // seconds ahead allowed
@@ -267,12 +273,6 @@ const VideoPlayer = ({
                   onLocal90Reached?.(true);
                   console.log('[FLOW] LOCAL_90 (from bootstrap)');
                 }
-                if (!isCompleteRef.current) {
-                  setIsComplete(true);
-                  isCompleteRef.current = true;
-                  console.log('[FLOW] NEXT_ENABLED (bootstrap)');
-                  onCompleteRef.current?.();
-                }
                 handleCompletionTrigger();
               }
             });
@@ -337,12 +337,6 @@ const VideoPlayer = ({
                   setLocalCompleted(true);
                   onLocal90Reached?.(true);
                   console.log('[FLOW] LOCAL_90 (from poll end)');
-                }
-                if (!isCompleteRef.current) {
-                  setIsComplete(true);
-                  isCompleteRef.current = true;
-                  console.log('[FLOW] NEXT_ENABLED (poll end)');
-                  onCompleteRef.current?.();
                 }
                 handleCompletionTrigger();
               }
@@ -467,17 +461,9 @@ const VideoPlayer = ({
           const durSafe = dur || 0;
           const ninetyReached = durSafe > 0 && (maxWatchedRef.current / durSafe) >= 0.9;
           if (ninetyReached && !localCompleted) {
-            console.log('[FLOW] LOCAL_90', { courseType, sectionId: section.id, maxWatched: maxWatchedRef.current, duration: durSafe });
             setLocalCompleted(true);
             onLocal90Reached?.(true);
-            // Enable Next immediately on local 90%
-            if (!isCompleteRef.current) {
-              setIsComplete(true);
-              isCompleteRef.current = true;
-              console.log('[FLOW] NEXT_ENABLED (local)');
-              // Mark section complete in parent immediately so top-level Next unlocks
-              onCompleteRef.current?.();
-            }
+            // Post to server and wait for confirmation before enabling Next
             handleCompletionTrigger();
           }
         }
@@ -546,6 +532,7 @@ const VideoPlayer = ({
       p.on('play', () => {
         if (!isMounted) return;
         lastPlayingStateRef.current = true;
+        setIsPlaying(true);
         if (!videoStartTimeRef.current) {
           videoStartTimeRef.current = Date.now();
           console.log('[Bunny] EVENT: play (started watching)', { sectionId: section.id });
@@ -555,6 +542,7 @@ const VideoPlayer = ({
       p.on('pause', () => {
         if (!isMounted) return;
         lastPlayingStateRef.current = false;
+        setIsPlaying(false);
         if (videoStartTimeRef.current) {
           totalWatchTimeRef.current += Math.floor((Date.now() - videoStartTimeRef.current) / 1000);
           videoStartTimeRef.current = null;
@@ -572,7 +560,7 @@ const VideoPlayer = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isActive || !lastPlayingStateRef.current) return;
 
-      const blockKeys = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'ArrowLeft', 'ArrowRight'];
+      const blockKeys = ['0','1','2','3','4','5','6','7','8','9','ArrowRight'];
       if (blockKeys.includes(e.key)) {
         e.preventDefault();
         e.stopPropagation();
@@ -694,10 +682,12 @@ const VideoPlayer = ({
     const ok = await waitForServerCompletion();
     if (ok) {
       setServerCompleted(true);
+      onServerCompletedChange?.(true);
       console.log('[FLOW] SERVER_CONFIRMED', { courseId: courseType, sectionId: section.id });
       
       setTimeout(() => {
         setGraceTimerDone(true);
+        onGraceTimerDoneChange?.(true);
         console.log('[FLOW] GRACE_DONE');
         setIsComplete(true);
         console.log('[FLOW] NEXT_ENABLED');
@@ -738,10 +728,12 @@ const VideoPlayer = ({
 
       if (data?.completed) {
         setServerCompleted(true);
+        onServerCompletedChange?.(true);
         console.log('[FLOW] SERVER_CONFIRMED (from recheck)');
         if (!isComplete) {
           setTimeout(() => {
             setGraceTimerDone(true);
+            onGraceTimerDoneChange?.(true);
             console.log('[FLOW] GRACE_DONE (from recheck)');
             setIsComplete(true);
             console.log('[FLOW] NEXT_ENABLED (from recheck)');
@@ -781,6 +773,14 @@ const VideoPlayer = ({
                 allowFullScreen
                 onError={handleIframeError}
               />
+              {isPlaying && (
+                <div
+                  className="absolute inset-x-0 bottom-0 h-14 z-10 cursor-not-allowed"
+                  title="Seeking ahead is disabled while the lesson is playing."
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                  onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                />
+              )}
             </div>
           ) : isActive && !videoId && section.videoUrl ? (
             <div className="relative bg-destructive/10 border border-destructive/50 rounded-lg overflow-hidden aspect-video mb-4">

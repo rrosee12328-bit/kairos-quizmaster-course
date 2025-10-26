@@ -495,6 +495,8 @@ const Level2Course = () => {
                       onNext={handleNextSlide}
                       onLocal90Reached={(reached) => setLocal90Reached(reached)}
                       onPostStatus={(status) => setPostStatus(status)}
+                      onServerCompletedChange={(val) => setServerCompleted(val)}
+                      onGraceTimerDoneChange={(val) => setGraceTimerDone(val)}
                     />
                   </CarouselItem>
                 ))}
@@ -518,9 +520,9 @@ const Level2Course = () => {
 
               <Button
                 onClick={handleNextSlide}
-                disabled={currentSlide === totalSections - 1 || !isCurrentSectionComplete}
-                aria-disabled={currentSlide === totalSections - 1 || !isCurrentSectionComplete}
-                title={!isCurrentSectionComplete ? "Complete current section to unlock next" : ""}
+                disabled={currentSlide === totalSections - 1 || !canProceed}
+                aria-disabled={currentSlide === totalSections - 1 || !canProceed}
+                title={!canProceed ? "Finish previous lesson to unlock" : ""}
                 className="relative"
                 style={{ outline: import.meta.env.DEV ? '2px solid red' : undefined }}
               >
