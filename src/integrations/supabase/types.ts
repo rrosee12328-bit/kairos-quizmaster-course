@@ -127,16 +127,50 @@ export type Database = {
         }
         Relationships: []
       }
+      course_completions_summary: {
+        Row: {
+          course_completed: boolean | null
+          course_type: string
+          created_at: string | null
+          id: string
+          last_unlocked_section: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          course_completed?: boolean | null
+          course_type: string
+          created_at?: string | null
+          id?: string
+          last_unlocked_section?: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          course_completed?: boolean | null
+          course_type?: string
+          created_at?: string | null
+          id?: string
+          last_unlocked_section?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       course_progress: {
         Row: {
           completed: boolean | null
           completed_at: string | null
           course_type: string
           created_at: string
+          has_quiz: boolean | null
           id: string
+          quiz_passed: boolean | null
+          section_completed: boolean | null
           section_id: number
           updated_at: string
           user_id: string
+          video_completed: boolean | null
           video_started_at: string | null
           video_watch_time_seconds: number | null
         }
@@ -145,10 +179,14 @@ export type Database = {
           completed_at?: string | null
           course_type: string
           created_at?: string
+          has_quiz?: boolean | null
           id?: string
+          quiz_passed?: boolean | null
+          section_completed?: boolean | null
           section_id: number
           updated_at?: string
           user_id: string
+          video_completed?: boolean | null
           video_started_at?: string | null
           video_watch_time_seconds?: number | null
         }
@@ -157,10 +195,14 @@ export type Database = {
           completed_at?: string | null
           course_type?: string
           created_at?: string
+          has_quiz?: boolean | null
           id?: string
+          quiz_passed?: boolean | null
+          section_completed?: boolean | null
           section_id?: number
           updated_at?: string
           user_id?: string
+          video_completed?: boolean | null
           video_started_at?: string | null
           video_watch_time_seconds?: number | null
         }

@@ -12,6 +12,7 @@ interface VideoPlayerProps {
     title: string;
     videoUrl: string;
     duration: string;
+    has_quiz?: boolean;
   };
   courseType?: string;
   isActive?: boolean;
@@ -23,6 +24,8 @@ interface VideoPlayerProps {
   // Gating state up to parent
   onServerCompletedChange?: (val: boolean) => void;
   onGraceTimerDoneChange?: (val: boolean) => void;
+  // Section completion callback
+  onSectionCompleted?: (sectionId: number) => void;
 }
 
 const VideoPlayer = ({ 
@@ -35,6 +38,7 @@ const VideoPlayer = ({
   onPostStatus,
   onServerCompletedChange,
   onGraceTimerDoneChange,
+  onSectionCompleted,
 }: VideoPlayerProps) => {
   const { toast } = useToast();
   const [progress, setProgress] = useState(0);
@@ -659,7 +663,7 @@ const VideoPlayer = ({
         payload 
       });
       
-      const { data, error } = await supabase.functions.invoke('progress-complete', {
+      const { data, error } = await supabase.functions.invoke('progress-video-complete', {
         body: payload,
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
@@ -674,7 +678,14 @@ const VideoPlayer = ({
       
       setPostStatus(200);
       onPostStatus?.(200);
-      console.log('[FLOW] POST_OK', { courseId: courseType, sectionId: section.id });
+      console.log('[FLOW] POST_OK', { courseId: courseType, sectionId: section.id, data });
+      
+      // Check if section is complete (video done and no quiz, or quiz already passed)
+      const progress = data?.progress;
+      if (progress?.section_completed) {
+        console.log('[FLOW] SECTION_COMPLETED immediately (no quiz or quiz already done)');
+        onSectionCompleted?.(section.id);
+      }
     } catch (e: any) {
       setPostStatus(500);
       onPostStatus?.(500);
