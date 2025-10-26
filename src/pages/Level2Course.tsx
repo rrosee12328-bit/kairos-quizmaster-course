@@ -10,6 +10,7 @@ import Quiz from "@/components/Quiz";
 import CourseHeader from "@/components/CourseHeader";
 import VideoPlayer from "@/components/VideoPlayer";
 import EnrollmentForm from "@/components/EnrollmentForm";
+import AutoAdvanceModal from "@/components/AutoAdvanceModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -39,6 +40,8 @@ const Level2Course = () => {
   const [serverCompleted, setServerCompleted] = useState(false);
   const [graceTimerDone, setGraceTimerDone] = useState(false);
   const [bypassGate, setBypassGate] = useState(false); // dev only
+  const [showAutoAdvanceModal, setShowAutoAdvanceModal] = useState(false);
+  const [completedSectionTitle, setCompletedSectionTitle] = useState("");
   const [courseSections, setCourseSections] = useState([
     {
       id: 1,
@@ -46,6 +49,7 @@ const Level2Course = () => {
       description: "Introduction to the Level 2 Security Officer Certification Course",
       duration: "6 seconds",
       videoUrl: "",
+      has_quiz: false,
       content: [
         "Course overview",
         "What to expect from this training"
@@ -57,6 +61,7 @@ const Level2Course = () => {
       description: "Understanding the goals and objectives of this certification program",
       duration: "1 minute 59 seconds",
       videoUrl: "",
+      has_quiz: false,
       content: [
         "Certification requirements",
         "Learning outcomes",
@@ -69,6 +74,7 @@ const Level2Course = () => {
       description: "Fundamental principles and responsibilities of security officers",
       duration: "27 minutes 3 seconds",
       videoUrl: "",
+      has_quiz: false,
       content: [
         "Professional conduct and appearance",
         "Core security responsibilities",
@@ -81,6 +87,7 @@ const Level2Course = () => {
       description: "Legal framework governing security operations",
       duration: "38 minutes 3 seconds",
       videoUrl: "",
+      has_quiz: false,
       content: [
         "State regulations for security officers",
         "Legal powers and limitations",
@@ -93,6 +100,7 @@ const Level2Course = () => {
       description: "Effective communication and de-escalation techniques",
       duration: "39 minutes 51 seconds",
       videoUrl: "",
+      has_quiz: false,
       content: [
         "Professional communication skills",
         "Conflict de-escalation strategies",
@@ -105,6 +113,7 @@ const Level2Course = () => {
       description: "Understanding appropriate force levels and legal considerations",
       duration: "16 minutes 58 seconds",
       videoUrl: "",
+      has_quiz: false,
       content: [
         "Force continuum",
         "Legal justifications",
@@ -117,6 +126,7 @@ const Level2Course = () => {
       description: "Citizen's arrest powers and procedures",
       duration: "5 minutes 57 seconds",
       videoUrl: "",
+      has_quiz: false,
       content: [
         "Legal authority for arrests",
         "Proper arrest procedures",
@@ -129,6 +139,7 @@ const Level2Course = () => {
       description: "Professional communication and documentation standards",
       duration: "8 minutes 57 seconds",
       videoUrl: "",
+      has_quiz: false,
       content: [
         "Report writing techniques",
         "Professional correspondence",
@@ -141,6 +152,7 @@ const Level2Course = () => {
       description: "Emergency response procedures and hazard identification",
       duration: "6 minutes 40 seconds",
       videoUrl: "",
+      has_quiz: false,
       content: [
         "Emergency response protocols",
         "Safety hazard identification",
@@ -373,6 +385,30 @@ const Level2Course = () => {
     });
   };
 
+  const handleSectionCompleted = (sectionId: number) => {
+    console.log('[Level2Course] SECTION_COMPLETED callback', { sectionId });
+    const section = courseSections.find(s => s.id === sectionId);
+    if (section) {
+      setCompletedSectionTitle(section.title);
+      setShowAutoAdvanceModal(true);
+      handleSectionComplete(sectionId);
+    }
+  };
+
+  const handleAutoAdvance = () => {
+    setShowAutoAdvanceModal(false);
+    if (currentSlide < totalSections - 1) {
+      handleNextSlide();
+    } else {
+      toast.success("Course Complete! All sections finished.");
+    }
+  };
+
+  const handleCancelAutoAdvance = () => {
+    setShowAutoAdvanceModal(false);
+    toast.info("Staying on current section. Click Next when ready.");
+  };
+
 
   const handleNextSlide = () => {
     if (!carouselApi) return;
@@ -488,6 +524,7 @@ const Level2Course = () => {
                         title: section.title,
                         videoUrl: section.videoUrl || "",
                         duration: section.duration,
+                        has_quiz: section.has_quiz || false,
                       }}
                       courseType="level2"
                       isActive={currentSlide === idx}
@@ -497,6 +534,7 @@ const Level2Course = () => {
                       onPostStatus={(status) => setPostStatus(status)}
                       onServerCompletedChange={(val) => setServerCompleted(val)}
                       onGraceTimerDoneChange={(val) => setGraceTimerDone(val)}
+                      onSectionCompleted={handleSectionCompleted}
                     />
                   </CarouselItem>
                 ))}
@@ -684,6 +722,15 @@ const Level2Course = () => {
           </>
         )}
       </div>
+
+      {/* Auto-advance modal */}
+      <AutoAdvanceModal
+        isOpen={showAutoAdvanceModal}
+        sectionTitle={completedSectionTitle}
+        onAdvance={handleAutoAdvance}
+        onCancel={handleCancelAutoAdvance}
+        countdownSeconds={5}
+      />
 
       <Footer />
     </div>
