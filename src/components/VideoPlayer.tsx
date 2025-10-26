@@ -41,6 +41,14 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
   const totalWatchTimeRef = useRef(0);
   const lastTimeUpdateRef = useRef(0);
   
+  // Anti-skip constants
+  const GRACE = 5; // seconds ahead allowed
+  const HYST = 1.5; // hysteresis tolerance
+  const CORRECTION_COOLDOWN_MS = 1200;
+  const lastCorrectionAtRef = useRef(0);
+  const isCorrectingRef = useRef(false);
+  const lastPlayingStateRef = useRef(false);
+  
   // Extract Bunny.net video ID from URL
   const getBunnyVideoId = (url: string) => {
     // Handle Bunny.net embed URLs like: https://iframe.mediadelivery.net/embed/{libraryId}/{videoId}
@@ -303,20 +311,51 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
         };
         p.on('ended', clearOnComplete);
 
-        // Watchdog: Check every 300ms for unauthorized forward jumps
+        // Watchdog: Check every 300ms for unauthorized forward jumps with hysteresis + cooldown
         watchdogInterval = window.setInterval(() => {
-          if (!isMounted || !readyRef.current) return;
+          if (!isMounted || !readyRef.current || isCorrectingRef.current) return;
           try {
             p.getCurrentTime((t: number) => {
-              const allowedMax = maxWatchedRef.current + 5;
-              if (t > allowedMax) {
-                console.log('[Bunny] WATCHDOG: Correcting unauthorized jump', {
-                  currentTime: t,
-                  maxWatched: maxWatchedRef.current,
-                  snappingTo: allowedMax
-                });
-                try { p.setCurrentTime(allowedMax); } catch {}
+              const now = Date.now();
+              const allowedEnd = maxWatchedRef.current + GRACE;
+              const hystWindow = allowedEnd + HYST;
+              
+              // Cooldown check: don't correct if within cooldown period
+              if (now - lastCorrectionAtRef.current < CORRECTION_COOLDOWN_MS) {
+                return;
               }
+              
+              // Hysteresis check: only correct if significantly beyond allowed window
+              if (t <= hystWindow) {
+                // Within tolerance (or backward seek)
+                return;
+              }
+              
+              // True skip ahead detected
+              console.log('[Bunny] WATCHDOG: Correcting unauthorized jump', {
+                currentTime: t,
+                maxWatched: maxWatchedRef.current,
+                snappingTo: allowedEnd
+              });
+              
+              isCorrectingRef.current = true;
+              lastCorrectionAtRef.current = now;
+              
+              // Pause, correct, then resume if was playing
+              p.getPaused((wasPaused: boolean) => {
+                p.pause();
+                try { 
+                  p.setCurrentTime(allowedEnd);
+                  setTimeout(() => {
+                    if (!wasPaused && lastPlayingStateRef.current) {
+                      try { p.play(); } catch {}
+                    }
+                    setTimeout(() => {
+                      isCorrectingRef.current = false;
+                    }, 300);
+                  }, 100);
+                } catch {}
+              });
             });
           } catch {}
         }, 300);
@@ -329,9 +368,16 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
               if (rate > 1.25) {
                 console.log('[Bunny] RATE GUARD: Preventing speed-run', { 
                   attemptedRate: rate, 
-                  enforcedRate: 1.0 
+                  enforcedRate: 1.25 
                 });
-                try { p.setPlaybackRate?.(1.0); } catch {}
+                try { 
+                  p.setPlaybackRate?.(1.25); 
+                  toast({
+                    title: "Max speed 1.25×",
+                    description: "To ensure proper learning, videos cannot be played faster than 1.25×",
+                    duration: 2000,
+                  });
+                } catch {}
               }
             });
           } catch {}
@@ -359,14 +405,13 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
         setCurrentTime(current);
         setDuration(dur);
 
-        // Only increase maxWatched on normal forward playback (not big jumps)
-        const timeDiff = current - maxWatchedRef.current;
-        if (timeDiff > 0 && timeDiff < 2) {
-          // Normal playback: small incremental increase
-          maxWatchedRef.current = current;
-        } else if (current <= maxWatchedRef.current + 5) {
-          // Within allowed buffer
-          if (current > maxWatchedRef.current) {
+        // Only increase maxWatched on natural forward playback (not during correction cooldown)
+        const inCooldown = now - lastCorrectionAtRef.current < CORRECTION_COOLDOWN_MS;
+        
+        if (!inCooldown && !isCorrectingRef.current) {
+          const timeDiff = current - maxWatchedRef.current;
+          // Natural forward playback: incremental increase within 2s
+          if (timeDiff > 0 && timeDiff <= 2) {
             maxWatchedRef.current = current;
           }
         }
@@ -408,22 +453,63 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
       });
 
       p.on('seeked', () => {
-        if (!isMounted) return;
-        // Anti-skip: snap back if user seeks beyond allowed buffer (handles keyboard shortcuts 0-9, arrows)
+        if (!isMounted || isCorrectingRef.current) return;
+        
         p.getCurrentTime((t: number) => {
-          const allowedSeek = maxWatchedRef.current + 5;
+          const now = Date.now();
+          const allowedEnd = maxWatchedRef.current + GRACE;
+          const hystWindow = allowedEnd + HYST;
+          
           console.log('[Bunny] EVENT: seeked', { 
             seekedTo: t.toFixed(2), 
             maxWatched: maxWatchedRef.current.toFixed(2),
-            allowed: allowedSeek.toFixed(2)
+            allowedEnd: allowedEnd.toFixed(2),
+            hystWindow: hystWindow.toFixed(2)
           });
-          if (t > allowedSeek) {
-            console.log('[Bunny] SEEK GUARD: Snapping back from seeked event', { 
-              seekedTo: t, 
-              snappedTo: allowedSeek 
-            });
-            try { p.setCurrentTime(allowedSeek); } catch {}
+          
+          // Cooldown check
+          if (now - lastCorrectionAtRef.current < CORRECTION_COOLDOWN_MS) {
+            console.log('[Bunny] SEEK: In cooldown, skipping correction');
+            return;
           }
+          
+          // Ignore backward seeks
+          if (t <= maxWatchedRef.current) {
+            return;
+          }
+          
+          // Within tolerance window
+          if (t <= hystWindow) {
+            console.log('[Bunny] SEEK: Within tolerance (hysteresis)', { 
+              seekedTo: t, 
+              hystWindow 
+            });
+            return;
+          }
+          
+          // Beyond tolerance: correct
+          console.log('[Bunny] SEEK GUARD: Correcting forward seek', { 
+            seekedTo: t, 
+            snappingTo: allowedEnd 
+          });
+          
+          isCorrectingRef.current = true;
+          lastCorrectionAtRef.current = now;
+          
+          p.getPaused((wasPaused: boolean) => {
+            p.pause();
+            try { 
+              p.setCurrentTime(allowedEnd);
+              setTimeout(() => {
+                if (!wasPaused && lastPlayingStateRef.current) {
+                  try { p.play(); } catch {}
+                }
+                setTimeout(() => {
+                  isCorrectingRef.current = false;
+                }, 300);
+              }, 100);
+            } catch {}
+          });
         });
       });
 
@@ -456,6 +542,7 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
 
       p.on('play', () => {
         if (!isMounted) return;
+        lastPlayingStateRef.current = true;
         if (!videoStartTimeRef.current) {
           videoStartTimeRef.current = Date.now();
           console.log('[Bunny] EVENT: play (started watching)', { sectionId: section.id });
@@ -463,9 +550,12 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
       });
 
       p.on('pause', () => {
-        if (!isMounted || !videoStartTimeRef.current) return;
-        totalWatchTimeRef.current += Math.floor((Date.now() - videoStartTimeRef.current) / 1000);
-        videoStartTimeRef.current = null;
+        if (!isMounted) return;
+        lastPlayingStateRef.current = false;
+        if (videoStartTimeRef.current) {
+          totalWatchTimeRef.current += Math.floor((Date.now() - videoStartTimeRef.current) / 1000);
+          videoStartTimeRef.current = null;
+        }
         console.log('[Bunny] EVENT: pause', { 
           sectionId: section.id, 
           totalWatchTime: totalWatchTimeRef.current 
@@ -474,9 +564,25 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
     };
 
     setup();
+    
+    // Keyboard seek prevention
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isActive || !lastPlayingStateRef.current) return;
+      
+      // Block number keys 0-9 and arrow keys during video playback
+      const blockKeys = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'ArrowLeft', 'ArrowRight'];
+      if (blockKeys.includes(e.key)) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('[Bunny] KEYBOARD: Blocked seek key', { key: e.key });
+      }
+    };
+    
+    document.addEventListener('keydown', handleKeyDown, true);
 
       return () => {
       isMounted = false;
+      document.removeEventListener('keydown', handleKeyDown, true);
       // Save watch time before cleanup
       if (videoStartTimeRef.current) {
         totalWatchTimeRef.current += Math.floor((Date.now() - videoStartTimeRef.current) / 1000);
