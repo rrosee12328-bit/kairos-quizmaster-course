@@ -456,7 +456,8 @@ const VideoPlayer = ({
         // Only increase maxWatched on natural forward playback (not during correction cooldown)
         const inCooldown = now - lastCorrectionAtRef.current < CORRECTION_COOLDOWN_MS;
         const delta = current - lastPlaybackTimeRef.current;
-        if (!inCooldown && !isCorrectingRef.current && delta > 0 && delta <= 2) {
+        if (!inCooldown && !isCorrectingRef.current && delta > 0) {
+          // Keep maxWatched in sync with actual playback to avoid false snapbacks
           maxWatchedRef.current = Math.max(maxWatchedRef.current, current);
         }
         lastPlaybackTimeRef.current = current;
@@ -554,6 +555,13 @@ const VideoPlayer = ({
           videoStartTimeRef.current = Date.now();
           console.log('[Bunny] EVENT: play (started watching)', { sectionId: section.id });
         }
+        // Sync maxWatched with current time at play start to avoid early corrections
+        try {
+          p.getCurrentTime((t: number) => {
+            maxWatchedRef.current = Math.max(maxWatchedRef.current, t);
+            lastPlaybackTimeRef.current = t;
+          });
+        } catch {}
       });
 
       p.on('pause', () => {
