@@ -654,6 +654,7 @@ const VideoPlayer = ({
         course_id: courseType,
         section_id: section.id,
         seconds_watched: totalWatchTimeRef.current,
+        has_quiz: section.has_quiz ?? false,
       };
       
       console.log('[FLOW] POST_SENT', { 
