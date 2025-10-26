@@ -661,6 +661,7 @@ const VideoPlayer = ({
       
       const { data, error } = await supabase.functions.invoke('progress-complete', {
         body: payload,
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
       
       if (error) {
