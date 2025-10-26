@@ -373,8 +373,29 @@ const VideoPlayer = ({
         };
         p.on('ended', clearOnComplete);
 
-        // Anti-skip watchdog disabled; using 'seeked' handler for enforcement to prevent repeat loops
-        // (previous watchdog removed to avoid false-positive clamping on some videos).
+        // Reinstate anti-skip watchdog: hard-clamp any forward jumps very quickly
+        watchdogInterval = window.setInterval(() => {
+          if (!isMounted || !readyRef.current || isCorrectingRef.current) return;
+          if (Date.now() < startupSuppressUntilRef.current) return;
+          try {
+            p.getCurrentTime((t: number) => {
+              const now = Date.now();
+              const allowedEnd = maxWatchedRef.current + FORWARD_GRACE;
+              const hystWindow = allowedEnd + HYST;
+              if (t > hystWindow && now - lastCorrectionAtRef.current >= 400) {
+                console.log('[Bunny] WATCHDOG CLAMP', { t, maxWatched: maxWatchedRef.current, snappingTo: allowedEnd });
+                isCorrectingRef.current = true;
+                suppressNextTimeupdateRef.current = true;
+                lastCorrectionAtRef.current = now;
+                try { p.setCurrentTime(allowedEnd); } catch {}
+                setTimeout(() => {
+                  isCorrectingRef.current = false;
+                  suppressNextTimeupdateRef.current = false;
+                }, 200);
+              }
+            });
+          } catch {}
+        }, 150);
 
         // Rate guard: prevent playback speed > 1.25x
         p.on('ratechange', () => {
