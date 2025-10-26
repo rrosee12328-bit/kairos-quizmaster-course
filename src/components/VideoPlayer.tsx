@@ -73,6 +73,7 @@ const VideoPlayer = ({
   
   // Anti-skip constants
   const GRACE = 5; // seconds ahead allowed
+  const FORWARD_GRACE = 2; // strict forward seek tolerance (seconds)
   const HYST = 1.5; // hysteresis tolerance
   const CORRECTION_COOLDOWN_MS = 1200;
   const lastCorrectionAtRef = useRef(0);
@@ -434,27 +435,37 @@ const VideoPlayer = ({
 
         // Enforce anti-skip in case 'seeked' didn't fire
         if (Date.now() >= startupSuppressUntilRef.current && !isCorrectingRef.current) {
-          const allowedEnd = maxWatchedRef.current + 2;
+          const allowedEnd = maxWatchedRef.current + FORWARD_GRACE;
           const hystWindow = allowedEnd + HYST;
-          if (current > hystWindow && now - lastCorrectionAtRef.current >= CORRECTION_COOLDOWN_MS) {
-            console.log('[Bunny] TIMEUPDATE CLAMP', { current, maxWatched: maxWatchedRef.current, snappingTo: allowedEnd });
-            isCorrectingRef.current = true;
-            suppressNextTimeupdateRef.current = true;
-            lastCorrectionAtRef.current = now;
-            try { p.setCurrentTime(allowedEnd); } catch {}
-            setTimeout(() => {
-              isCorrectingRef.current = false;
-              suppressNextTimeupdateRef.current = false;
-            }, 300);
-            lastPlaybackTimeRef.current = allowedEnd;
-            return;
+          const delta = current - lastPlaybackTimeRef.current;
+
+          // Large jump forward detected (user seek) - clamp or ignore
+          if (delta > 0.75) {
+            if (current > hystWindow && now - lastCorrectionAtRef.current >= CORRECTION_COOLDOWN_MS) {
+              console.log('[Bunny] TIMEUPDATE CLAMP', { current, maxWatched: maxWatchedRef.current, snappingTo: allowedEnd });
+              isCorrectingRef.current = true;
+              suppressNextTimeupdateRef.current = true;
+              lastCorrectionAtRef.current = now;
+              try { p.setCurrentTime(allowedEnd); } catch {}
+              setTimeout(() => {
+                isCorrectingRef.current = false;
+                suppressNextTimeupdateRef.current = false;
+              }, 300);
+              lastPlaybackTimeRef.current = allowedEnd;
+              return;
+            }
+            if (current > allowedEnd) {
+              // Tolerate small overshoot but do not extend maxWatched on a jump
+              lastPlaybackTimeRef.current = current;
+              return;
+            }
           }
         }
 
         // Only increase maxWatched on natural forward playback (not during correction cooldown)
         const inCooldown = now - lastCorrectionAtRef.current < CORRECTION_COOLDOWN_MS;
         const delta = current - lastPlaybackTimeRef.current;
-        if (!inCooldown && !isCorrectingRef.current && delta > 0) {
+        if (!inCooldown && !isCorrectingRef.current && delta > 0 && delta <= 0.75) {
           // Keep maxWatched in sync with actual playback to avoid false snapbacks
           maxWatchedRef.current = Math.max(maxWatchedRef.current, current);
         }
@@ -488,8 +499,8 @@ const VideoPlayer = ({
 
         p.getCurrentTime((t: number) => {
           const now = Date.now();
-          // Strict grace: only allow 2 seconds forward to prevent progress bar skipping
-          const allowedEnd = maxWatchedRef.current + 2;
+          // Strict grace: only allow limited forward seeking
+          const allowedEnd = maxWatchedRef.current + FORWARD_GRACE;
           const hystWindow = allowedEnd + HYST;
 
           console.log('[Bunny] EVENT: seeked', {
@@ -821,14 +832,6 @@ const VideoPlayer = ({
                 allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
                 allowFullScreen
                 onError={handleIframeError}
-              />
-              <div
-                className="absolute inset-x-0 bottom-0 h-3 z-10 cursor-not-allowed"
-                style={{ pointerEvents: 'auto' }}
-                title="Seeking is disabled. Use play/pause controls above."
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
               />
               
             </div>
