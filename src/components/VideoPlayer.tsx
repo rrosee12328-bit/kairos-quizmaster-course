@@ -3,6 +3,7 @@ import { SkipForward } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import VideoDebugPanel from "./VideoDebugPanel";
 interface VideoPlayerProps {
   section: {
     id: number;
@@ -20,6 +21,8 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [reloadTick, setReloadTick] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const playerRef = useRef<any>(null);
   const maxWatchedRef = useRef(0);
@@ -47,7 +50,7 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
 
   // Build iframe src using signed URL if provided (preserves token)
   const buildIframeSrc = () => {
-    if (overrideUrl) return `${overrideUrl}&ts=${Date.now()}&rt=${reloadTick}`;
+    if (overrideUrl) return `${overrideUrl}&rememberPosition=false&playsinline=true&ts=${Date.now()}&rt=${reloadTick}`;
     const uStr = section.videoUrl;
     if (uStr && uStr.startsWith('https://iframe.mediadelivery.net/embed/')) {
       try {
@@ -172,9 +175,16 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
       new Promise<void>((resolve) => {
         if ((window as any).playerjs) return resolve();
         const s = document.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/player.js@1.0.4/dist/player.min.js';
+        s.src = '//assets.mediadelivery.net/playerjs/playerjs-latest.min.js';
         s.async = true;
-        s.onload = () => resolve();
+        s.onload = () => {
+          console.log('[VideoPlayer] Player.js loaded from Bunny CDN');
+          resolve();
+        };
+        s.onerror = () => {
+          console.error('[VideoPlayer] Failed to load Player.js');
+          resolve(); // Continue anyway
+        };
         document.head.appendChild(s);
       });
 
@@ -229,7 +239,12 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
         if (!isMounted) return;
         readyRef.current = true;
         try { clearTimeout(fallbackTimeout); } catch {}
-        console.log('[Bunny] ready', { videoId });
+        console.log('[Bunny] EVENT: ready', { 
+          videoId, 
+          sectionId: section.id, 
+          courseType,
+          iframeAttached: !!iframeRef.current 
+        });
         // Reset on new section
         setProgress(0);
         setIsComplete(false);
@@ -287,10 +302,19 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
         const dur = data?.duration ?? duration ?? 0;
         const percentRaw = typeof data?.percent === 'number' ? data.percent : null;
 
-        // Prevent ANY forward seeking beyond watched position (strict mode)
-        if (current > maxWatchedRef.current + 0) {
-          console.log('[Bunny] strict mode: prevent forward seek', { current, max: maxWatchedRef.current });
-          try { p.setCurrentTime(maxWatchedRef.current); } catch {}
+        // Update state for debug panel
+        setCurrentTime(current);
+        setDuration(dur);
+
+        // Anti-skip: Allow 5 second grace buffer for forward seeking
+        const allowedSeek = maxWatchedRef.current + 5;
+        if (current > allowedSeek) {
+          console.log('[Bunny] SEEK GUARD: Prevented forward skip', { 
+            attempted: current, 
+            max: maxWatchedRef.current, 
+            snappedTo: allowedSeek 
+          });
+          try { p.setCurrentTime(allowedSeek); } catch {}
           return;
         }
         if (current > maxWatchedRef.current) {
@@ -310,9 +334,17 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
           const durSafe = dur || 0;
           const epsilon = Math.max(0.25, durSafe * 0.01); // 0.25s or 1% of duration
           if (!isCompleteRef.current && durSafe > 0 && (current >= durSafe - epsilon || pct >= 90)) {
-            console.log('[Bunny] 90% completion threshold reached', { current, dur: durSafe, pct });
+            console.log('[Bunny] 90% COMPLETION THRESHOLD REACHED', { 
+              current, 
+              duration: durSafe, 
+              percent: pct,
+              sectionId: section.id,
+              courseType 
+            });
             isCompleteRef.current = true;
             setIsComplete(true);
+            // Save to database
+            saveVideoWatchTime();
             onCompleteRef.current?.();
             // Auto-advance to next section after marking complete
             setTimeout(() => onNextRef.current?.(), 300);
@@ -321,18 +353,26 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
       });
 
       p.on('seeked', () => {
-        // If user tries to seek forward, snap back (strict mode with minimal buffer for timing)
+        // Anti-skip: snap back if user seeks beyond allowed buffer (handles keyboard shortcuts 0-9, arrows)
         p.getCurrentTime((t: number) => {
-          if (t > maxWatchedRef.current + 0.1) {
-            console.log('[Bunny] strict mode: seeked forward, snapping back', { t, max: maxWatchedRef.current });
-            try { p.setCurrentTime(maxWatchedRef.current); } catch {}
+          const allowedSeek = maxWatchedRef.current + 5;
+          if (t > allowedSeek) {
+            console.log('[Bunny] SEEK GUARD (seeked event): Snapping back', { 
+              seekedTo: t, 
+              max: maxWatchedRef.current, 
+              snappedTo: allowedSeek 
+            });
+            try { p.setCurrentTime(allowedSeek); } catch {}
           }
         });
       });
 
       p.on('ended', () => {
         if (!isMounted) return;
-        console.log('[Bunny] ended');
+        console.log('[Bunny] EVENT: ended', { 
+          sectionId: section.id, 
+          totalWatchTime: totalWatchTimeRef.current 
+        });
         // Stop watch time tracking
         if (videoStartTimeRef.current) {
           totalWatchTimeRef.current += Math.floor((Date.now() - videoStartTimeRef.current) / 1000);
@@ -352,7 +392,7 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
         if (!isMounted) return;
         if (!videoStartTimeRef.current) {
           videoStartTimeRef.current = Date.now();
-          console.log('[Bunny] started watching');
+          console.log('[Bunny] EVENT: play (started watching)', { sectionId: section.id });
         }
       });
 
@@ -360,7 +400,10 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
         if (!isMounted || !videoStartTimeRef.current) return;
         totalWatchTimeRef.current += Math.floor((Date.now() - videoStartTimeRef.current) / 1000);
         videoStartTimeRef.current = null;
-        console.log('[Bunny] paused, total watch time:', totalWatchTimeRef.current);
+        console.log('[Bunny] EVENT: pause', { 
+          sectionId: section.id, 
+          totalWatchTime: totalWatchTimeRef.current 
+        });
       });
     };
 
@@ -393,6 +436,35 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
       }
     };
   }, [section.videoUrl, isActive, videoId, reloadTick]);
+
+  const recheckCompletion = async () => {
+    if (!courseType) return;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from('course_progress')
+        .select('completed')
+        .eq('user_id', user.id)
+        .eq('course_type', courseType)
+        .eq('section_id', section.id)
+        .maybeSingle();
+
+      if (data?.completed) {
+        console.log('[VideoPlayer] RECHECK: Section is completed in DB', { sectionId: section.id });
+        if (!isCompleteRef.current) {
+          isCompleteRef.current = true;
+          setIsComplete(true);
+          onCompleteRef.current?.();
+        }
+      } else {
+        console.log('[VideoPlayer] RECHECK: Section NOT completed in DB', { sectionId: section.id });
+      }
+    } catch (error) {
+      console.error('[VideoPlayer] Error rechecking completion:', error);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -479,6 +551,18 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
           </div>
         </CardContent>
       </Card>
+
+      {/* Debug Panel (dev only) */}
+      <VideoDebugPanel
+        currentTime={currentTime}
+        maxWatched={maxWatchedRef.current}
+        duration={duration}
+        percentWatched={progress}
+        isComplete={isComplete}
+        sectionId={section.id}
+        courseType={courseType}
+        onRecheck={recheckCompletion}
+      />
     </div>
   );
 };
