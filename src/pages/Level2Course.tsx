@@ -519,12 +519,19 @@ const Level2Course = () => {
               </div>
 
               <Button
-                onClick={handleNextSlide}
+                onClick={() => {
+                  console.log('[FLOW] NEXT_BUTTON_CLICK', { canProceed, currentSlide, nextSlide: currentSlide + 1 });
+                  if (canProceed && currentSlide < totalSections - 1) {
+                    handleNextSlide();
+                  }
+                }}
                 disabled={currentSlide === totalSections - 1 || !canProceed}
                 aria-disabled={currentSlide === totalSections - 1 || !canProceed}
                 title={!canProceed ? "Finish previous lesson to unlock" : ""}
                 className="relative"
-                style={{ outline: import.meta.env.DEV ? '2px solid red' : undefined }}
+                style={{ 
+                  outline: import.meta.env.DEV ? (canProceed ? '2px solid lime' : '2px solid red') : undefined 
+                }}
               >
                 Next
                 <ChevronRight className="h-4 w-4 ml-2" />

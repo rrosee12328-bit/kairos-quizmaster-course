@@ -520,6 +520,7 @@ const VideoPlayer = ({
           sectionId: section.id,
           totalWatchTime: totalWatchTimeRef.current,
         });
+        setIsPlaying(false);
         // Stop watch time tracking
         if (videoStartTimeRef.current) {
           totalWatchTimeRef.current += Math.floor((Date.now() - videoStartTimeRef.current) / 1000);
@@ -531,6 +532,7 @@ const VideoPlayer = ({
 
       p.on('play', () => {
         if (!isMounted) return;
+        console.log('[Bunny] PLAY_CLICK - Video playing');
         lastPlayingStateRef.current = true;
         setIsPlaying(true);
         if (!videoStartTimeRef.current) {
@@ -541,6 +543,7 @@ const VideoPlayer = ({
 
       p.on('pause', () => {
         if (!isMounted) return;
+        console.log('[Bunny] PAUSE_CLICK - Video paused');
         lastPlayingStateRef.current = false;
         setIsPlaying(false);
         if (videoStartTimeRef.current) {
@@ -690,7 +693,7 @@ const VideoPlayer = ({
         onGraceTimerDoneChange?.(true);
         console.log('[FLOW] GRACE_DONE');
         setIsComplete(true);
-        console.log('[FLOW] NEXT_ENABLED');
+        console.log('[FLOW] NEXT_ENABLED = true (disabled=false)');
         onCompleteRef.current?.();
         showCompletionNotification();
       }, 2000);
@@ -773,12 +776,18 @@ const VideoPlayer = ({
                 allowFullScreen
                 onError={handleIframeError}
               />
+              {/* Scrubber overlay - only covers progress bar at bottom while playing */}
               {isPlaying && (
                 <div
-                  className="absolute inset-x-0 bottom-0 h-14 z-10 cursor-not-allowed"
+                  className="absolute inset-x-0 bottom-0 h-10 z-10 cursor-not-allowed"
+                  style={{
+                    pointerEvents: 'auto',
+                    outline: import.meta.env.DEV ? '2px solid red' : undefined
+                  }}
                   title="Seeking ahead is disabled while the lesson is playing."
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
                   onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                  onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
                 />
               )}
             </div>
