@@ -29,7 +29,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const jwt = authHeader.replace('Bearer ', '').trim();
+    const { data: { user }, error: userError } = await supabase.auth.getUser(jwt);
     
     if (userError) {
       console.error('[progress-video-complete] Auth error:', userError.message);
