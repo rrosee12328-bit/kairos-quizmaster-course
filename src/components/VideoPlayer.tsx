@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { SkipForward, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import VideoDebugPanel from "./VideoDebugPanel";
 import { useToast } from "@/hooks/use-toast";
@@ -26,6 +27,7 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [autoAdvance] = useState(false); // Default: no auto-advance
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const playerRef = useRef<any>(null);
   const maxWatchedRef = useRef(0);
@@ -48,7 +50,8 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
   const lastCorrectionAtRef = useRef(0);
   const isCorrectingRef = useRef(false);
   const lastPlayingStateRef = useRef(false);
-  
+  const suppressNextTimeupdateRef = useRef(false);
+  const lastPlaybackTimeRef = useRef(0);
   // Extract Bunny.net video ID from URL
   const getBunnyVideoId = (url: string) => {
     // Handle Bunny.net embed URLs like: https://iframe.mediadelivery.net/embed/{libraryId}/{videoId}
@@ -235,11 +238,8 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
               const epsilon = Math.max(0.25, dSafe * 0.01);
               if (dSafe > 0 && t >= dSafe - epsilon) {
                 console.log('[Bunny] bootstrap poll reached end', { t, d: dSafe });
-                isCompleteRef.current = true;
-                setIsComplete(true);
-                onCompleteRef.current?.();
-                setTimeout(() => onNextRef.current?.(), 300);
                 try { window.clearInterval(bootstrapPoll); } catch {}
+
               }
             });
           });
@@ -253,11 +253,11 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
         if (!isMounted) return;
         readyRef.current = true;
         try { clearTimeout(fallbackTimeout); } catch {}
-        console.log('[Bunny] EVENT: ready', { 
-          videoId, 
-          sectionId: section.id, 
+        console.log('[Bunny] EVENT: ready', {
+          videoId,
+          sectionId: section.id,
           courseType,
-          iframeAttached: !!iframeRef.current 
+          iframeAttached: !!iframeRef.current,
         });
         // Reset on new section
         setProgress(0);
@@ -283,6 +283,9 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
         durationUpdateInterval = window.setInterval(updateDuration, 500);
         updateDuration();
 
+        // If server already marks this section completed (refresh), enable Next immediately
+        recheckCompletion();
+
         // Robust completion polling as a fallback for very short videos or missing 'ended'
         const pollEpsilon = () => Math.max(0.25, (duration || 0) * 0.01);
         completionPoll = window.setInterval(() => {
@@ -295,12 +298,7 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
               const d = duration || 0;
               if (d > 0 && t >= d - pollEpsilon()) {
                 console.log('[Bunny] completion poll reached end', { t, d });
-                if (!isCompleteRef.current) {
-                  isCompleteRef.current = true;
-                  setIsComplete(true);
-                  onCompleteRef.current?.();
-                  setTimeout(() => onNextRef.current?.(), 300);
-                }
+                try { window.clearInterval(completionPoll); } catch {}
               }
             });
           } catch {}
@@ -311,7 +309,7 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
         };
         p.on('ended', clearOnComplete);
 
-        // Watchdog: Check every 300ms for unauthorized forward jumps with hysteresis + cooldown
+        // Watchdog: Check every 300ms for unauthorized forward jumps with hysteresis + cooldown (clamp-seek, no pause)
         watchdogInterval = window.setInterval(() => {
           if (!isMounted || !readyRef.current || isCorrectingRef.current) return;
           try {
@@ -319,43 +317,32 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
               const now = Date.now();
               const allowedEnd = maxWatchedRef.current + GRACE;
               const hystWindow = allowedEnd + HYST;
-              
-              // Cooldown check: don't correct if within cooldown period
-              if (now - lastCorrectionAtRef.current < CORRECTION_COOLDOWN_MS) {
-                return;
-              }
-              
-              // Hysteresis check: only correct if significantly beyond allowed window
-              if (t <= hystWindow) {
-                // Within tolerance (or backward seek)
-                return;
-              }
-              
-              // True skip ahead detected
-              console.log('[Bunny] WATCHDOG: Correcting unauthorized jump', {
+
+              // Cooldown check
+              if (now - lastCorrectionAtRef.current < CORRECTION_COOLDOWN_MS) return;
+
+              // Ignore backward seeks and tolerate small overshoot
+              if (t <= maxWatchedRef.current || t <= hystWindow) return;
+
+              // True skip ahead detected — clamp once
+              console.log('[Bunny] WATCHDOG: CORRECT (snapback)', {
                 currentTime: t,
                 maxWatched: maxWatchedRef.current,
-                snappingTo: allowedEnd
+                allowedEnd,
               });
-              
+
               isCorrectingRef.current = true;
+              suppressNextTimeupdateRef.current = true;
               lastCorrectionAtRef.current = now;
-              
-              // Pause, correct, then resume if was playing
-              p.getPaused((wasPaused: boolean) => {
-                p.pause();
-                try { 
-                  p.setCurrentTime(allowedEnd);
-                  setTimeout(() => {
-                    if (!wasPaused && lastPlayingStateRef.current) {
-                      try { p.play(); } catch {}
-                    }
-                    setTimeout(() => {
-                      isCorrectingRef.current = false;
-                    }, 300);
-                  }, 100);
-                } catch {}
-              });
+
+              try {
+                p.setCurrentTime(allowedEnd);
+              } catch {}
+
+              setTimeout(() => {
+                isCorrectingRef.current = false;
+                suppressNextTimeupdateRef.current = false;
+              }, 300);
             });
           } catch {}
         }, 300);
@@ -365,16 +352,17 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
           if (!isMounted) return;
           try {
             p.getPlaybackRate?.((rate: number) => {
+              console.log('[Bunny] EVENT: ratechange', { rate });
               if (rate > 1.25) {
-                console.log('[Bunny] RATE GUARD: Preventing speed-run', { 
-                  attemptedRate: rate, 
-                  enforcedRate: 1.25 
+                console.log('[Bunny] RATE GUARD: Preventing speed-run', {
+                  attemptedRate: rate,
+                  enforcedRate: 1.25,
                 });
-                try { 
-                  p.setPlaybackRate?.(1.25); 
+                try {
+                  p.setPlaybackRate?.(1.25);
                   toast({
-                    title: "Max speed 1.25×",
-                    description: "To ensure proper learning, videos cannot be played faster than 1.25×",
+                    title: 'Max speed 1.25×',
+                    description: 'To ensure proper learning, videos cannot be played faster than 1.25×',
                     duration: 2000,
                   });
                 } catch {}
@@ -390,32 +378,36 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
         const dur = data?.duration ?? duration ?? 0;
         const percentRaw = typeof data?.percent === 'number' ? data.percent : null;
 
-        // Throttled logging (every 2 seconds)
         const now = Date.now();
+        // Throttled logging (every 2 seconds)
         if (now - lastTimeUpdateRef.current > 2000) {
-          console.log('[Bunny] EVENT: timeupdate (throttled)', { 
-            current: current.toFixed(2), 
+          console.log('[Bunny] EVENT: timeupdate (throttled)', {
+            current: current.toFixed(2),
             maxWatched: maxWatchedRef.current.toFixed(2),
-            percent: percentRaw 
+            percent: percentRaw,
           });
           lastTimeUpdateRef.current = now;
         }
 
-        // Update state for debug panel
+        // Update UI state for debug panel
         setCurrentTime(current);
         setDuration(dur);
 
-        // Only increase maxWatched on natural forward playback (not during correction cooldown)
-        const inCooldown = now - lastCorrectionAtRef.current < CORRECTION_COOLDOWN_MS;
-        
-        if (!inCooldown && !isCorrectingRef.current) {
-          const timeDiff = current - maxWatchedRef.current;
-          // Natural forward playback: incremental increase within 2s
-          if (timeDiff > 0 && timeDiff <= 2) {
-            maxWatchedRef.current = current;
-          }
+        // Skip logic during suppression window after a clamp correction
+        if (suppressNextTimeupdateRef.current) {
+          lastPlaybackTimeRef.current = current;
+          return;
         }
 
+        // Only increase maxWatched on natural forward playback (not during correction cooldown)
+        const inCooldown = now - lastCorrectionAtRef.current < CORRECTION_COOLDOWN_MS;
+        const delta = current - lastPlaybackTimeRef.current;
+        if (!inCooldown && !isCorrectingRef.current && delta > 0 && delta <= 2) {
+          maxWatchedRef.current = Math.max(maxWatchedRef.current, current);
+        }
+        lastPlaybackTimeRef.current = current;
+
+        // Compute percent
         let pct: number | null = null;
         if (percentRaw !== null) {
           pct = percentRaw <= 1 ? Math.round(percentRaw * 100) : Math.round(percentRaw);
@@ -425,119 +417,80 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
 
         if (pct !== null) {
           setProgress(pct);
-          // Completion at 90% threshold
           const durSafe = dur || 0;
-          const epsilon = Math.max(0.25, durSafe * 0.01);
-          if (!isCompleteRef.current && durSafe > 0 && (maxWatchedRef.current >= durSafe - epsilon || pct >= 90)) {
-            console.log('[Bunny] 90% COMPLETION THRESHOLD REACHED', { 
-              maxWatched: maxWatchedRef.current, 
-              duration: durSafe, 
+          const ninetyReached = durSafe > 0 && (maxWatchedRef.current / durSafe) >= 0.9;
+          if (ninetyReached && !completionPostedRef.current) {
+            console.log('[Bunny] 90% COMPLETION THRESHOLD REACHED', {
+              maxWatched: maxWatchedRef.current,
+              duration: durSafe,
               percent: pct,
               sectionId: section.id,
-              courseType 
+              courseType,
             });
-            isCompleteRef.current = true;
-            setIsComplete(true);
-            
-            // Save to database (debounced)
-            if (!completionPostedRef.current) {
-              completionPostedRef.current = true;
-              saveVideoWatchTime();
-              onCompleteRef.current?.();
-              
-              // Show completion notification
-              showCompletionNotification();
-            }
+            // Trigger completion flow (server truth + 2s grace)
+            handleCompletionTrigger();
           }
         }
       });
 
       p.on('seeked', () => {
         if (!isMounted || isCorrectingRef.current) return;
-        
+
         p.getCurrentTime((t: number) => {
           const now = Date.now();
           const allowedEnd = maxWatchedRef.current + GRACE;
           const hystWindow = allowedEnd + HYST;
-          
-          console.log('[Bunny] EVENT: seeked', { 
-            seekedTo: t.toFixed(2), 
+
+          console.log('[Bunny] EVENT: seeked', {
+            seekedTo: t.toFixed(2),
             maxWatched: maxWatchedRef.current.toFixed(2),
             allowedEnd: allowedEnd.toFixed(2),
-            hystWindow: hystWindow.toFixed(2)
+            hystWindow: hystWindow.toFixed(2),
           });
-          
+
           // Cooldown check
           if (now - lastCorrectionAtRef.current < CORRECTION_COOLDOWN_MS) {
             console.log('[Bunny] SEEK: In cooldown, skipping correction');
             return;
           }
-          
+
           // Ignore backward seeks
-          if (t <= maxWatchedRef.current) {
-            return;
-          }
-          
-          // Within tolerance window
+          if (t <= maxWatchedRef.current) return;
+
+          // Tolerate small overshoot within hysteresis window
           if (t <= hystWindow) {
-            console.log('[Bunny] SEEK: Within tolerance (hysteresis)', { 
-              seekedTo: t, 
-              hystWindow 
-            });
+            console.log('[Bunny] SEEK: SKIP tolerated (within hysteresis)');
             return;
           }
-          
-          // Beyond tolerance: correct
-          console.log('[Bunny] SEEK GUARD: Correcting forward seek', { 
-            seekedTo: t, 
-            snappingTo: allowedEnd 
-          });
-          
+
+          // Clamp without pausing
+          console.log('[Bunny] SEEK: CORRECT (snapback)', { seekedTo: t, snappingTo: allowedEnd });
           isCorrectingRef.current = true;
+          suppressNextTimeupdateRef.current = true;
           lastCorrectionAtRef.current = now;
-          
-          p.getPaused((wasPaused: boolean) => {
-            p.pause();
-            try { 
-              p.setCurrentTime(allowedEnd);
-              setTimeout(() => {
-                if (!wasPaused && lastPlayingStateRef.current) {
-                  try { p.play(); } catch {}
-                }
-                setTimeout(() => {
-                  isCorrectingRef.current = false;
-                }, 300);
-              }, 100);
-            } catch {}
-          });
+          try {
+            p.setCurrentTime(allowedEnd);
+          } catch {}
+          setTimeout(() => {
+            isCorrectingRef.current = false;
+            suppressNextTimeupdateRef.current = false;
+          }, 300);
         });
       });
 
       p.on('ended', () => {
         if (!isMounted) return;
-        console.log('[Bunny] EVENT: ended', { 
-          sectionId: section.id, 
-          totalWatchTime: totalWatchTimeRef.current 
+        console.log('[Bunny] EVENT: ended', {
+          sectionId: section.id,
+          totalWatchTime: totalWatchTimeRef.current,
         });
         // Stop watch time tracking
         if (videoStartTimeRef.current) {
           totalWatchTimeRef.current += Math.floor((Date.now() - videoStartTimeRef.current) / 1000);
           videoStartTimeRef.current = null;
         }
-        if (!isCompleteRef.current) {
-          isCompleteRef.current = true;
-          setIsComplete(true);
-          
-          // Save watch time to database
-          if (!completionPostedRef.current) {
-            completionPostedRef.current = true;
-            saveVideoWatchTime();
-            onCompleteRef.current?.();
-            
-            // Show completion notification
-            showCompletionNotification();
-          }
-        }
+        // Trigger completion flow (no auto-advance)
+        handleCompletionTrigger();
       });
 
       p.on('play', () => {
@@ -565,11 +518,10 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
 
     setup();
     
-    // Keyboard seek prevention
+    // Keyboard seek prevention (capture) while playing
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isActive || !lastPlayingStateRef.current) return;
-      
-      // Block number keys 0-9 and arrow keys during video playback
+
       const blockKeys = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'ArrowLeft', 'ArrowRight'];
       if (blockKeys.includes(e.key)) {
         e.preventDefault();
@@ -611,43 +563,50 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
     };
   }, [section.videoUrl, isActive, videoId, reloadTick]);
 
-  const showCompletionNotification = () => {
-    const handleContinue = () => {
-      if (autoAdvance) {
-        // Auto-advance with countdown
-        let countdown = 5;
-        
-        const countdownInterval = setInterval(() => {
-          countdown--;
-          if (countdown > 0) {
-            toast({
-              title: "✅ Section Complete!",
-              description: `Auto-advancing in ${countdown} seconds...`,
-              duration: 1000,
-            });
-          } else {
-            clearInterval(countdownInterval);
-            onNextRef.current?.();
-          }
-        }, 1000);
-        
-        toast({
-          title: "✅ Section Complete!",
-          description: `Auto-advancing in 5 seconds...`,
-          duration: 5000,
-        });
-      } else {
-        // Immediate navigation
-        onNextRef.current?.();
+  // Completion flow: save to server, verify, then enable after 2s and show modal
+  const waitForServerCompletion = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !courseType) return;
+      for (let i = 0; i < 5; i++) {
+        const { data } = await supabase
+          .from('course_progress')
+          .select('completed')
+          .eq('user_id', user.id)
+          .eq('course_type', courseType)
+          .eq('section_id', section.id)
+          .maybeSingle();
+        if (data?.completed) return;
+        await new Promise((r) => setTimeout(r, 400));
       }
-    };
+    } catch (e) {
+      console.error('[VideoPlayer] waitForServerCompletion error', e);
+    }
+  };
 
-    // Show completion toast with actions
-    toast({
-      title: "✅ Section Complete!",
-      description: "You've watched ≥90% of this lesson. Click 'Continue to Next' button below the video or the Next button in navigation.",
-      duration: 10000,
-    });
+  const handleCompletionTrigger = async () => {
+    if (completionPostedRef.current) return;
+    completionPostedRef.current = true;
+    console.log('[VideoPlayer] COMPLETION POST: sending to Supabase');
+    try {
+      await saveVideoWatchTime();
+      console.log('[VideoPlayer] COMPLETION POST: success');
+    } catch (e) {
+      console.error('[VideoPlayer] COMPLETION POST: failed', e);
+    }
+
+    await waitForServerCompletion();
+
+    setTimeout(() => {
+      setIsComplete(true);
+      onCompleteRef.current?.();
+      showCompletionNotification();
+    }, 2000);
+  };
+
+  const showCompletionNotification = () => {
+    // Open modal; navigation only on user click
+    setShowCompleteModal(true);
   };
 
   const recheckCompletion = async () => {
