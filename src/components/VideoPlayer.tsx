@@ -306,11 +306,11 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
 
         if (pct !== null) {
           setProgress(pct);
-          // Fallback completion detection for very short videos if 'ended' doesn't fire
+          // Completion at 90% threshold
           const durSafe = dur || 0;
           const epsilon = Math.max(0.25, durSafe * 0.01); // 0.25s or 1% of duration
-          if (!isCompleteRef.current && durSafe > 0 && (current >= durSafe - epsilon || pct >= 99)) {
-            console.log('[Bunny] near-end fallback completion', { current, dur: durSafe, pct });
+          if (!isCompleteRef.current && durSafe > 0 && (current >= durSafe - epsilon || pct >= 90)) {
+            console.log('[Bunny] 90% completion threshold reached', { current, dur: durSafe, pct });
             isCompleteRef.current = true;
             setIsComplete(true);
             onCompleteRef.current?.();
@@ -458,7 +458,7 @@ const VideoPlayer = ({ section, courseType, isActive = true, onComplete, onNext 
               {progress > 0 ? `Progress: ${progress}% complete` : 'Ready to watch'}
             </div>
             <div className="flex gap-2">
-              {!isComplete && progress > 80 && (
+              {!isComplete && progress >= 80 && (
                 <Button onClick={() => {
                   if (!isCompleteRef.current) {
                     isCompleteRef.current = true;

@@ -495,7 +495,8 @@ const Level2Course = () => {
 
               <Button
                 onClick={handleNextSlide}
-                disabled={currentSlide === totalSections - 1}
+                disabled={currentSlide === totalSections - 1 || !isCurrentSectionComplete}
+                title={!isCurrentSectionComplete ? "Complete current section to unlock next" : ""}
               >
                 Next
                 <ChevronRight className="h-4 w-4 ml-2" />
