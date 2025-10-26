@@ -817,34 +817,17 @@ const VideoPlayer = ({
                   left: 0,
                   height: '100%',
                   width: '100%',
-                  pointerEvents: 'none',
                 }}
                 allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
                 allowFullScreen
                 onError={handleIframeError}
               />
+              {/* Thin overlay over progress bar only - blocks seeking but allows play/pause */}
               <div
-                className="absolute inset-0 z-10 cursor-pointer"
+                className="absolute inset-x-0 bottom-0 h-12 z-10 cursor-not-allowed"
                 style={{ pointerEvents: 'auto' }}
-                title="Click to play/pause. Seeking is disabled."
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  const p = playerRef.current;
-                  try {
-                    if (!p) return;
-                    if (lastPlayingStateRef.current) {
-                      p.pause?.();
-                    } else {
-                      if (readyRef.current) {
-                        p.play?.();
-                      } else {
-                        queuedPlayRef.current = true;
-                      }
-                    }
-                  } catch {}
-                }}
-                onDoubleClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                title="Seeking is disabled. Use play/pause controls above."
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
                 onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
                 onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
               />
@@ -861,42 +844,6 @@ const VideoPlayer = ({
                   onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
                 />
               )}
-              {/* Controls overlay: play/pause + time (seeking disabled) */}
-              <div className="absolute inset-x-0 bottom-0 z-20 pointer-events-none">
-                <div className="m-2 rounded-md bg-background/80 backdrop-blur border pointer-events-auto px-3 py-2 flex items-center justify-between">
-                  <Button
-                    size="icon"
-                    variant="secondary"
-                    aria-label={isPlaying ? 'Pause' : 'Play'}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      const p = playerRef.current;
-                      try {
-                        if (!p) return;
-                        if (isPlaying) {
-                          p.pause?.();
-                        } else {
-                          if (readyRef.current) {
-                            p.play?.();
-                          } else {
-                            queuedPlayRef.current = true;
-                          }
-                        }
-                      } catch {}
-                    }}
-                  >
-                    {isPlaying ? (
-                      <Pause className="h-4 w-4" />
-                    ) : (
-                      <Play className="h-4 w-4" />
-                    )}
-                  </Button>
-                  <div className="text-xs text-muted-foreground tabular-nums ml-3">
-                    {fmt(currentTime)} / {fmt(duration)} • –{fmt((duration || 0) - currentTime)}
-                  </div>
-                </div>
-              </div>
             </div>
           ) : isActive && !videoId && section.videoUrl ? (
             <div className="relative bg-destructive/10 border border-destructive/50 rounded-lg overflow-hidden aspect-video mb-4">
