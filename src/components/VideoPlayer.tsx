@@ -802,6 +802,7 @@ const VideoPlayer = ({
                   left: 0,
                   height: '100%',
                   width: '100%',
+                  pointerEvents: 'none',
                 }}
                 allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
                 allowFullScreen
