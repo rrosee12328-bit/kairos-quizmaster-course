@@ -87,7 +87,7 @@ const Level2Course = () => {
       id: 4,
       title: "Applicable Rules and State Laws",
       description: "Legal framework governing security operations",
-      duration: "38 minutes 3 seconds",
+      duration: "37 minutes 59 seconds",
       videoUrl: "",
       has_quiz: false,
       content: [
