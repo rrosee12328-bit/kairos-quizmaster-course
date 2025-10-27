@@ -315,7 +315,7 @@ const VideoPlayer = ({
           courseType,
           iframeAttached: !!iframeRef.current,
         });
-        // Reset on new section
+        // Reset on new section - STRICT RESET
         setProgress(0);
         setIsComplete(false);
         isCompleteRef.current = false;
@@ -324,8 +324,27 @@ const VideoPlayer = ({
         videoStartTimeRef.current = null;
         totalWatchTimeRef.current = 0;
         lastTimeUpdateRef.current = 0;
-        startupSuppressUntilRef.current = Date.now() + 7000;
-        try { p.setCurrentTime(0); } catch {}
+        lastPlaybackTimeRef.current = 0;
+        lastCorrectionAtRef.current = 0;
+        // Shorter startup suppression to enforce restrictions faster
+        startupSuppressUntilRef.current = Date.now() + 3000;
+        
+        // Force video to start at 0 with retry to overcome Bunny caching
+        const forceStart = () => {
+          try { 
+            p.setCurrentTime(0);
+            // Verify it actually reset
+            setTimeout(() => {
+              p.getCurrentTime((t: number) => {
+                if (t > 5) {
+                  console.log('[Bunny] FORCE RESET - Position still high, retrying', t);
+                  p.setCurrentTime(0);
+                }
+              });
+            }, 500);
+          } catch {}
+        };
+        forceStart();
 
         // If user clicked play before ready, honor it now
         if (queuedPlayRef.current) {
@@ -427,9 +446,17 @@ const VideoPlayer = ({
         setCurrentTime(current);
         setDuration(dur);
 
-        // During startup suppression window, keep maxWatched in sync to avoid false corrections
+        // During startup suppression window, ONLY sync maxWatched if we're near the start
+        // This prevents Bunny's position caching from inflating maxWatched
         if (Date.now() < startupSuppressUntilRef.current) {
-          maxWatchedRef.current = Math.max(maxWatchedRef.current, current);
+          // Only allow maxWatched to grow if we're in the first 10 seconds
+          if (current < 10) {
+            maxWatchedRef.current = Math.max(maxWatchedRef.current, current);
+          } else {
+            // Beyond 10 seconds during startup means Bunny cached position - clamp it
+            console.log('[Bunny] STARTUP: Detected cached position, forcing reset', { current, maxWatched: maxWatchedRef.current });
+            try { p.setCurrentTime(0); } catch {}
+          }
         }
 
         // Skip logic during suppression window after a clamp correction
