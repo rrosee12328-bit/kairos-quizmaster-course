@@ -447,11 +447,6 @@ const VideoPlayer = ({
               lastCorrectionAtRef.current = now;
               try { 
                 p.setCurrentTime(allowedEnd);
-                // Brief pause ensures correction sticks
-                p.pause();
-                setTimeout(() => {
-                  try { p.play(); } catch {}
-                }, 150);
               } catch {}
               setTimeout(() => {
                 isCorrectingRef.current = false;
@@ -531,18 +526,13 @@ const VideoPlayer = ({
             return;
           }
 
-          // Clamp with brief pause to ensure correction sticks
+          // Clamp without blinking
           console.log('[Bunny] SEEK: CORRECT (snapback)', { seekedTo: t, snappingTo: allowedEnd });
           isCorrectingRef.current = true;
           suppressNextTimeupdateRef.current = true;
           lastCorrectionAtRef.current = now;
           try {
             p.setCurrentTime(allowedEnd);
-            // Brief pause ensures the snap takes effect
-            p.pause();
-            setTimeout(() => {
-              try { p.play(); } catch {}
-            }, 150);
           } catch {}
           setTimeout(() => {
             isCorrectingRef.current = false;
