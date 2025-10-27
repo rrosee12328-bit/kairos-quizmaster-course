@@ -287,9 +287,9 @@ const Profile = () => {
             </div>
             <div className="flex-1">
               <h1 className="text-4xl font-bold mb-1">
-                {profile?.full_name && profile.full_name !== user?.email 
+                Welcome {profile?.full_name && profile.full_name !== user?.email 
                   ? profile.full_name 
-                  : 'Welcome!'}
+                  : profile?.email?.split('@')[0] || 'Student'}
               </h1>
               <p className="text-sm text-muted-foreground">{user?.email}</p>
             </div>
@@ -561,7 +561,11 @@ const Profile = () => {
                   const canAccess = (enrollment.enrollment_status === 'enrolled' || enrollment.enrollment_status === 'pending') && !completion;
                   
                   return (
-                    <div key={enrollment.id} className={`border rounded-lg p-4 ${canAccess ? 'cursor-pointer hover:border-primary hover:shadow-md' : ''} transition-all`}>
+                    <div 
+                      key={enrollment.id} 
+                      className={`border rounded-lg p-4 ${canAccess ? 'cursor-pointer hover:border-primary hover:shadow-md' : ''} transition-all`}
+                      onClick={() => canAccess && navigate(`/course/${enrollment.course_type}`)}
+                    >
                       <div className="flex items-start justify-between mb-3">
                         <div>
                           <h4 className="font-semibold mb-1">{getCourseTitle(enrollment.course_type)}</h4>
@@ -587,18 +591,12 @@ const Profile = () => {
                         </div>
                       )}
                       
-                      <Button asChild className="mt-3 w-full" size="lg" variant={canAccess ? "default" : "outline"} disabled={!canAccess}>
-                        <Link to={canAccess ? `/course/${enrollment.course_type}` : '#'}>
-                          {canAccess ? (
-                            <>
-                              Continue Course
-                              <ArrowRight className="h-4 w-4 ml-2" />
-                            </>
-                          ) : (
-                            'Course Completed'
-                          )}
-                        </Link>
-                      </Button>
+                      {canAccess && (
+                        <div className="mt-3 flex items-center justify-center text-sm text-primary font-medium">
+                          Continue Course
+                          <ArrowRight className="h-4 w-4 ml-2" />
+                        </div>
+                      )}
                     </div>
                   );
                 })}
