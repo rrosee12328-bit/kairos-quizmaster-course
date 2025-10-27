@@ -892,10 +892,9 @@ const VideoPlayer = ({
                 allowFullScreen
                 onError={handleIframeError}
               />
-              {/* Scrubber blocker: prevent all interactions with the progress bar */}
               <div
-                className="absolute inset-x-0 bottom-0 h-12 z-10 cursor-not-allowed select-none"
-                style={{ pointerEvents: 'auto', userSelect: 'none', touchAction: 'none' }}
+                className="absolute inset-x-0 bottom-0 z-10 cursor-not-allowed select-none"
+                style={{ height: ([4,5,6] as number[]).includes(section.id) ? '28%' : '14px', pointerEvents: 'auto', userSelect: 'none', touchAction: 'none' }}
                 aria-hidden
                 title="Seeking is disabled - you must watch the video to progress"
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
