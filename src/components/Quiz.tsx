@@ -378,37 +378,39 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
             )}
             
             <div className="space-y-4">
-              <h3 className="font-semibold text-lg">Your Answers:</h3>
+              <h3 className="font-semibold text-lg">
+                {passed 
+                  ? "Great job! You got all required questions correct!" 
+                  : "Questions You Got Wrong:"}
+              </h3>
+              {!passed && (
+                <p className="text-sm text-muted-foreground">
+                  Review these questions in the course materials, then retake the exam to try again.
+                </p>
+              )}
               {questions.map((question, index) => {
                 const userAnswer = selectedAnswers[index];
                 const isCorrect = userAnswer === question.correctAnswer;
                 
+                // Only show incorrect answers
+                if (isCorrect) return null;
+                
                 return (
                   <div 
                     key={index} 
-                    className={`p-4 rounded-lg border-2 ${
-                      isCorrect 
-                        ? 'bg-green-50 dark:bg-green-950/20 border-green-500' 
-                        : 'bg-red-50 dark:bg-red-950/20 border-red-500'
-                    }`}
+                    className="p-4 rounded-lg border-2 bg-red-50 dark:bg-red-950/20 border-red-500"
                   >
                     <div className="flex items-start gap-2 mb-2">
-                      {isCorrect ? (
-                        <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-1" />
-                      ) : (
-                        <XCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-1" />
-                      )}
+                      <XCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-1" />
                       <div className="flex-1">
                         <p className="font-medium mb-2">{question.question}</p>
                         <div className="space-y-1 text-sm">
-                          <p className={userAnswer === question.correctAnswer ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'}>
+                          <p className="text-red-700 dark:text-red-300">
                             Your answer: {question.options[userAnswer]}
                           </p>
-                          {!isCorrect && (
-                            <p className="text-green-700 dark:text-green-300">
-                              Correct answer: {question.options[question.correctAnswer]}
-                            </p>
-                          )}
+                          <p className="text-muted-foreground text-xs mt-2">
+                            Review the course material to find the correct answer.
+                          </p>
                         </div>
                       </div>
                     </div>
