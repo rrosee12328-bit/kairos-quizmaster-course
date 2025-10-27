@@ -19,6 +19,8 @@ interface Enrollment {
   course_type: string;
   enrollment_status: string;
   created_at: string;
+  first_name: string;
+  last_name: string;
 }
 
 interface Completion {
@@ -287,9 +289,11 @@ const Profile = () => {
             </div>
             <div className="flex-1">
               <h1 className="text-4xl font-bold mb-1">
-                Welcome {profile?.full_name && profile.full_name !== user?.email 
-                  ? profile.full_name 
-                  : profile?.email?.split('@')[0] || 'Student'}
+                Welcome {enrollments.length > 0 && enrollments[0].first_name
+                  ? `${enrollments[0].first_name} ${enrollments[0].last_name}`
+                  : profile?.full_name && profile.full_name !== user?.email 
+                    ? profile.full_name 
+                    : 'Student'}
               </h1>
               <p className="text-sm text-muted-foreground">{user?.email}</p>
             </div>
