@@ -485,6 +485,16 @@ const Level2Course = () => {
 
   const handleAutoAdvance = () => {
     setShowAutoAdvanceModal(false);
+    
+    // If final section, go to exam
+    if (currentSlide >= courseSections.length - 1) {
+      setShowQuiz(true);
+      setTimeout(() => {
+        quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+      return;
+    }
+    
     handleNextSection();
   };
 
