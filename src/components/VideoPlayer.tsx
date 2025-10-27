@@ -818,7 +818,7 @@ const VideoPlayer = ({
           {isActive && videoId ? (
             <div className="relative rounded-lg overflow-hidden aspect-video mb-4 overscroll-none touch-none" onWheel={(e) => e.preventDefault()}>
               <iframe
-                key={`${videoId}-${reloadTick}`}
+                key={`${videoId}`}
                 ref={iframeRef}
                 src={iframeSrc}
                 loading="lazy" scrolling="no"

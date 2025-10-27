@@ -638,7 +638,7 @@ const Level2Course = () => {
             </div>
 
         {/* Course Carousel */}
-        <div className="mb-6 animate-fade-in">
+        <div className="mb-6">
             <Carousel 
               setApi={setCarouselApi}
             >
@@ -646,7 +646,7 @@ const Level2Course = () => {
                 {courseSections.map((section, idx) => (
                   <CarouselItem key={section.id}>
                     <VideoPlayer
-                      key={`video-${section.id}-${section.videoUrl || 'empty'}-${currentSlide === idx ? 'active' : 'inactive'}`}
+                      
                       section={{
                         id: section.id,
                         title: section.title,
