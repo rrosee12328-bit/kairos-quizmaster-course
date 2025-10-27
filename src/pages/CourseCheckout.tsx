@@ -69,7 +69,6 @@ const CourseCheckout = () => {
       ],
       priceId: "price_1SIuwK2Lv7r2i0JX3XIe7Oi0",
       price: "$99.00",
-      originalPrice: "$50.00",
       isLevel2: true
     },
     level3: {
@@ -696,11 +695,6 @@ const CourseCheckout = () => {
               <div className="bg-muted/30 rounded-lg p-6 space-y-4">
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-3 mb-2">
-                    {course.originalPrice && (
-                      <span className="text-2xl text-muted-foreground line-through">
-                        {course.originalPrice}
-                      </span>
-                    )}
                     <span className="text-4xl font-bold text-primary">{course.price}</span>
                   </div>
                   <p className="text-sm text-muted-foreground">One-time payment • Lifetime access</p>
