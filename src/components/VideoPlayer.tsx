@@ -85,6 +85,7 @@ const VideoPlayer = ({
   const startupSuppressUntilRef = useRef(0);
   // Queue a play request if user clicks before player is ready
   const queuedPlayRef = useRef(false);
+  const pendingCorrectionTimeoutRef = useRef<number | null>(null);
   // Format seconds to M:SS for display
   const fmt = (s: number) => {
     const v = Math.max(0, Math.floor(s || 0));
@@ -544,9 +545,26 @@ const VideoPlayer = ({
             hystWindow: hystWindow.toFixed(2),
           });
 
-          // Cooldown check
+          // Cooldown check - schedule correction rather than skip
           if (now - lastCorrectionAtRef.current < CORRECTION_COOLDOWN_MS) {
-            console.log('[Bunny] SEEK: In cooldown, skipping correction');
+            const waitMs = CORRECTION_COOLDOWN_MS - (now - lastCorrectionAtRef.current) + 50;
+            if (pendingCorrectionTimeoutRef.current) window.clearTimeout(pendingCorrectionTimeoutRef.current);
+            pendingCorrectionTimeoutRef.current = window.setTimeout(() => {
+              try {
+                p.getCurrentTime((t2: number) => {
+                  const allowedEnd2 = maxWatchedRef.current + FORWARD_GRACE;
+                  const hystWindow2 = allowedEnd2 + HYST;
+                  if (t2 > hystWindow2) {
+                    console.log('[Bunny] SEEK: DELAYED CORRECT', { seekedTo: t2, snappingTo: allowedEnd2 });
+                    isCorrectingRef.current = true;
+                    suppressNextTimeupdateRef.current = true;
+                    lastCorrectionAtRef.current = Date.now();
+                    try { p.setCurrentTime(allowedEnd2); } catch {}
+                    setTimeout(() => { isCorrectingRef.current = false; suppressNextTimeupdateRef.current = false; }, 400);
+                  }
+                });
+              } catch {}
+            }, Math.max(0, waitMs));
             return;
           }
 
@@ -636,7 +654,7 @@ const VideoPlayer = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isActive || !lastPlayingStateRef.current) return;
 
-      const blockKeys = ['0','1','2','3','4','5','6','7','8','9','ArrowRight'];
+      const blockKeys = ['0','1','2','3','4','5','6','7','8','9','ArrowRight','ArrowLeft','l','j','Home','End'];
       if (blockKeys.includes(e.key)) {
         e.preventDefault();
         e.stopPropagation();
@@ -660,6 +678,7 @@ const VideoPlayer = ({
       try { window.clearInterval(durationUpdateInterval); } catch {}
       try { window.clearInterval(watchdogInterval); } catch {}
       try { clearTimeout(fallbackTimeout); } catch {}
+      if (pendingCorrectionTimeoutRef.current) { try { window.clearTimeout(pendingCorrectionTimeoutRef.current); } catch {} pendingCorrectionTimeoutRef.current = null; }
       readyRef.current = false;
       // Destroy player
       if (playerRef.current) {
@@ -875,7 +894,7 @@ const VideoPlayer = ({
               />
               {/* Scrubber blocker: prevent all interactions with the progress bar */}
               <div
-                className="absolute inset-x-0 bottom-0 h-6 z-10 cursor-not-allowed select-none"
+                className="absolute inset-x-0 bottom-0 h-12 z-10 cursor-not-allowed select-none"
                 style={{ pointerEvents: 'auto', userSelect: 'none', touchAction: 'none' }}
                 aria-hidden
                 title="Seeking is disabled - you must watch the video to progress"
