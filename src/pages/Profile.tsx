@@ -290,7 +290,7 @@ const Profile = () => {
             <div className="flex-1">
               <h1 className="text-4xl font-bold mb-1">
                 Welcome {enrollments.length > 0 && enrollments[0].first_name
-                  ? `${enrollments[0].first_name} ${enrollments[0].last_name}`
+                  ? enrollments[0].first_name
                   : profile?.full_name && profile.full_name !== user?.email 
                     ? profile.full_name 
                     : 'Student'}
