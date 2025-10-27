@@ -68,7 +68,7 @@ const CourseCheckout = () => {
         "Legal framework for unarmed officers"
       ],
       priceId: "price_1SIuwK2Lv7r2i0JX3XIe7Oi0",
-      price: "$1.00",
+      price: "$99.00",
       originalPrice: "$50.00",
       isLevel2: true
     },
