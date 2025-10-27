@@ -881,7 +881,7 @@ const Level2Course = () => {
         sectionTitle={completedSectionTitle}
         onAdvance={handleAutoAdvance}
         onCancel={handleCancelAutoAdvance}
-        countdownSeconds={10}
+        countdownSeconds={5}
         isFinalSection={currentSlide >= courseSections.length - 1}
       />
 

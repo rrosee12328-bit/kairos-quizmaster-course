@@ -561,6 +561,12 @@ const VideoPlayer = ({
         }
         // Trigger completion flow (no auto-advance)
         handleCompletionTrigger();
+        
+        // Trigger modal only after video ends
+        if (completionPostedRef.current) {
+          console.log('[FLOW] VIDEO_ENDED - Triggering section completion modal');
+          onSectionCompleted?.(section.id);
+        }
       });
 
       p.on('play', () => {
@@ -735,8 +741,8 @@ const VideoPlayer = ({
       // Check if section is complete (video done and no quiz, or quiz already passed)
       const progress = data?.progress;
       if (progress?.section_completed) {
-        console.log('[FLOW] SECTION_COMPLETED immediately (no quiz or quiz already done)');
-        onSectionCompleted?.(section.id);
+        console.log('[FLOW] SECTION_COMPLETED - Server confirmed, waiting for video ended event to show modal');
+        // DON'T call onSectionCompleted here - wait for 'ended' event
       }
     } catch (e: any) {
       setPostStatus(500);
