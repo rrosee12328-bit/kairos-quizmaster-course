@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { SkipForward, CheckCircle2, Play, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -105,8 +105,16 @@ const VideoPlayer = ({
   const libraryId = libraryIdMatch ? libraryIdMatch[1] : '510506';
 
   // Build iframe src using signed URL if provided (preserves token)
-  const buildIframeSrc = () => {
-    if (overrideUrl) return `${overrideUrl}&rememberPosition=false&playsinline=true&ts=${Date.now()}&rt=${reloadTick}`;
+  const iframeSrc = useMemo(() => {
+    if (overrideUrl) {
+      // Keep the URL stable; only change when we explicitly refresh (reloadTick)
+      const u = new URL(overrideUrl);
+      u.searchParams.set('rememberPosition', 'false');
+      u.searchParams.set('playsinline', 'true');
+      u.searchParams.set('playerjs', '1');
+      u.searchParams.set('rt', String(reloadTick));
+      return u.toString();
+    }
     const uStr = section.videoUrl;
     if (uStr && uStr.startsWith('https://iframe.mediadelivery.net/embed/')) {
       try {
@@ -117,7 +125,6 @@ const VideoPlayer = ({
         u.searchParams.set('showSpeed', 'false');
         u.searchParams.set('rememberPosition', 'false');
         u.searchParams.set('playerjs', '1');
-        u.searchParams.set('ts', String(Date.now()));
         u.searchParams.set('rt', String(reloadTick));
         return u.toString();
       } catch {
@@ -126,10 +133,9 @@ const VideoPlayer = ({
     }
     // Fallback (shouldn't be needed if signed URL exists)
     return videoId
-      ? `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?autoplay=false&preload=true&playsinline=true&showSpeed=false&rememberPosition=false&playerjs=1&ts=${Date.now()}&rt=${reloadTick}`
+      ? `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?autoplay=false&preload=true&playsinline=true&showSpeed=false&rememberPosition=false&playerjs=1&rt=${reloadTick}`
       : '';
-  };
-  const iframeSrc = buildIframeSrc();
+  }, [overrideUrl, section.videoUrl, videoId, libraryId, reloadTick]);
 
   const handleIframeError = async () => {
     console.error('[VideoPlayer] iframe load error for video:', videoId);
