@@ -455,8 +455,11 @@ const Level2Course = () => {
 
   const handleNextSection = () => {
     if (!nextSectionId) {
-      console.log('NEXT_CLICK_NAV - Final section, no next');
-      toast.success("Course Complete! All sections finished.");
+      console.log('NEXT_CLICK_NAV - Final section, going to exam');
+      setShowQuiz(true);
+      setTimeout(() => {
+        quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
       return;
     }
 
@@ -699,8 +702,8 @@ const Level2Course = () => {
               <button
                 id="nextBtn"
                 data-testid="btn-next"
-                disabled={currentSlide === totalSections - 1 || !canProceed}
-                aria-disabled={currentSlide === totalSections - 1 || !canProceed}
+                disabled={!canProceed}
+                aria-disabled={!canProceed}
                 onClick={() => {
                   console.log('CAN_PROCEED_TRUE - NEXT_CLICK_NAV', { 
                     canProceed, 
@@ -719,7 +722,7 @@ const Level2Course = () => {
                   pointerEvents: 'auto'
                 }}
               >
-                Next
+                {currentSlide === totalSections - 1 ? 'Go to Final Exam' : 'Next'}
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
