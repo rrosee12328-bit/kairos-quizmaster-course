@@ -438,18 +438,25 @@ const VideoPlayer = ({
           const hystWindow = allowedEnd + HYST;
           const delta = current - lastPlaybackTimeRef.current;
 
-          // Large jump forward detected (user seek) - clamp or ignore
-          if (delta > 0.75) {
+          // Large jump forward detected (user seek) - clamp aggressively
+          if (delta > 0.5) {
             if (current > hystWindow && now - lastCorrectionAtRef.current >= CORRECTION_COOLDOWN_MS) {
               console.log('[Bunny] TIMEUPDATE CLAMP', { current, maxWatched: maxWatchedRef.current, snappingTo: allowedEnd });
               isCorrectingRef.current = true;
               suppressNextTimeupdateRef.current = true;
               lastCorrectionAtRef.current = now;
-              try { p.setCurrentTime(allowedEnd); } catch {}
+              try { 
+                p.setCurrentTime(allowedEnd);
+                // Brief pause ensures correction sticks
+                p.pause();
+                setTimeout(() => {
+                  try { p.play(); } catch {}
+                }, 150);
+              } catch {}
               setTimeout(() => {
                 isCorrectingRef.current = false;
                 suppressNextTimeupdateRef.current = false;
-              }, 300);
+              }, 400);
               lastPlaybackTimeRef.current = allowedEnd;
               return;
             }
@@ -464,7 +471,7 @@ const VideoPlayer = ({
         // Only increase maxWatched on natural forward playback (not during correction cooldown)
         const inCooldown = now - lastCorrectionAtRef.current < CORRECTION_COOLDOWN_MS;
         const delta = current - lastPlaybackTimeRef.current;
-        if (!inCooldown && !isCorrectingRef.current && delta > 0 && delta <= 0.75) {
+        if (!inCooldown && !isCorrectingRef.current && delta > 0 && delta <= 0.5) {
           // Keep maxWatched in sync with actual playback to avoid false snapbacks
           maxWatchedRef.current = Math.max(maxWatchedRef.current, current);
         }
@@ -524,18 +531,23 @@ const VideoPlayer = ({
             return;
           }
 
-          // Clamp without pausing
+          // Clamp with brief pause to ensure correction sticks
           console.log('[Bunny] SEEK: CORRECT (snapback)', { seekedTo: t, snappingTo: allowedEnd });
           isCorrectingRef.current = true;
           suppressNextTimeupdateRef.current = true;
           lastCorrectionAtRef.current = now;
           try {
             p.setCurrentTime(allowedEnd);
+            // Brief pause ensures the snap takes effect
+            p.pause();
+            setTimeout(() => {
+              try { p.play(); } catch {}
+            }, 150);
           } catch {}
           setTimeout(() => {
             isCorrectingRef.current = false;
             suppressNextTimeupdateRef.current = false;
-          }, 300);
+          }, 400);
         });
       });
 
@@ -832,19 +844,26 @@ const VideoPlayer = ({
                 allowFullScreen
                 onError={handleIframeError}
               />
-              {/* Scrubber blocker: prevent interacting with the progress bar while keeping native controls usable */}
+              {/* Scrubber blocker: prevent all interactions with the progress bar */}
               <div
-                className="absolute inset-x-0 bottom-0 h-5 z-10 cursor-not-allowed"
-                style={{ pointerEvents: 'auto' }}
+                className="absolute inset-x-0 bottom-0 h-6 z-10 cursor-not-allowed select-none"
+                style={{ pointerEvents: 'auto', userSelect: 'none', touchAction: 'none' }}
                 aria-hidden
-                title="Seeking is disabled"
+                title="Seeking is disabled - you must watch the video to progress"
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onDoubleClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
                 onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
                 onMouseUp={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onMouseMove={(e) => { e.preventDefault(); e.stopPropagation(); }}
                 onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
                 onPointerUp={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onPointerMove={(e) => { e.preventDefault(); e.stopPropagation(); }}
                 onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
                 onTouchMove={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onDragStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onDrag={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}
               />
               
             </div>
