@@ -67,7 +67,7 @@ const CourseCheckout = () => {
         "Emergency response (non-armed)",
         "Legal framework for unarmed officers"
       ],
-      priceId: "price_1SN3pd2Lv7r2i0JXJQy0Imf3",
+      priceId: "price_1SIuwK2Lv7r2i0JX3XIe7Oi0",
       price: "$1.00",
       isLevel2: true
     },
