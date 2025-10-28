@@ -304,8 +304,8 @@ const Courses = () => {
         "Drills"
       ],
       route: "/course/pepper-spray",
-      priceId: "price_1SIulC2Lv7r2i0JX6rKjuKRr",
-      price: "$50.00"
+      priceId: "price_1SNDip2Lv7r2i0JXkz532nZz",
+      price: "$1.00"
     }
   ];
 

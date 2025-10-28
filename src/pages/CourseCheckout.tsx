@@ -129,7 +129,7 @@ const CourseCheckout = () => {
         "Criminal and civil liability",
         "Drills"
       ],
-      priceId: "price_1SN3pd2Lv7r2i0JXJQy0Imf3",
+      priceId: "price_1SNDip2Lv7r2i0JXkz532nZz",
       price: "$1.00",
       isPepperSpray: true,
       requirements: [
