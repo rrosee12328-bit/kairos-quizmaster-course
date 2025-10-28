@@ -88,7 +88,7 @@ const CourseCheckout = () => {
         "Legal responsibilities of armed officers"
       ],
       priceId: "price_1SIuap2Lv7r2i0JXWjbkKkWm",
-      price: "$125.00",
+      price: "$1.00",
       isLevel3: true
     },
     level4: {
