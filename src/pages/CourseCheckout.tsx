@@ -175,7 +175,12 @@ const CourseCheckout = () => {
       if (error) throw error;
 
       if (data?.url) {
-        window.location.href = data.url;
+        // Open in a new tab to avoid iframe/sandbox restrictions in the preview
+        const opened = window.open(data.url, '_blank', 'noopener,noreferrer');
+        if (!opened) {
+          // Fallback to same-tab navigation if pop-up blocked
+          window.location.assign(data.url);
+        }
       }
     } catch (error) {
       console.error('Payment error:', error);
