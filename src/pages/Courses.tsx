@@ -281,8 +281,8 @@ const Courses = () => {
         "Use of Force & Deadly Force"
       ],
       route: "/course/level4",
-      priceId: "price_1SIuhk2Lv7r2i0JXmknziXJn",
-      price: "$200.00"
+      priceId: "price_1SNDgM2Lv7r2i0JXN0Uw4yMH",
+      price: "$1.00"
     },
     {
       id: "pepper-spray",
