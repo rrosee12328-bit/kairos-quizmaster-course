@@ -240,7 +240,7 @@ const Courses = () => {
       ],
       route: "/course/level2",
       priceId: "price_1SIuwK2Lv7r2i0JX3XIe7Oi0",
-      price: "$99.00"
+      price: "$1.00"
     },
     {
       id: "level3", 
