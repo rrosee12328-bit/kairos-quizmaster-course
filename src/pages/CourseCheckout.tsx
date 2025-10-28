@@ -67,8 +67,8 @@ const CourseCheckout = () => {
         "Emergency response (non-armed)",
         "Legal framework for unarmed officers"
       ],
-      priceId: "price_1SIuwK2Lv7r2i0JX3XIe7Oi0",
-      price: "$99.00",
+      priceId: "price_1SN3pd2Lv7r2i0JXJQy0Imf3",
+      price: "$1.00",
       isLevel2: true
     },
     level3: {
@@ -87,7 +87,7 @@ const CourseCheckout = () => {
         "Weapons maintenance",
         "Legal responsibilities of armed officers"
       ],
-      priceId: "price_1SIuap2Lv7r2i0JXWjbkKkWm",
+      priceId: "price_1SN3pd2Lv7r2i0JXJQy0Imf3",
       price: "$1.00",
       isLevel3: true
     },
@@ -107,8 +107,8 @@ const CourseCheckout = () => {
         "Unarmed Defensive Tactics",
         "Use of Force & Deadly Force"
       ],
-      priceId: "price_1SIuhk2Lv7r2i0JXmknziXJn",
-      price: "$200.00",
+      priceId: "price_1SN3pd2Lv7r2i0JXJQy0Imf3",
+      price: "$1.00",
       isLevel4: true
     },
     "pepper-spray": {
@@ -129,8 +129,8 @@ const CourseCheckout = () => {
         "Criminal and civil liability",
         "Drills"
       ],
-      priceId: "price_1SIulC2Lv7r2i0JX6rKjuKRr",
-      price: "$50.00",
+      priceId: "price_1SN3pd2Lv7r2i0JXJQy0Imf3",
+      price: "$1.00",
       isPepperSpray: true,
       requirements: [
         "This course is for security guards only",
