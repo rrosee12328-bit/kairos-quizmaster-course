@@ -58,33 +58,51 @@ const Course = () => {
   };
 
   const checkEnrollmentStatus = async (userId: string) => {
-    // Check if user is enrolled, has any progress, or has completed the course
-    const { data: enrollment } = await supabase
-      .from('enrollments')
-      .select('enrollment_status')
-      .eq('user_id', userId)
-      .eq('course_type', 'level3')
-      .maybeSingle();
+    try {
+      // Check if user is enrolled, has any progress, or has completed the course
+      const [enrollmentResult, progressResult, completionResult] = await Promise.all([
+        supabase
+          .from('enrollments')
+          .select('enrollment_status')
+          .eq('user_id', userId)
+          .eq('course_type', 'level3')
+          .maybeSingle(),
+        supabase
+          .from('course_progress')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('course_type', 'level3')
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from('course_completions')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('course_type', 'level3')
+          .maybeSingle()
+      ]);
 
-    const { data: progress } = await supabase
-      .from('course_progress')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('course_type', 'level3')
-      .limit(1)
-      .maybeSingle();
+      const enrollment = enrollmentResult.data;
+      const progress = progressResult.data;
+      const completion = completionResult.data;
 
-    const { data: completion } = await supabase
-      .from('course_completions')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('course_type', 'level3')
-      .maybeSingle();
+      console.log('[Level3Course] Access check:', { 
+        userId, 
+        hasEnrollment: !!enrollment, 
+        hasProgress: !!progress, 
+        hasCompletion: !!completion,
+        isAdmin 
+      });
 
-    // Allow access if enrolled OR has progress OR completed (for review)
-    if (!enrollment && !progress && !completion && !isAdmin) {
-      toast.error('You need to enroll in this course first');
-      navigate('/courses');
+      // Allow access if enrolled OR has progress OR completed (for review) OR is admin
+      if (!enrollment && !progress && !completion && !isAdmin) {
+        console.error('[Level3Course] Access denied - no enrollment, progress, or completion found');
+        toast.error('You need to enroll in this course first. If you already purchased it, please contact support.');
+        navigate('/courses');
+      }
+    } catch (error) {
+      console.error('[Level3Course] Error checking enrollment:', error);
+      // Don't block access on error - let them through
     }
   };
 
