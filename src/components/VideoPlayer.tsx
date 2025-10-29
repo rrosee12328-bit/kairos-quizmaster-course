@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import AutoAdvanceModal from "./AutoAdvanceModal";
-import { CheckCircle2 } from "lucide-react";
 
 interface VideoPlayerProps {
   section: {
@@ -114,7 +112,16 @@ const VideoPlayer = ({
       // Track video progress
       if (data?.currentTime !== undefined && data?.duration !== undefined) {
         const percent = (data.currentTime / data.duration) * 100;
-        setWatchedPercent(Math.max(watchedPercent, percent));
+        const newPercent = Math.max(watchedPercent, percent);
+        setWatchedPercent(newPercent);
+        
+        // Automatically trigger completion at 90%
+        if (newPercent >= 90 && !hasCompletedRef.current) {
+          console.log('[VideoPlayer] 90% watched, triggering auto-advance');
+          hasCompletedRef.current = true;
+          onSectionCompleted?.(section.id);
+          setShowAutoAdvance(true);
+        }
       }
       
       // Video ended
@@ -164,14 +171,6 @@ const VideoPlayer = ({
 
   const handleStayHere = () => {
     setShowAutoAdvance(false);
-  };
-
-  const handleMarkComplete = () => {
-    if (!hasCompletedRef.current) {
-      hasCompletedRef.current = true;
-      onSectionCompleted?.(section.id);
-      setShowAutoAdvance(true);
-    }
   };
 
   if (!isActive) {
@@ -239,22 +238,6 @@ const VideoPlayer = ({
             style={{ pointerEvents: 'auto' }}
             title="Scrubbing is disabled during training"
           />
-        </div>
-
-        <div className="mt-4">
-          <Button 
-            onClick={handleMarkComplete}
-            className="w-full"
-            size="lg"
-            disabled={watchedPercent < 90 || hasCompletedRef.current}
-          >
-            <CheckCircle2 className="mr-2 h-5 w-5" />
-            {hasCompletedRef.current 
-              ? 'Section Completed' 
-              : watchedPercent < 90
-              ? `Watch ${Math.ceil(90 - watchedPercent)}% more to continue`
-              : 'Complete Section & Continue'}
-          </Button>
         </div>
 
         <AutoAdvanceModal
