@@ -34,6 +34,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
       });
     }
 
+    const userAgent = req.headers.get('user-agent') || 'unknown';
+    const device = /Mobile|Android|iPhone/i.test(userAgent) ? 'mobile' : 'desktop';
+    console.log('[progress-allowed] Request received', {
+      userId: user.id,
+      email: user.email,
+      courseId: course_id,
+      device,
+      userAgent
+    });
+
     const url = new URL(req.url);
     const course_id = url.searchParams.get('course_id');
 

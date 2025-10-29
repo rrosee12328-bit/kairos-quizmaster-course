@@ -22,6 +22,7 @@ const AutoAdvanceModal = ({
   isFinalSection = false,
 }: AutoAdvanceModalProps) => {
   const [secondsLeft, setSecondsLeft] = useState(countdownSeconds);
+  const device = /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
 
   useEffect(() => {
     if (!isOpen) {
@@ -30,7 +31,7 @@ const AutoAdvanceModal = ({
     }
 
     // Log modal shown
-    console.log('MODAL_SHOWN', { sectionTitle, isFinalSection });
+    console.log('MODAL_SHOWN', { sectionTitle, isFinalSection, device, ua: navigator.userAgent });
 
     // Don't auto-advance if final section
     if (isFinalSection) return;
@@ -38,11 +39,12 @@ const AutoAdvanceModal = ({
     const interval = setInterval(() => {
       setSecondsLeft((prev) => {
         const newValue = prev - 1;
-        console.log('COUNTDOWN_TICK:', newValue);
+        console.log('COUNTDOWN_TICK:', { newValue, device });
         
         if (newValue <= 0) {
           clearInterval(interval);
-          console.log('AUTO_ADVANCE_NAV', { from: sectionTitle });
+          console.log('AUTO_ADVANCE_NAV', { from: sectionTitle, device });
+          console.log('[AutoAdvanceModal] auto_advance_fired', { device });
           onAdvance();
           return 0;
         }
@@ -56,12 +58,14 @@ const AutoAdvanceModal = ({
   const progress = ((countdownSeconds - secondsLeft) / countdownSeconds) * 100;
 
   const handleContinue = () => {
-    console.log('CONTINUE_NOW_CLICK', { sectionTitle });
+    const device = /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
+    console.log('CONTINUE_NOW_CLICK', { sectionTitle, device });
     onAdvance();
   };
 
   const handleStay = () => {
-    console.log('STAY_HERE_CLICK', { sectionTitle });
+    const device = /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
+    console.log('STAY_HERE_CLICK', { sectionTitle, device });
     onCancel();
   };
 

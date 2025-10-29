@@ -135,12 +135,6 @@ const Course = () => {
       title: "Welcome",
       description: "Welcome to the Level 3 Security Officer Certification Course",
       duration: "1 minute",
-  const [courseSections, setCourseSections] = useState([
-    {
-      id: 1,
-      title: "Welcome",
-      description: "Welcome to the Level 3 Security Officer Certification Course",
-      duration: "1 minute",
       videoUrl: "https://iframe.mediadelivery.net/embed/506173/571ebbaa-2ffc-4050-8670-a3e9d0c1c4f5",
       content: [
         "Course overview and objectives",

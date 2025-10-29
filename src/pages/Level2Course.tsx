@@ -357,6 +357,20 @@ const Level2Course = () => {
 
   const checkEnrollmentStatus = async (userId: string) => {
     try {
+      const device = /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
+      console.log('[Level2Course] course_access', {
+        user: user?.email,
+        userId,
+        courseId: 'level2',
+        client: { 
+          device, 
+          os: navigator.platform,
+          ua: navigator.userAgent,
+          referrer: document.referrer,
+          origin: window.location.origin
+        }
+      });
+
       // Check if user is enrolled, has any progress, or has completed the course
       const [enrollmentResult, progressResult, completionResult] = await Promise.all([
         supabase
@@ -374,7 +388,7 @@ const Level2Course = () => {
           .maybeSingle(),
         supabase
           .from('course_completions')
-          .select('id')
+          .select('id, passed')
           .eq('user_id', userId)
           .eq('course_type', 'level2')
           .maybeSingle()
@@ -384,16 +398,28 @@ const Level2Course = () => {
       const progress = progressResult.data;
       const completion = completionResult.data;
 
-      console.log('[Level2Course] Access check:', { 
+      // Visibility rule: canRenderVideo = isEnrolled(user, courseId) - INDEPENDENT of pass/fail
+      const canRenderVideo = !!(enrollment || progress || completion);
+      const assessmentResult = completion?.passed === false ? 'failed' : completion?.passed ? 'passed' : 'none';
+
+      console.log('[Level2Course] course_access', { 
+        user: user?.email,
         userId, 
+        courseId: 'level2',
+        enrolled: !!enrollment,
+        assessment: assessmentResult,
+        canRenderVideo,
+        canAdvance: true, // Quiz results only affect advancement, not visibility
         hasEnrollment: !!enrollment, 
         hasProgress: !!progress, 
         hasCompletion: !!completion,
-        isAdmin 
+        isAdmin,
+        outcome: canRenderVideo || isAdmin ? '200' : '403',
+        reason: canRenderVideo || isAdmin ? 'ENTITLEMENT_OK' : 'NO_ENTITLEMENT'
       });
 
       // Allow access if enrolled OR has progress OR completed (for review) OR is admin
-      if (!enrollment && !progress && !completion && !isAdmin) {
+      if (!canRenderVideo && !isAdmin) {
         console.error('[Level2Course] Access denied - no enrollment, progress, or completion found');
         toast.error('You need to enroll in this course first. If you already purchased it, please contact support.');
         navigate('/courses');
@@ -404,7 +430,7 @@ const Level2Course = () => {
       // Don't block access on error - let them through
     }
 
-    // Check highest completed section for navigation guard
+    // Check highest completed section for navigation guard (canAdvance, not canRenderVideo)
     const { data: progressData } = await supabase
       .from('course_progress')
       .select('section_id, section_completed')
@@ -428,6 +454,15 @@ const Level2Course = () => {
   };
 
   const handleSectionComplete = (sectionId: number) => {
+    const device = /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
+    console.log('[Level2Course] video_ended', {
+      sectionId,
+      currentSlide,
+      device,
+      ua: navigator.userAgent,
+      nextSectionExists: !!courseSections[currentSlide + 1]
+    });
+    
     setCompletedSections((prev) => {
       const next = prev.includes(sectionId) ? prev : [...prev, sectionId];
       console.log('[Level2Course] Section complete', { sectionId, next });
@@ -436,10 +471,12 @@ const Level2Course = () => {
   };
 
   const handleSectionCompleted = async (sectionId: number) => {
+    const device = /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
     console.log('SERVER_CONFIRMED_SECTION_COMPLETE', { 
       sectionId, 
       userId: debugUserId,
-      courseType: 'level2'
+      courseType: 'level2',
+      device
     });
 
     // CRITICAL: Re-fetch progress from server to ensure we have latest state (no stale cache)
@@ -455,24 +492,24 @@ const Level2Course = () => {
 
       console.log('POST_OK - Fresh server data:', { 
         sectionId, 
-        serverData: progressData 
+        serverData: progressData,
+        device
       });
 
       if (progressData?.section_completed) {
-        console.log('SERVER_SECTION_COMPLETED', { sectionId });
+        setServerCompleted(true);
+        const nextSection = courseSections[currentSlide + 1];
         
-        const completedSection = courseSections.find(s => s.id === sectionId);
-        if (completedSection) {
-          setCompletedSectionTitle(completedSection.title);
+        if (nextSection) {
+          console.log('[Level2Course] countdown_shown', {
+            nextSection: nextSection.title,
+            device
+          });
+          setNextSectionTitle(nextSection.title);
           setShowAutoAdvanceModal(true);
-        }
-        handleSectionComplete(sectionId);
-        
-        // Update highest completed index
-        const sectionIndex = courseSections.findIndex(s => s.id === sectionId);
-        if (sectionIndex > highestCompletedIndex) {
-          setHighestCompletedIndex(sectionIndex);
-          console.log('HIGHEST_COMPLETED_INDEX updated:', sectionIndex);
+        } else {
+          console.log('[Level2Course] Course complete - final section', { device });
+          toast.success("You've completed all sections!");
         }
       }
     }

@@ -81,7 +81,17 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Authenticated user: ${user.id}`);
+    const userAgent = req.headers.get('user-agent') || 'unknown';
+    const referrer = req.headers.get('referer') || req.headers.get('origin') || 'unknown';
+    const device = /Mobile|Android|iPhone/i.test(userAgent) ? 'mobile' : 'desktop';
+    
+    console.log(`Authenticated user: ${user.id}`, {
+      email: user.email,
+      device,
+      os: userAgent.includes('Windows') ? 'Windows' : userAgent.includes('Mac') ? 'Mac' : userAgent.includes('Linux') ? 'Linux' : 'Unknown',
+      ua: userAgent,
+      referrer
+    });
 
     if (!BUNNY_API_KEY) {
       throw new Error('BUNNY_API_KEY not configured');
@@ -198,8 +208,24 @@ serve(async (req) => {
 
     // Generate signed URL for a video
     if (action === 'getSignedUrl' && videoId) {
+      console.log(`Generating signed URL`, {
+        action: 'getSignedUrl',
+        videoId,
+        libraryId,
+        expiresInHours: expiresInHours || 24,
+        userId: user.id,
+        email: user.email,
+        device,
+        ua: userAgent,
+        referrer
+      });
+
       const signedUrl = await generateSignedUrl(libraryId, videoId, expiresInHours || 24);
-      console.log(`Generated signed URL for video ${videoId}, expires in ${expiresInHours || 24} hours`);
+      
+      console.log(`Generated signed URL for video ${videoId}, expires in ${expiresInHours || 24} hours`, {
+        device,
+        urlLength: signedUrl.length
+      });
 
       return new Response(JSON.stringify({ signedUrl }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
