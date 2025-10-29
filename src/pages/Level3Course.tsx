@@ -34,6 +34,9 @@ const Course = () => {
         setIsAuthenticated(true);
         checkAdminStatus(user.id);
         checkEnrollmentStatus(user.id);
+      } else {
+        // Redirect to login if not authenticated (match Level 2 behavior)
+        navigate('/auth?redirect=/course/level3');
       }
     });
 
@@ -44,11 +47,13 @@ const Course = () => {
       } else {
         setIsAuthenticated(false);
         setIsAdmin(false);
+        // Redirect to login if logged out (match Level 2 behavior)
+        navigate('/auth?redirect=/course/level3');
       }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
 
   const checkAdminStatus = async (userId: string) => {
@@ -342,18 +347,20 @@ const Course = () => {
               <CarouselContent>
                 {courseSections.map((section, idx) => (
                   <CarouselItem key={section.id}>
-                    <VideoPlayer
-                      section={{
-                        id: section.id,
-                        title: section.title,
-                        videoUrl: section.videoUrl || "",
-                        duration: section.duration,
-                      }}
-                      courseType="level3"
-                      isActive={currentSlide === idx}
-                      onComplete={() => handleSectionComplete(section.id)}
-                      onNext={handleNextSlide}
-                    />
+                    {isAuthenticated && (
+                      <VideoPlayer
+                        section={{
+                          id: section.id,
+                          title: section.title,
+                          videoUrl: section.videoUrl || "",
+                          duration: section.duration,
+                        }}
+                        courseType="level3"
+                        isActive={currentSlide === idx}
+                        onComplete={() => handleSectionComplete(section.id)}
+                        onNext={handleNextSlide}
+                      />
+                    )}
                   </CarouselItem>
                 ))}
               </CarouselContent>
