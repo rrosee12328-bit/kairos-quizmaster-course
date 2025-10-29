@@ -26,6 +26,7 @@ const Course = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [videosLoaded, setVideosLoaded] = useState(false);
   const quizRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -55,6 +56,75 @@ const Course = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  // Fetch videos from Bunny.net and generate signed URLs
+  useEffect(() => {
+    const fetchSignedUrls = async () => {
+      if (videosLoaded) return;
+      
+      try {
+        console.log('[Level3Course] Generating signed URLs for all sections');
+        
+        // Generate signed URLs for each section's video
+        const updatedSections = await Promise.all(
+          courseSections.map(async (section) => {
+            if (!section.videoUrl) {
+              console.warn(`[Level3Course] No video URL for section ${section.id}`);
+              return section;
+            }
+
+            // Extract video ID from existing URL
+            const match = section.videoUrl.match(/\/embed\/(\d+)\/([a-f0-9-]+)/i);
+            if (!match) {
+              console.warn(`[Level3Course] Could not extract video ID from ${section.videoUrl}`);
+              return section;
+            }
+
+            const libraryId = match[1];
+            const videoId = match[2];
+
+            try {
+              const { data: signedData, error: signedError } = await supabase.functions.invoke('bunny-video', {
+                body: {
+                  action: 'getSignedUrl',
+                  libraryId: libraryId,
+                  videoId: videoId,
+                  expiresInHours: 24
+                }
+              });
+
+              if (signedError || (!signedData?.signedUrl && !signedData?.iframeUrl)) {
+                console.error(`[Level3Course] Failed to generate signed URL for section ${section.id}:`, signedError || signedData);
+                return section;
+              }
+
+              // Use iframe URL for embed
+              const iframeUrl = signedData.iframeUrl || signedData.signedUrl;
+              console.log(`[Level3Course] Generated signed iframe URL for section ${section.id}:`, iframeUrl);
+              
+              return {
+                ...section,
+                videoUrl: iframeUrl
+              };
+            } catch (err) {
+              console.error(`[Level3Course] Error generating signed URL for section ${section.id}:`, err);
+              return section;
+            }
+          })
+        );
+
+        setCourseSections(updatedSections);
+        setVideosLoaded(true);
+        console.log('[Level3Course] All video URLs signed');
+      } catch (err) {
+        console.error('[Level3Course] Fatal error generating signed URLs:', err);
+        toast.error('Failed to load course videos. Please refresh the page.');
+      }
+    };
+
+    if (isAuthenticated && !videosLoaded) {
+      fetchSignedUrls();
+    }
+  }, [isAuthenticated, videosLoaded]);
 
   const checkAdminStatus = async (userId: string) => {
     const { data, error } = await supabase.rpc('is_admin', { _user_id: userId });

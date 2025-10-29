@@ -67,9 +67,18 @@ const VideoPlayer = ({
   const videoId = extractedVideoId;
   const libraryId = extractedLibraryId || '510506';
 
-  // Fetch signed iframe URL from Bunny.net
+  // Fetch signed iframe URL from Bunny.net (skip if already signed)
   useEffect(() => {
     if (!isActive || !videoId) return;
+
+    // Skip fetching if URL already has token & expires (already signed)
+    const urlHasToken = section.videoUrl?.includes('token=') && section.videoUrl?.includes('expires=');
+    if (urlHasToken) {
+      console.log('[VideoPlayer] Using pre-signed URL:', section.videoUrl);
+      setIframeUrl(section.videoUrl);
+      setLoading(false);
+      return;
+    }
 
     const fetchIframeUrl = async () => {
       try {
