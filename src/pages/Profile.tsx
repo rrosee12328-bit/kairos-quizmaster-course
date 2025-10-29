@@ -124,21 +124,30 @@ const Profile = () => {
         if (enrollmentsToUpdate.length > 0) {
           console.log('Syncing enrollments with user account:', enrollmentsToUpdate.length);
           
-          // Call server-side sync function for secure enrollment sync
-          const { error: syncError } = await supabase.functions.invoke('sync-enrollment');
+          // Get current session to pass auth token
+          const { data: { session } } = await supabase.auth.getSession();
           
-          if (syncError) {
-            console.error('Error syncing enrollments:', syncError);
-          } else {
-            // Refresh enrollments after sync
-            const { data: updatedData } = await supabase
-              .from('enrollments')
-              .select('*')
-              .or(`user_id.eq.${userId},email.eq.${userEmail}`)
-              .order('created_at', { ascending: false });
+          if (session) {
+            // Call server-side sync function for secure enrollment sync
+            const { error: syncError } = await supabase.functions.invoke('sync-enrollment', {
+              headers: {
+                Authorization: `Bearer ${session.access_token}`
+              }
+            });
             
-            setEnrollments(updatedData || []);
-            return;
+            if (syncError) {
+              console.error('Error syncing enrollments:', syncError);
+            } else {
+              // Refresh enrollments after sync
+              const { data: updatedData } = await supabase
+                .from('enrollments')
+                .select('*')
+                .or(`user_id.eq.${userId},email.eq.${userEmail}`)
+                .order('created_at', { ascending: false });
+              
+              setEnrollments(updatedData || []);
+              return;
+            }
           }
         }
       }
