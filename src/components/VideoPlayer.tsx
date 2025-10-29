@@ -38,6 +38,7 @@ const VideoPlayer = ({
   const [error, setError] = useState<string | null>(null);
   const [showAutoAdvance, setShowAutoAdvance] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [watchedPercent, setWatchedPercent] = useState(0);
   
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const hasCompletedRef = useRef(false);
@@ -102,26 +103,37 @@ const VideoPlayer = ({
     fetchIframeUrl();
   }, [isActive, videoId, libraryId, section.videoUrl]);
 
-  // Listen for video end event from iframe (if Bunny supports postMessage)
+  // Listen for video events from iframe (if Bunny supports postMessage)
   useEffect(() => {
     if (!isActive || !iframeUrl) return;
 
     const handleMessage = (event: MessageEvent) => {
-      // Bunny.net may send postMessage events for video state
-      if (event.data?.event === 'ended' || event.data?.type === 'ended') {
+      // Bunny.net postMessage events
+      const data = event.data;
+      
+      // Track video progress
+      if (data?.currentTime !== undefined && data?.duration !== undefined) {
+        const percent = (data.currentTime / data.duration) * 100;
+        setWatchedPercent(Math.max(watchedPercent, percent));
+      }
+      
+      // Video ended
+      if (data?.event === 'ended' || data?.type === 'ended') {
         console.log('[VideoPlayer] Video ended via postMessage');
         setIsPlaying(false);
+        setWatchedPercent(100);
         if (!hasCompletedRef.current) {
           hasCompletedRef.current = true;
           onSectionCompleted?.(section.id);
           setShowAutoAdvance(true);
         }
       }
+      
       // Track play/pause state
-      if (event.data?.event === 'play' || event.data?.type === 'play') {
+      if (data?.event === 'play' || data?.type === 'play') {
         setIsPlaying(true);
       }
-      if (event.data?.event === 'pause' || event.data?.type === 'pause') {
+      if (data?.event === 'pause' || data?.type === 'pause') {
         setIsPlaying(false);
       }
     };
@@ -134,7 +146,7 @@ const VideoPlayer = ({
         window.removeEventListener('message', messageListenerRef.current);
       }
     };
-  }, [isActive, iframeUrl, section.id, onSectionCompleted]);
+  }, [isActive, iframeUrl, section.id, onSectionCompleted, watchedPercent]);
 
   const togglePlayPause = () => {
     if (!iframeRef.current?.contentWindow) return;
@@ -234,10 +246,14 @@ const VideoPlayer = ({
             onClick={handleMarkComplete}
             className="w-full"
             size="lg"
-            disabled={hasCompletedRef.current}
+            disabled={watchedPercent < 90 || hasCompletedRef.current}
           >
             <CheckCircle2 className="mr-2 h-5 w-5" />
-            {hasCompletedRef.current ? 'Section Completed' : 'Complete Section & Continue'}
+            {hasCompletedRef.current 
+              ? 'Section Completed' 
+              : watchedPercent < 90
+              ? `Watch ${Math.ceil(90 - watchedPercent)}% more to continue`
+              : 'Complete Section & Continue'}
           </Button>
         </div>
 
