@@ -38,6 +38,8 @@ const VideoPlayer = ({
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [iframeUrl, setIframeUrl] = useState<string | null>(null);
+  const [useIframe, setUseIframe] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAutoAdvance, setShowAutoAdvance] = useState(false);
@@ -83,10 +85,13 @@ const VideoPlayer = ({
 
         if (response.error) throw response.error;
 
-        // Get HLS URL from Bunny
+        // Get URLs from Edge Function
         const hlsUrl = response.data?.signedUrl || response.data?.url || response.data;
+        const iframe = response.data?.iframeUrl || null;
         console.log('[VideoPlayer] Fetched HLS URL:', hlsUrl);
+        if (iframe) console.log('[VideoPlayer] Received iframe fallback URL');
         setVideoUrl(hlsUrl);
+        setIframeUrl(iframe);
         setLoading(false);
       } catch (err) {
         console.error("Error fetching video:", err);
@@ -118,13 +123,23 @@ const VideoPlayer = ({
       console.log('[VideoPlayer] Using hls.js');
       
       hls.on(Hls.Events.ERROR, (event, data) => {
+        console.error("[VideoPlayer] HLS error:", data);
         if (data.fatal) {
-          console.error("HLS fatal error:", data);
-          setError("Video playback error");
+          if (iframeUrl) {
+            console.warn("[VideoPlayer] Falling back to iframe embed.");
+            setUseIframe(true);
+          } else {
+            setError("Video playback error");
+          }
         }
       });
     } else {
-      setError("Your browser doesn't support video playback");
+      if (iframeUrl) {
+        console.warn("[VideoPlayer] HLS not supported, using iframe fallback.");
+        setUseIframe(true);
+      } else {
+        setError("Your browser doesn't support video playback");
+      }
     }
 
     return () => {
@@ -398,15 +413,27 @@ const VideoPlayer = ({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="relative rounded-xl overflow-hidden bg-black aspect-video">
-          <video
-            ref={videoRef}
-            className="w-full h-full"
-            playsInline
-            preload="metadata"
-            disablePictureInPicture
-            controls={false}
-            controlsList="nodownload noplaybackrate noremoteplayback"
-          />
+          {useIframe && iframeUrl ? (
+            <iframe
+              src={iframeUrl}
+              className="w-full h-full"
+              allow="autoplay; fullscreen; picture-in-picture"
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer"
+              title={`Video section ${section.id}`}
+            />
+          ) : (
+            <video
+              ref={videoRef}
+              className="w-full h-full"
+              playsInline
+              preload="metadata"
+              disablePictureInPicture
+              controls={false}
+              controlsList="nodownload noplaybackrate noremoteplayback"
+            />
+          )}
         </div>
 
         <div className="flex items-center gap-3">

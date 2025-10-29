@@ -271,13 +271,16 @@ serve(async (req) => {
       // HLS URL format: https://{cdn-hostname}/{video-guid}/playlist.m3u8?token={hash}&expires={timestamp}
       const hlsUrl = `https://${cdnHostname}/${videoId}/playlist.m3u8?token=${token}&expires=${expiryTimestamp}`;
       
+      // Also prepare iframe embed URL as a fallback for clients
+      const iframeUrl = await generateSignedUrl(libraryId, videoId, expiresInHours || 24);
+      
       console.log(`Generated HLS URL for video ${videoId}`, {
         device,
         cdnHostname,
         expires: new Date(expiryTimestamp * 1000).toISOString()
       });
 
-      return new Response(JSON.stringify({ signedUrl: hlsUrl }), {
+      return new Response(JSON.stringify({ signedUrl: hlsUrl, iframeUrl }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
