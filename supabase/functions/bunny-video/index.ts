@@ -238,16 +238,18 @@ serve(async (req) => {
       }
 
       const libraryData = await libraryResponse.json();
-      const cdnHostname = libraryData.videoLibrary?.hostname || libraryData.hostName;
-      
-      console.log('Library CDN info:', {
-        libraryId,
-        cdnHostname,
-        hasHostname: !!cdnHostname
-      });
+      let cdnHostname: string | undefined =
+        libraryData?.videoLibrary?.hostname ||
+        libraryData?.hostName ||
+        libraryData?.hostname ||
+        libraryData?.pullZone?.hostname;
 
       if (!cdnHostname) {
-        throw new Error('CDN hostname not found in library data');
+        // Fallback to known pattern vz-{libraryId}.b-cdn.net
+        cdnHostname = `vz-${libraryId}.b-cdn.net`;
+        console.warn('CDN hostname missing in library data, using fallback', { libraryId, cdnHostname });
+      } else {
+        console.log('Library CDN info:', { libraryId, cdnHostname, source: 'library' });
       }
 
       // Get signing key
