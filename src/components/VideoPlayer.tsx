@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import AutoAdvanceModal from "./AutoAdvanceModal";
+import Hls from "hls.js";
 
 interface VideoPlayerProps {
   section: {
@@ -37,10 +38,12 @@ const VideoPlayer = ({
   const [showAutoAdvance, setShowAutoAdvance] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
+  const hlsRef = useRef<Hls | null>(null);
   const hasCompletedRef = useRef(false);
   const maxWatchedRef = useRef(0);
   const lastTimeRef = useRef(0);
   const isSnappingRef = useRef(false);
+  const fellBackRef = useRef(false);
 
   // Extract Bunny.net identifiers from either iframe or HLS URL
   const extractIdsFromUrl = (url: string) => {
@@ -81,24 +84,65 @@ const VideoPlayer = ({
     setLoading(false);
   }, [isActive, videoId, libraryId]);
 
-  // Setup video player with MP4 URL
+  // Setup video player with MP4 URL (fallback to HLS on error)
   useEffect(() => {
     if (!videoUrl || !videoRef.current || !isActive) return;
 
     const video = videoRef.current;
-    
+
+    const fallbackToHls = () => {
+      if (fellBackRef.current) return;
+      fellBackRef.current = true;
+      const hlsUrl = section.videoUrl; // signed HLS from parent
+      if (!hlsUrl) return;
+      console.log('[VideoPlayer] MP4 failed, falling back to HLS');
+      
+      // Cleanup MP4 src
+      video.src = '';
+
+      if (Hls.isSupported()) {
+        const hls = new Hls({ enableWorker: true });
+        hlsRef.current = hls;
+        hls.loadSource(hlsUrl);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.ERROR, (_evt, data) => {
+          if (data.fatal) {
+            console.error('[VideoPlayer] Fatal HLS error on fallback:', data);
+            setError('Video playback error');
+          }
+        });
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = hlsUrl;
+      } else {
+        setError('Your browser does not support this video format');
+      }
+    };
+
     // Set MP4 source directly
     video.src = videoUrl;
-    console.log('[VideoPlayer] Video source set');
+    console.log('[VideoPlayer] Video source set to MP4');
+
+    const onError = () => {
+      console.warn('[VideoPlayer] MP4 error event');
+      fallbackToHls();
+    };
+
+    video.addEventListener('error', onError);
 
     // Anti-skip: Reset maxWatched on new video
     maxWatchedRef.current = 0;
     lastTimeRef.current = 0;
 
     return () => {
+      video.removeEventListener('error', onError);
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
       video.src = '';
+      fellBackRef.current = false;
     };
-  }, [videoUrl, isActive]);
+  }, [videoUrl, isActive, section.videoUrl]);
 
   // Anti-skip logic
   useEffect(() => {
