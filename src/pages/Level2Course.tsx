@@ -359,7 +359,6 @@ const Level2Course = () => {
     try {
       const device = /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
       console.log('[Level2Course] course_access', {
-        user: user?.email,
         userId,
         courseId: 'level2',
         client: { 
@@ -403,7 +402,6 @@ const Level2Course = () => {
       const assessmentResult = completion?.passed === false ? 'failed' : completion?.passed ? 'passed' : 'none';
 
       console.log('[Level2Course] course_access', { 
-        user: user?.email,
         userId, 
         courseId: 'level2',
         enrolled: !!enrollment,
@@ -505,7 +503,6 @@ const Level2Course = () => {
             nextSection: nextSection.title,
             device
           });
-          setNextSectionTitle(nextSection.title);
           setShowAutoAdvanceModal(true);
         } else {
           console.log('[Level2Course] Course complete - final section', { device });
