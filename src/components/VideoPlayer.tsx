@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import AutoAdvanceModal from "./AutoAdvanceModal";
-import Hls from "hls.js";
 
 interface VideoPlayerProps {
   section: {
@@ -32,18 +31,14 @@ const VideoPlayer = ({
   onNext,
   onSectionCompleted,
 }: VideoPlayerProps) => {
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [iframeUrl, setIframeUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAutoAdvance, setShowAutoAdvance] = useState(false);
   
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const hlsRef = useRef<Hls | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const hasCompletedRef = useRef(false);
-  const maxWatchedRef = useRef(0);
-  const lastTimeRef = useRef(0);
-  const isSnappingRef = useRef(false);
-  const fellBackRef = useRef(false);
+  const messageListenerRef = useRef<((event: MessageEvent) => void) | null>(null);
 
   // Extract Bunny.net identifiers from either iframe or HLS URL
   const extractIdsFromUrl = (url: string) => {
@@ -69,183 +64,66 @@ const VideoPlayer = ({
   const videoId = extractedVideoId;
   const libraryId = extractedLibraryId || '510506';
 
-  // Use direct MP4 URL from Bunny CDN
+  // Fetch signed iframe URL from Bunny.net
   useEffect(() => {
-    if (!isActive) return;
+    if (!isActive || !videoId) return;
 
-    if (!videoId) {
-      return;
-    }
-
-    // Use direct MP4 URL (no authentication needed for public videos)
-    const mp4Url = `https://vz-${libraryId}.b-cdn.net/${videoId}/play_720p.mp4`;
-    console.log('[VideoPlayer] Using direct MP4 URL:', mp4Url);
-    setVideoUrl(mp4Url);
-    setLoading(false);
-  }, [isActive, videoId, libraryId]);
-
-  // Setup video player with MP4 URL (fallback to HLS on error)
-  useEffect(() => {
-    if (!videoUrl || !videoRef.current || !isActive) return;
-
-    const video = videoRef.current;
-
-    const fallbackToHls = () => {
-      if (fellBackRef.current) return;
-      fellBackRef.current = true;
-      const hlsUrl = section.videoUrl; // signed HLS from parent
-      if (!hlsUrl) return;
-      console.log('[VideoPlayer] MP4 failed, falling back to HLS');
-      
-      // Cleanup MP4 src
-      video.src = '';
-
-      if (Hls.isSupported()) {
-        const hls = new Hls({ enableWorker: true });
-        hlsRef.current = hls;
-        hls.loadSource(hlsUrl);
-        hls.attachMedia(video);
-        hls.on(Hls.Events.ERROR, (_evt, data) => {
-          if (data.fatal) {
-            console.error('[VideoPlayer] Fatal HLS error on fallback:', data);
-            setError('Video playback error');
+    const fetchIframeUrl = async () => {
+      try {
+        setLoading(true);
+        const { data: { session } } = await supabase.auth.getSession();
+        const { data, error } = await supabase.functions.invoke('bunny-video', {
+          headers: session ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+          body: {
+            action: 'getSignedUrl',
+            libraryId,
+            videoId,
+            expiresInHours: 24
           }
         });
-      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = hlsUrl;
-      } else {
-        setError('Your browser does not support this video format');
-      }
-    };
 
-    // Set MP4 source directly
-    video.src = videoUrl;
-    console.log('[VideoPlayer] Video source set to MP4');
-
-    const onError = () => {
-      console.warn('[VideoPlayer] MP4 error event');
-      fallbackToHls();
-    };
-
-    video.addEventListener('error', onError);
-
-    // Anti-skip: Reset maxWatched on new video
-    maxWatchedRef.current = 0;
-    lastTimeRef.current = 0;
-
-    return () => {
-      video.removeEventListener('error', onError);
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-        hlsRef.current = null;
-      }
-      video.src = '';
-      fellBackRef.current = false;
-    };
-  }, [videoUrl, isActive, section.videoUrl]);
-
-  // Anti-skip logic
-  useEffect(() => {
-    if (!videoRef.current || !isActive) return;
-
-    const video = videoRef.current;
-    const SNAP_TOLERANCE = 0.5;
-    const JUMP_THRESHOLD = 2;
-
-    const snapBack = (toTime: number) => {
-      if (isSnappingRef.current) return;
-      isSnappingRef.current = true;
-      
-      const wasPlaying = !video.paused && !video.ended;
-      video.pause();
-      video.currentTime = Math.max(0, toTime);
-      
-      if (wasPlaying) {
-        video.play().catch(() => {});
-      }
-      
-      setTimeout(() => {
-        isSnappingRef.current = false;
-      }, 150);
-    };
-
-    const handleLoadedMetadata = () => {
-      maxWatchedRef.current = 0;
-      lastTimeRef.current = 0;
-      video.playbackRate = 1;
-    };
-
-    const handleRateChange = () => {
-      if (video.playbackRate !== 1) {
-        video.playbackRate = 1;
-      }
-    };
-
-    const handleSeeking = () => {
-      const currentTime = video.currentTime;
-      const ahead = currentTime - maxWatchedRef.current;
-      
-      if (ahead > SNAP_TOLERANCE) {
-        console.log('[VideoPlayer] Forward seek blocked:', { currentTime, maxWatched: maxWatchedRef.current });
-        snapBack(maxWatchedRef.current);
-      }
-    };
-
-    const handleTimeUpdate = () => {
-      const currentTime = video.currentTime;
-      const delta = currentTime - lastTimeRef.current;
-
-      if (!isSnappingRef.current) {
-        const ahead = currentTime - maxWatchedRef.current;
+        if (error) throw error;
         
-        if ((ahead > SNAP_TOLERANCE && delta > JUMP_THRESHOLD) || ahead > SNAP_TOLERANCE) {
-          console.log('[VideoPlayer] Forward jump blocked:', { currentTime, maxWatched: maxWatchedRef.current, delta });
-          snapBack(maxWatchedRef.current);
-          return;
+        // Use iframe URL from Bunny
+        const url = data?.iframeUrl || section.videoUrl;
+        console.log('[VideoPlayer] Using Bunny iframe URL:', url);
+        setIframeUrl(url);
+        setLoading(false);
+      } catch (err) {
+        console.error('[VideoPlayer] Error fetching iframe URL:', err);
+        setError('Failed to load video');
+        setLoading(false);
+      }
+    };
+
+    fetchIframeUrl();
+  }, [isActive, videoId, libraryId, section.videoUrl]);
+
+  // Listen for video end event from iframe (if Bunny supports postMessage)
+  useEffect(() => {
+    if (!isActive || !iframeUrl) return;
+
+    const handleMessage = (event: MessageEvent) => {
+      // Bunny.net may send postMessage events for video state
+      if (event.data?.event === 'ended' || event.data?.type === 'ended') {
+        console.log('[VideoPlayer] Video ended via postMessage');
+        if (!hasCompletedRef.current) {
+          hasCompletedRef.current = true;
+          onSectionCompleted?.(section.id);
+          setShowAutoAdvance(true);
         }
       }
-
-      if (currentTime > maxWatchedRef.current) {
-        maxWatchedRef.current = currentTime;
-      }
-      
-      lastTimeRef.current = currentTime;
     };
 
-    const handleEnded = () => {
-      console.log('[VideoPlayer] Video ended, showing countdown');
-      if (!hasCompletedRef.current) {
-        hasCompletedRef.current = true;
-        onSectionCompleted?.(section.id);
-        setShowAutoAdvance(true);
-      }
-    };
-
-    // Block keyboard shortcuts
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
-      if (['arrowright', 'arrowleft', ' ', 'l', 'j', 'k'].includes(key)) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    };
-
-    video.addEventListener('loadedmetadata', handleLoadedMetadata);
-    video.addEventListener('ratechange', handleRateChange);
-    video.addEventListener('seeking', handleSeeking);
-    video.addEventListener('timeupdate', handleTimeUpdate);
-    video.addEventListener('ended', handleEnded);
-    document.addEventListener('keydown', handleKeyDown, true);
+    messageListenerRef.current = handleMessage;
+    window.addEventListener('message', handleMessage);
 
     return () => {
-      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      video.removeEventListener('ratechange', handleRateChange);
-      video.removeEventListener('seeking', handleSeeking);
-      video.removeEventListener('timeupdate', handleTimeUpdate);
-      video.removeEventListener('ended', handleEnded);
-      document.removeEventListener('keydown', handleKeyDown, true);
+      if (messageListenerRef.current) {
+        window.removeEventListener('message', messageListenerRef.current);
+      }
     };
-  }, [isActive, section.id, onSectionCompleted]);
+  }, [isActive, iframeUrl, section.id, onSectionCompleted]);
 
   const handleAutoAdvance = () => {
     setShowAutoAdvance(false);
@@ -278,7 +156,7 @@ const VideoPlayer = ({
     );
   }
 
-  if (error || !videoUrl) {
+  if (error || !iframeUrl) {
     return (
       <Card>
         <CardHeader>
@@ -307,14 +185,12 @@ const VideoPlayer = ({
       </CardHeader>
       <CardContent>
         <div className="relative rounded-xl overflow-hidden bg-black aspect-video">
-          <video
-            ref={videoRef}
+          <iframe
+            ref={iframeRef}
+            src={iframeUrl}
             className="w-full h-full"
-            controls
-            controlsList="nodownload noplaybackrate noremoteplayback"
-            disablePictureInPicture
-            playsInline
-            onContextMenu={(e) => e.preventDefault()}
+            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+            allowFullScreen
             title={`Video section ${section.id}`}
           />
         </div>
