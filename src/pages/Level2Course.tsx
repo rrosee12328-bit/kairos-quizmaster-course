@@ -310,8 +310,8 @@ const Level2Course = () => {
 
               return {
                 ...section,
-                // Use HLS URL for direct control (anti-skip)
-                videoUrl: signedData.signedUrl || signedData.iframeUrl,
+                // Prefer signed iframe URL for Bunny embed
+                videoUrl: signedData.iframeUrl || signedData.signedUrl,
               };
             } catch (err) {
               console.error(`[Level2Course] Error generating signed URL:`, err);
