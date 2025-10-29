@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import AutoAdvanceModal from "./AutoAdvanceModal";
-import Hls from "hls.js";
 
 interface VideoPlayerProps {
   section: {
@@ -38,7 +37,6 @@ const VideoPlayer = ({
   const [showAutoAdvance, setShowAutoAdvance] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
-  const hlsRef = useRef<Hls | null>(null);
   const hasCompletedRef = useRef(false);
   const maxWatchedRef = useRef(0);
   const lastTimeRef = useRef(0);
@@ -68,7 +66,7 @@ const VideoPlayer = ({
   const videoId = extractedVideoId;
   const libraryId = extractedLibraryId || '510506';
 
-  // Fetch signed HLS URL from edge function
+  // Use direct MP4 URL from Bunny CDN
   useEffect(() => {
     if (!isActive) return;
 
@@ -76,77 +74,29 @@ const VideoPlayer = ({
       return;
     }
 
-    const fetchVideoUrl = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const response = await supabase.functions.invoke("bunny-video", {
-          headers: session ? { Authorization: `Bearer ${session.access_token}` } : undefined,
-          body: { 
-            action: 'getSignedUrl',
-            libraryId,
-            videoId,
-            expiresInHours: 24,
-          },
-        });
+    // Use direct MP4 URL (no authentication needed for public videos)
+    const mp4Url = `https://vz-${libraryId}.b-cdn.net/${videoId}/play_720p.mp4`;
+    console.log('[VideoPlayer] Using direct MP4 URL:', mp4Url);
+    setVideoUrl(mp4Url);
+    setLoading(false);
+  }, [isActive, videoId, libraryId]);
 
-        if (response.error) throw response.error;
-
-        // Use HLS URL for direct control (anti-skip)
-        const hlsUrl = response.data?.signedUrl || section.videoUrl;
-        console.log('[VideoPlayer] Using HLS URL for anti-skip:', hlsUrl);
-        setVideoUrl(hlsUrl);
-        setLoading(false);
-      } catch (err) {
-        console.error("Error fetching video:", err);
-        setError("Failed to load video");
-        setLoading(false);
-      }
-    };
-
-    fetchVideoUrl();
-  }, [isActive, section.videoUrl, videoId, libraryId]);
-
-  // Setup HLS player and anti-skip protection
+  // Setup video player with MP4 URL
   useEffect(() => {
     if (!videoUrl || !videoRef.current || !isActive) return;
 
     const video = videoRef.current;
-
-    // Initialize HLS player
-    if (Hls.isSupported()) {
-      const hls = new Hls({
-        enableWorker: true,
-        lowLatencyMode: false,
-      });
-      
-      hls.loadSource(videoUrl);
-      hls.attachMedia(video);
-      hlsRef.current = hls;
-
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        console.log('[VideoPlayer] HLS manifest loaded');
-      });
-
-      hls.on(Hls.Events.ERROR, (event, data) => {
-        if (data.fatal) {
-          console.error('[VideoPlayer] Fatal HLS error:', data);
-          setError("Video playback error");
-        }
-      });
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      // Native HLS support (Safari)
-      video.src = videoUrl;
-    }
+    
+    // Set MP4 source directly
+    video.src = videoUrl;
+    console.log('[VideoPlayer] Video source set');
 
     // Anti-skip: Reset maxWatched on new video
     maxWatchedRef.current = 0;
     lastTimeRef.current = 0;
 
     return () => {
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-        hlsRef.current = null;
-      }
+      video.src = '';
     };
   }, [videoUrl, isActive]);
 
