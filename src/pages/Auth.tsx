@@ -68,7 +68,9 @@ const Auth = () => {
       if (session?.user) {
         await processPendingEnrollment(session.user);
         // Sync enrollments created before sign-in
-        await supabase.functions.invoke('sync-enrollment');
+        await supabase.functions.invoke('sync-enrollment', {
+          headers: { Authorization: `Bearer ${session.access_token}` }
+        });
         navigate(redirectPath);
       }
     };
@@ -83,7 +85,9 @@ const Auth = () => {
           setTimeout(async () => {
             await processPendingEnrollment(session.user!);
             // Ensure any pre-purchase enrollments are linked
-            await supabase.functions.invoke('sync-enrollment');
+            await supabase.functions.invoke('sync-enrollment', {
+              headers: { Authorization: `Bearer ${session.access_token}` }
+            });
             navigate(redirectPath);
           }, 0);
         }

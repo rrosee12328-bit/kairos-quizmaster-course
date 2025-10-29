@@ -128,7 +128,10 @@ const Courses = () => {
           if (showToast) toast.info(`Syncing ${enrollmentsToUpdate.length} course(s) with your account...`);
           
           // Call server-side sync function for secure enrollment sync
-          const { data: syncResult, error: syncError } = await supabase.functions.invoke('sync-enrollment');
+          const { data: { session } } = await supabase.auth.getSession();
+          const { data: syncResult, error: syncError } = await supabase.functions.invoke('sync-enrollment', {
+            headers: session ? { Authorization: `Bearer ${session.access_token}` } : undefined
+          });
           
           if (syncError) {
             console.error('Error syncing enrollments:', syncError);
