@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import AutoAdvanceModal from "./AutoAdvanceModal";
+import { CheckCircle2 } from "lucide-react";
 
 interface VideoPlayerProps {
   section: {
@@ -152,6 +154,14 @@ const VideoPlayer = ({
     setShowAutoAdvance(false);
   };
 
+  const handleMarkComplete = () => {
+    if (!hasCompletedRef.current) {
+      hasCompletedRef.current = true;
+      onSectionCompleted?.(section.id);
+      setShowAutoAdvance(true);
+    }
+  };
+
   if (!isActive) {
     return null;
   }
@@ -211,11 +221,24 @@ const VideoPlayer = ({
             allowFullScreen
             title={`Video section ${section.id}`}
           />
+          {/* Overlay to block scrubber at bottom */}
           <div 
             className="absolute left-0 right-0 bottom-0 h-24 z-10 cursor-not-allowed"
             style={{ pointerEvents: 'auto' }}
             title="Scrubbing is disabled during training"
           />
+        </div>
+
+        <div className="mt-4">
+          <Button 
+            onClick={handleMarkComplete}
+            className="w-full"
+            size="lg"
+            disabled={hasCompletedRef.current}
+          >
+            <CheckCircle2 className="mr-2 h-5 w-5" />
+            {hasCompletedRef.current ? 'Section Completed' : 'Complete Section & Continue'}
+          </Button>
         </div>
 
         <AutoAdvanceModal
