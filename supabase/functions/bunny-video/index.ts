@@ -208,7 +208,7 @@ serve(async (req) => {
 
     // Generate signed URL for a video
     if (action === 'getSignedUrl' && videoId) {
-      console.log(`Generating signed URL`, {
+      console.log(`Generating signed HLS URL`, {
         action: 'getSignedUrl',
         videoId,
         libraryId,
@@ -220,14 +220,59 @@ serve(async (req) => {
         referrer
       });
 
-      const signedUrl = await generateSignedUrl(libraryId, videoId, expiresInHours || 24);
-      
-      console.log(`Generated signed URL for video ${videoId}, expires in ${expiresInHours || 24} hours`, {
-        device,
-        urlLength: signedUrl.length
+      // First, get video metadata to find CDN zone
+      const videoResponse = await fetch(
+        `https://video.bunnycdn.com/library/${libraryId}/videos/${videoId}`,
+        {
+          headers: {
+            'AccessKey': BUNNY_API_KEY,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!videoResponse.ok) {
+        const errorText = await videoResponse.text();
+        console.error(`Failed to fetch video metadata (${videoResponse.status}):`, errorText);
+        throw new Error(`Failed to fetch video metadata: ${videoResponse.status}`);
+      }
+
+      const videoData = await videoResponse.json();
+      console.log('Video metadata:', {
+        guid: videoData.guid,
+        status: videoData.status,
+        availableResolutions: videoData.availableResolutions
       });
 
-      return new Response(JSON.stringify({ signedUrl }), {
+      // Get signing key
+      const signingKey = getSigningKey(libraryId);
+      if (!signingKey) {
+        throw new Error(`Signing key not configured. Set BUNNY_SIGNING_KEY_${libraryId} or BUNNY_VIDEO_LIBRARY_KEY`);
+      }
+
+      const expiryTimestamp = Math.floor(Date.now() / 1000) + ((expiresInHours || 24) * 3600);
+      
+      // HLS URL format: https://vz-{cdn-zone}.b-cdn.net/{video-guid}/playlist.m3u8
+      // For token auth: add ?token={hash}&expires={timestamp}
+      const signatureString = `${signingKey}${videoId}${expiryTimestamp}`;
+      const encoder = new TextEncoder();
+      const data = encoder.encode(signatureString);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const token = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      
+      // Extract CDN zone from video pull zone (e.g., "vz-abc123-456.b-cdn.net")
+      // If not available, use the video library's default pull zone
+      const pullZone = videoData.videoLibrary?.pullZone || `vz-${videoData.videoLibrary?.replicationRegions?.[0] || libraryId}`;
+      const hlsUrl = `https://${pullZone}.b-cdn.net/${videoId}/playlist.m3u8?token=${token}&expires=${expiryTimestamp}`;
+      
+      console.log(`Generated HLS URL for video ${videoId}`, {
+        device,
+        pullZone,
+        expires: new Date(expiryTimestamp * 1000).toISOString()
+      });
+
+      return new Response(JSON.stringify({ signedUrl: hlsUrl }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
