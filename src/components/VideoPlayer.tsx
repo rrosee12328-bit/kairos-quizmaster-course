@@ -35,6 +35,7 @@ const VideoPlayer = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAutoAdvance, setShowAutoAdvance] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const hasCompletedRef = useRef(false);
@@ -107,11 +108,19 @@ const VideoPlayer = ({
       // Bunny.net may send postMessage events for video state
       if (event.data?.event === 'ended' || event.data?.type === 'ended') {
         console.log('[VideoPlayer] Video ended via postMessage');
+        setIsPlaying(false);
         if (!hasCompletedRef.current) {
           hasCompletedRef.current = true;
           onSectionCompleted?.(section.id);
           setShowAutoAdvance(true);
         }
+      }
+      // Track play/pause state
+      if (event.data?.event === 'play' || event.data?.type === 'play') {
+        setIsPlaying(true);
+      }
+      if (event.data?.event === 'pause' || event.data?.type === 'pause') {
+        setIsPlaying(false);
       }
     };
 
@@ -124,6 +133,15 @@ const VideoPlayer = ({
       }
     };
   }, [isActive, iframeUrl, section.id, onSectionCompleted]);
+
+  const togglePlayPause = () => {
+    if (!iframeRef.current?.contentWindow) return;
+    
+    // Send postMessage to Bunny iframe to control playback
+    const command = isPlaying ? 'pause' : 'play';
+    iframeRef.current.contentWindow.postMessage({ method: command }, '*');
+    setIsPlaying(!isPlaying);
+  };
 
   const handleAutoAdvance = () => {
     setShowAutoAdvance(false);
@@ -184,7 +202,7 @@ const VideoPlayer = ({
         <CardTitle>Section {section.id}: {section.title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="relative rounded-xl overflow-hidden bg-black aspect-video">
+        <div className="relative rounded-xl overflow-hidden bg-black aspect-video group">
           <iframe
             ref={iframeRef}
             src={iframeUrl}
@@ -193,12 +211,30 @@ const VideoPlayer = ({
             allowFullScreen
             title={`Video section ${section.id}`}
           />
-          {/* Transparent overlay to block control interactions */}
+          {/* Transparent overlay to block scrubber interaction */}
           <div 
-            className="absolute inset-0 z-10 cursor-not-allowed"
+            className="absolute inset-0 z-10"
             style={{ pointerEvents: 'auto' }}
             title="Video controls are disabled during training"
           />
+          {/* Custom play/pause button */}
+          <button
+            onClick={togglePlayPause}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 
+                       bg-black/60 hover:bg-black/80 text-white rounded-full p-4 
+                       transition-all opacity-0 group-hover:opacity-100"
+            aria-label={isPlaying ? 'Pause video' : 'Play video'}
+          >
+            {isPlaying ? (
+              <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+              </svg>
+            ) : (
+              <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            )}
+          </button>
         </div>
 
         <AutoAdvanceModal
