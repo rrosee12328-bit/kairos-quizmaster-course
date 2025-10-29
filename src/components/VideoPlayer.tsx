@@ -414,16 +414,6 @@ const VideoPlayer = ({
             controls={false}
             controlsList="nodownload noplaybackrate noremoteplayback"
           />
-          {/* Interaction shield to block native gestures/seeking */}
-          <div
-            className="absolute inset-0 z-10 cursor-not-allowed select-none"
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-            onDoubleClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-            onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
-            onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
-            aria-hidden
-            title="Seeking is disabled - you must watch the video to progress"
-          />
         </div>
 
         <div className="flex items-center gap-3">
