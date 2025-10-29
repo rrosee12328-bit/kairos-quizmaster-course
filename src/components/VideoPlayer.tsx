@@ -87,11 +87,16 @@ const VideoPlayer = ({
 
         // Get URLs from Edge Function
         const hlsUrl = response.data?.signedUrl || response.data?.url || response.data;
-        const iframe = response.data?.iframeUrl || null;
+        const iframe = response.data?.iframeUrl || section.videoUrl || null;
         console.log('[VideoPlayer] Fetched HLS URL:', hlsUrl);
-        if (iframe) console.log('[VideoPlayer] Received iframe fallback URL');
-        setVideoUrl(hlsUrl);
-        setIframeUrl(iframe);
+        if (iframe) {
+          console.log('[VideoPlayer] Using Bunny iframe embed');
+          setIframeUrl(iframe);
+          setUseIframe(true);
+          setVideoUrl(null);
+        } else {
+          setVideoUrl(hlsUrl);
+        }
         setLoading(false);
       } catch (err) {
         console.error("Error fetching video:", err);
@@ -105,6 +110,7 @@ const VideoPlayer = ({
 
   // Load HLS video with hls.js
   useEffect(() => {
+    if (useIframe) return; // prefer Bunny iframe player
     if (!videoUrl || !videoRef.current) return;
 
     const video = videoRef.current;
@@ -148,7 +154,7 @@ const VideoPlayer = ({
         hlsRef.current = null;
       }
     };
-  }, [videoUrl]);
+  }, [videoUrl, useIframe]);
 
   // Anti-skip enforcement on native video
   useEffect(() => {
@@ -436,28 +442,31 @@ const VideoPlayer = ({
           )}
         </div>
 
-        <div className="flex items-center gap-3">
-          <Button 
-            onClick={togglePlay} 
-            variant="outline" 
-            size="sm"
-            className="gap-2"
-          >
-            {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            {isPlaying ? "Pause" : "Play"}
-          </Button>
-          <div className="flex-1">
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-primary transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              />
+        {!useIframe && (
+          <div className="flex items-center gap-3">
+            <Button 
+              onClick={togglePlay} 
+              variant="outline" 
+              size="sm"
+              className="gap-2"
+            >
+              {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+              {isPlaying ? "Pause" : "Play"}
+            </Button>
+            <div className="flex-1">
+              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-primary transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
             </div>
+            <span className="text-sm text-muted-foreground">
+              Forward seeking disabled
+            </span>
           </div>
-          <span className="text-sm text-muted-foreground">
-            Forward seeking disabled
-          </span>
-        </div>
+        )}
+
 
         <AutoAdvanceModal
           isOpen={showAutoAdvance}
