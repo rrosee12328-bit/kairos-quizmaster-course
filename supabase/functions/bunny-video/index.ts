@@ -59,39 +59,12 @@ serve(async (req) => {
   }
 
   try {
-    // Verify authentication
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      console.error('Missing authorization header');
-      return new Response(
-        JSON.stringify({ error: 'Authentication required' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Extract JWT token from "Bearer <token>" format
-    const token = authHeader.replace('Bearer ', '');
-
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-    );
-
-    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-    if (userError || !user) {
-      console.error('Auth error:', userError?.message || 'No user found');
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized', details: userError?.message }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
+    // Function is public (verify_jwt = false), no auth check needed
     const userAgent = req.headers.get('user-agent') || 'unknown';
     const referrer = req.headers.get('referer') || req.headers.get('origin') || 'unknown';
     const device = /Mobile|Android|iPhone/i.test(userAgent) ? 'mobile' : 'desktop';
     
-    console.log(`Authenticated user: ${user.id}`, {
-      email: user.email,
+    console.log(`Bunny video request`, {
       device,
       os: userAgent.includes('Windows') ? 'Windows' : userAgent.includes('Mac') ? 'Mac' : userAgent.includes('Linux') ? 'Linux' : 'Unknown',
       ua: userAgent,
