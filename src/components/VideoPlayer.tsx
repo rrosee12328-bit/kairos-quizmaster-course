@@ -211,30 +211,11 @@ const VideoPlayer = ({
             allowFullScreen
             title={`Video section ${section.id}`}
           />
-          {/* Transparent overlay to block scrubber interaction */}
           <div 
-            className="absolute inset-0 z-10"
+            className="absolute left-0 right-0 bottom-0 h-24 z-10 cursor-not-allowed"
             style={{ pointerEvents: 'auto' }}
-            title="Video controls are disabled during training"
+            title="Scrubbing is disabled during training"
           />
-          {/* Custom play/pause button */}
-          <button
-            onClick={togglePlayPause}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 
-                       bg-black/60 hover:bg-black/80 text-white rounded-full p-4 
-                       transition-all opacity-0 group-hover:opacity-100"
-            aria-label={isPlaying ? 'Pause video' : 'Play video'}
-          >
-            {isPlaying ? (
-              <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
-              </svg>
-            ) : (
-              <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z"/>
-              </svg>
-            )}
-          </button>
         </div>
 
         <AutoAdvanceModal
