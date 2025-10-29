@@ -166,6 +166,7 @@ const VideoPlayer = ({
       lastPingRef.current = 0;
       totalWatchTimeRef.current = 0;
       video.playbackRate = 1;
+      video.controls = false;
       video.disablePictureInPicture = true;
     };
 
@@ -410,7 +411,18 @@ const VideoPlayer = ({
             playsInline
             preload="metadata"
             disablePictureInPicture
+            controls={false}
             controlsList="nodownload noplaybackrate noremoteplayback"
+          />
+          {/* Interaction shield to block native gestures/seeking */}
+          <div
+            className="absolute inset-0 z-10 cursor-not-allowed select-none"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+            onDoubleClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+            onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+            onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
+            aria-hidden
+            title="Seeking is disabled - you must watch the video to progress"
           />
         </div>
 
