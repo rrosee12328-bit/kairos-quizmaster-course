@@ -26,6 +26,11 @@ function getSigningKey(libraryId: string): string | null {
   return key || DEFAULT_SIGNING_KEY || null;
 }
 
+function getApiKey(libraryId: string): string | null {
+  const specific = Deno.env.get(`BUNNY_API_KEY_${libraryId}`);
+  return specific || BUNNY_API_KEY || null;
+}
+
 async function generateSignedUrl(libraryId: string, videoId: string, expiresInHours: number = 24): Promise<string> {
   const signingKey = getSigningKey(libraryId);
   if (!signingKey) {
@@ -93,9 +98,7 @@ serve(async (req) => {
       referrer
     });
 
-    if (!BUNNY_API_KEY) {
-      throw new Error('BUNNY_API_KEY not configured');
-    }
+    // API key is resolved per-library using getApiKey(libraryId)
 
     const body = await req.json();
     
@@ -113,6 +116,14 @@ serve(async (req) => {
     }
 
     const { action, videoId, title, collectionId, libraryId, expiresInHours } = validationResult.data;
+    const selectedApiKey = getApiKey(libraryId);
+    if (!selectedApiKey) {
+      console.error(`No Bunny API key configured for library ${libraryId}. Set BUNNY_API_KEY_${libraryId} or BUNNY_API_KEY`);
+      return new Response(
+        JSON.stringify({ error: `Bunny API key not configured for library ${libraryId}` }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     console.log(`Bunny.net request - Action: ${action}, LibraryId: ${libraryId}, VideoId: ${videoId}, Expires: ${expiresInHours || 24}h`);
 
     // Get video details
@@ -121,7 +132,7 @@ serve(async (req) => {
         `https://video.bunnycdn.com/library/${libraryId}/videos/${videoId}`,
         {
           headers: {
-            'AccessKey': BUNNY_API_KEY,
+            'AccessKey': selectedApiKey,
             'Content-Type': 'application/json',
           },
         }
@@ -148,7 +159,7 @@ serve(async (req) => {
         {
           method: 'POST',
           headers: {
-            'AccessKey': BUNNY_API_KEY,
+            'AccessKey': selectedApiKey,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
@@ -176,7 +187,7 @@ serve(async (req) => {
         `https://video.bunnycdn.com/library/${libraryId}/videos?page=1&itemsPerPage=100`,
         {
           headers: {
-            'AccessKey': BUNNY_API_KEY,
+            'AccessKey': selectedApiKey,
             'Content-Type': 'application/json',
           },
         }
@@ -225,7 +236,7 @@ serve(async (req) => {
         `https://video.bunnycdn.com/library/${libraryId}`,
         {
           headers: {
-            'AccessKey': BUNNY_API_KEY,
+            'AccessKey': selectedApiKey,
             'Content-Type': 'application/json',
           },
         }
