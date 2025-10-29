@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { pepperSprayExamQuestions } from "@/data/pepperSprayExamQuestions";
 
-const LIBRARY_ID = "512130";
+const LIBRARY_ID = "510506";
 const VIDEO_GUID = "9ccd2d12-bbcf-4fd7-a74f-15cf1188e453";
 
 const PepperSprayCourse = () => {
