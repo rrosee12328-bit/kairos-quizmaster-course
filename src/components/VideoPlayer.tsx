@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import AutoAdvanceModal from "./AutoAdvanceModal";
-import { CheckCircle2 } from "lucide-react";
 
 interface VideoPlayerProps {
   section: {
@@ -117,9 +115,9 @@ const VideoPlayer = ({
         const newPercent = Math.max(watchedPercent, percent);
         setWatchedPercent(newPercent);
         
-        // Automatically trigger completion at 90%
-        if (newPercent >= 90 && !hasCompletedRef.current) {
-          console.log('[VideoPlayer] 90% watched, triggering auto-advance');
+        // Automatically trigger completion at 100%
+        if (newPercent >= 99.5 && !hasCompletedRef.current) {
+          console.log('[VideoPlayer] ~100% watched, triggering auto-advance');
           hasCompletedRef.current = true;
           onSectionCompleted?.(section.id);
           setShowAutoAdvance(true);
@@ -157,14 +155,6 @@ const VideoPlayer = ({
     };
   }, [isActive, iframeUrl, section.id, onSectionCompleted, watchedPercent]);
 
-  const togglePlayPause = () => {
-    if (!iframeRef.current?.contentWindow) return;
-    
-    // Send postMessage to Bunny iframe to control playback
-    const command = isPlaying ? 'pause' : 'play';
-    iframeRef.current.contentWindow.postMessage({ method: command }, '*');
-    setIsPlaying(!isPlaying);
-  };
 
   const handleAutoAdvance = () => {
     setShowAutoAdvance(false);
@@ -249,18 +239,6 @@ const VideoPlayer = ({
             style={{ pointerEvents: 'auto' }}
             title="Scrubbing is disabled during training"
           />
-        </div>
-
-        <div className="mt-4 flex justify-center">
-          <Button
-            onClick={handleCompleteSection}
-            size="lg"
-            disabled={hasCompletedRef.current}
-            className="min-w-[300px]"
-          >
-            <CheckCircle2 className="mr-2 h-5 w-5" />
-            {hasCompletedRef.current ? 'Section Completed' : 'Complete Section & Continue'}
-          </Button>
         </div>
 
         <AutoAdvanceModal
