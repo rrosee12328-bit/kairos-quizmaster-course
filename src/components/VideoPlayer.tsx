@@ -72,13 +72,6 @@ const VideoPlayer = ({
 
     const fetchVideoUrl = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          setError("Not authenticated");
-          setLoading(false);
-          return;
-        }
-
         const response = await supabase.functions.invoke("bunny-video", {
           body: { 
             action: 'getSignedUrl',
