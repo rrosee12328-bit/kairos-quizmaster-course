@@ -50,6 +50,29 @@ const Course = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Pre-sign Level 3 video URLs to avoid 403s (token-protected library)
+  useEffect(() => {
+    (async () => {
+      try {
+        const updated = await Promise.all(courseSections.map(async (s) => {
+          const m = (s.videoUrl || '').match(/embed\/(\d+)\/([a-f0-9-]+)/i);
+          if (!m) return s;
+          const [, libId, vid] = m;
+          const { data, error } = await supabase.functions.invoke('bunny-video', {
+            body: { action: 'getSignedUrl', libraryId: libId, videoId: vid, expiresInHours: 24 },
+          });
+          if (!error && data?.signedUrl) {
+            return { ...s, videoUrl: data.signedUrl };
+          }
+          return s;
+        }));
+        setCourseSections(updated);
+      } catch (e) {
+        console.error('[Level3Course] Error pre-signing videos:', e);
+      }
+    })();
+  }, []);
+
   const checkAdminStatus = async (userId: string) => {
     const { data, error } = await supabase.rpc('is_admin', { _user_id: userId });
     if (!error && data) {
@@ -106,7 +129,7 @@ const Course = () => {
     }
   };
 
-  const courseSections = [
+  const [courseSections, setCourseSections] = useState([
     {
       id: 1,
       title: "Welcome",
@@ -237,7 +260,7 @@ const Course = () => {
         "Practical techniques"
       ]
     }
-  ];
+  ]);
 
   const handleSectionComplete = (sectionId: number) => {
     setCompletedSections((prev) => {

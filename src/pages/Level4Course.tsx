@@ -47,7 +47,21 @@ const Level4Course = () => {
   }, []);
 
   useEffect(() => {
-    setVideoUrl(`https://iframe.mediadelivery.net/embed/${LIBRARY_ID}/${VIDEO_GUID}`);
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('bunny-video', {
+          body: { action: 'getSignedUrl', libraryId: LIBRARY_ID, videoId: VIDEO_GUID, expiresInHours: 24 },
+        });
+        if (!error && data?.signedUrl) {
+          setVideoUrl(data.signedUrl);
+        } else {
+          setVideoUrl(`https://iframe.mediadelivery.net/embed/${LIBRARY_ID}/${VIDEO_GUID}`);
+        }
+      } catch (e) {
+        console.error('[Level4Course] Signing error', e);
+        setVideoUrl(`https://iframe.mediadelivery.net/embed/${LIBRARY_ID}/${VIDEO_GUID}`);
+      }
+    })();
   }, []);
 
   useEffect(() => {
