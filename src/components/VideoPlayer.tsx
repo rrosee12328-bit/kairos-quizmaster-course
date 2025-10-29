@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import AutoAdvanceModal from "./AutoAdvanceModal";
+import playerjs from "player.js";
 
 interface VideoPlayerProps {
   section: {
@@ -101,59 +102,87 @@ const VideoPlayer = ({
     fetchIframeUrl();
   }, [isActive, videoId, libraryId, section.videoUrl]);
 
-  // Listen for video events from iframe (if Bunny supports postMessage)
+  // Wire Player.js to the Bunny iframe for reliable events
   useEffect(() => {
-    if (!isActive || !iframeUrl) return;
+    if (!isActive || !iframeUrl || !iframeRef.current) return;
 
-    const handleMessage = (event: MessageEvent) => {
-      // Bunny.net postMessage events
-      const data = event.data;
-      
-      // Track video progress
-      if (data?.currentTime !== undefined && data?.duration !== undefined) {
-        const percent = (data.currentTime / data.duration) * 100;
-        const newPercent = Math.max(watchedPercent, percent);
-        setWatchedPercent(newPercent);
-        
-        // Automatically trigger completion at 100%
-        if (newPercent >= 99.5 && !hasCompletedRef.current) {
-          console.log('[VideoPlayer] ~100% watched, triggering auto-advance');
-          hasCompletedRef.current = true;
-          onSectionCompleted?.(section.id);
-          setShowAutoAdvance(true);
+    const iframe = iframeRef.current;
+    let player: any;
+
+    try {
+      player = new (playerjs as any).Player(iframe);
+    } catch (e) {
+      console.warn('[VideoPlayer] Player.js init failed, falling back to message listener');
+    }
+
+    const handleTimeUpdate = (payload: any) => {
+      try {
+        const data = typeof payload === 'string' ? JSON.parse(payload) : payload;
+        const seconds = data?.seconds ?? data?.currentTime;
+        const duration = data?.duration ?? data?.length;
+        if (typeof seconds === 'number' && typeof duration === 'number' && duration > 0) {
+          const percent = (seconds / duration) * 100;
+          const newPercent = Math.max(percent, 0);
+          setWatchedPercent((prev) => Math.max(prev, newPercent));
+          if (percent >= 99.5 && !hasCompletedRef.current) {
+            hasCompletedRef.current = true;
+            onSectionCompleted?.(section.id);
+            setShowAutoAdvance(true);
+          }
         }
-      }
-      
-      // Video ended
-      if (data?.event === 'ended' || data?.type === 'ended') {
-        console.log('[VideoPlayer] Video ended via postMessage');
-        setIsPlaying(false);
-        setWatchedPercent(100);
-        if (!hasCompletedRef.current) {
-          hasCompletedRef.current = true;
-          onSectionCompleted?.(section.id);
-          setShowAutoAdvance(true);
-        }
-      }
-      
-      // Track play/pause state
-      if (data?.event === 'play' || data?.type === 'play') {
-        setIsPlaying(true);
-      }
-      if (data?.event === 'pause' || data?.type === 'pause') {
-        setIsPlaying(false);
-      }
+      } catch {}
     };
 
-    messageListenerRef.current = handleMessage;
-    window.addEventListener('message', handleMessage);
+    if (player) {
+      player.on('ready', () => {
+        // Listen for events
+        player.on('play', () => setIsPlaying(true));
+        player.on('pause', () => setIsPlaying(false));
+        player.on('timeupdate', handleTimeUpdate);
+        player.on('ended', () => {
+          setIsPlaying(false);
+          setWatchedPercent(100);
+          if (!hasCompletedRef.current) {
+            hasCompletedRef.current = true;
+            onSectionCompleted?.(section.id);
+            setShowAutoAdvance(true);
+          }
+        });
+      });
+    } else {
+      // Fallback: generic message listener (best-effort)
+      const allowedOrigin = (() => {
+        try { return new URL(iframeUrl).origin; } catch { return undefined; }
+      })();
+      const onMessage = (event: MessageEvent) => {
+        if (allowedOrigin && event.origin !== allowedOrigin) return;
+        const d = event.data;
+        if (d?.event === 'timeupdate' || d?.type === 'timeupdate' || (d?.seconds && d?.duration)) {
+          handleTimeUpdate(d.data || d);
+        }
+        if (d?.event === 'ended' || d?.type === 'ended') {
+          setIsPlaying(false);
+          setWatchedPercent(100);
+          if (!hasCompletedRef.current) {
+            hasCompletedRef.current = true;
+            onSectionCompleted?.(section.id);
+            setShowAutoAdvance(true);
+          }
+        }
+        if (d?.event === 'play' || d?.type === 'play') setIsPlaying(true);
+        if (d?.event === 'pause' || d?.type === 'pause') setIsPlaying(false);
+      };
+      window.addEventListener('message', onMessage);
+      messageListenerRef.current = onMessage;
+    }
 
     return () => {
       if (messageListenerRef.current) {
         window.removeEventListener('message', messageListenerRef.current);
+        messageListenerRef.current = null;
       }
     };
-  }, [isActive, iframeUrl, section.id, onSectionCompleted, watchedPercent]);
+  }, [isActive, iframeUrl, section.id, onSectionCompleted]);
 
 
   const handleAutoAdvance = () => {
