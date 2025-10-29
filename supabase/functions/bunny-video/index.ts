@@ -198,8 +198,6 @@ serve(async (req) => {
         videoId,
         libraryId,
         expiresInHours: expiresInHours || 24,
-        userId: user.id,
-        email: user.email,
         device,
         ua: userAgent,
         referrer
