@@ -117,7 +117,8 @@ serve(async (req) => {
 
     const { action, videoId, title, collectionId, libraryId, expiresInHours } = validationResult.data;
     const selectedApiKey = getApiKey(libraryId);
-    if (!selectedApiKey) {
+    const requireApiKey = action !== 'getSignedUrl';
+    if (requireApiKey && !selectedApiKey) {
       console.error(`No Bunny API key configured for library ${libraryId}. Set BUNNY_API_KEY_${libraryId} or BUNNY_API_KEY`);
       return new Response(
         JSON.stringify({ error: `Bunny API key not configured for library ${libraryId}` }),
@@ -132,7 +133,7 @@ serve(async (req) => {
         `https://video.bunnycdn.com/library/${libraryId}/videos/${videoId}`,
         {
           headers: {
-            'AccessKey': selectedApiKey,
+            'AccessKey': selectedApiKey as string,
             'Content-Type': 'application/json',
           },
         }
@@ -159,7 +160,7 @@ serve(async (req) => {
         {
           method: 'POST',
           headers: {
-            'AccessKey': selectedApiKey,
+            'AccessKey': selectedApiKey as string,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
@@ -187,7 +188,7 @@ serve(async (req) => {
         `https://video.bunnycdn.com/library/${libraryId}/videos?page=1&itemsPerPage=100`,
         {
           headers: {
-            'AccessKey': selectedApiKey,
+            'AccessKey': selectedApiKey as string,
             'Content-Type': 'application/json',
           },
         }
@@ -231,36 +232,41 @@ serve(async (req) => {
         referrer
       });
 
-      // Fetch library info to get the correct CDN hostname
-      const libraryResponse = await fetch(
-        `https://video.bunnycdn.com/library/${libraryId}`,
-        {
-          headers: {
-            'AccessKey': selectedApiKey,
-            'Content-Type': 'application/json',
-          },
+      // Determine CDN hostname; prefer library info when available, otherwise fallback
+      let cdnHostname = `vz-${libraryId}.b-cdn.net`;
+      try {
+        if (selectedApiKey) {
+          const libraryResponse = await fetch(
+            `https://video.bunnycdn.com/library/${libraryId}`,
+            {
+              headers: {
+                'AccessKey': selectedApiKey,
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+          if (libraryResponse.ok) {
+            const libraryData = await libraryResponse.json();
+            const libHost =
+              libraryData?.videoLibrary?.hostname ||
+              libraryData?.hostName ||
+              libraryData?.hostname ||
+              libraryData?.pullZone?.hostname;
+            if (libHost) {
+              cdnHostname = libHost;
+              console.log('Library CDN info:', { libraryId, cdnHostname, source: 'library' });
+            } else {
+              console.warn('CDN hostname missing in library data, using fallback', { libraryId, cdnHostname });
+            }
+          } else {
+            const errorText = await libraryResponse.text();
+            console.warn(`Library info fetch failed (${libraryResponse.status}), using fallback:`, errorText);
+          }
+        } else {
+          console.warn('No Bunny API key provided; skipping library info fetch and using fallback hostname', { libraryId, cdnHostname });
         }
-      );
-
-      if (!libraryResponse.ok) {
-        const errorText = await libraryResponse.text();
-        console.error(`Failed to fetch library info (${libraryResponse.status}):`, errorText);
-        throw new Error(`Failed to fetch library info: ${libraryResponse.status}`);
-      }
-
-      const libraryData = await libraryResponse.json();
-      let cdnHostname: string | undefined =
-        libraryData?.videoLibrary?.hostname ||
-        libraryData?.hostName ||
-        libraryData?.hostname ||
-        libraryData?.pullZone?.hostname;
-
-      if (!cdnHostname) {
-        // Fallback to known pattern vz-{libraryId}.b-cdn.net
-        cdnHostname = `vz-${libraryId}.b-cdn.net`;
-        console.warn('CDN hostname missing in library data, using fallback', { libraryId, cdnHostname });
-      } else {
-        console.log('Library CDN info:', { libraryId, cdnHostname, source: 'library' });
+      } catch (e) {
+        console.warn('Error fetching library info, using fallback hostname', { libraryId, cdnHostname, error: (e as Error).message });
       }
 
       // Get signing key
