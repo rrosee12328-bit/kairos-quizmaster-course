@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import AutoAdvanceModal from "./AutoAdvanceModal";
+import Hls from "hls.js";
 
 interface VideoPlayerProps {
   section: {
@@ -36,7 +37,12 @@ const VideoPlayer = ({
   const [error, setError] = useState<string | null>(null);
   const [showAutoAdvance, setShowAutoAdvance] = useState(false);
   
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const hlsRef = useRef<Hls | null>(null);
   const hasCompletedRef = useRef(false);
+  const maxWatchedRef = useRef(0);
+  const lastTimeRef = useRef(0);
+  const isSnappingRef = useRef(false);
 
   // Extract Bunny.net identifiers from either iframe or HLS URL
   const extractIdsFromUrl = (url: string) => {
@@ -62,19 +68,11 @@ const VideoPlayer = ({
   const videoId = extractedVideoId;
   const libraryId = extractedLibraryId || '510506';
 
-  // Fetch signed iframe URL from edge function (or use provided iframe URL)
+  // Fetch signed HLS URL from edge function
   useEffect(() => {
     if (!isActive) return;
 
-    // If parent already provided an iframe URL, use it directly
-    if (section.videoUrl && section.videoUrl.includes('iframe.mediadelivery.net')) {
-      setVideoUrl(section.videoUrl);
-      setLoading(false);
-      return;
-    }
-
     if (!videoId) {
-      // Wait for parent to supply a valid URL/id
       return;
     }
 
@@ -93,10 +91,10 @@ const VideoPlayer = ({
 
         if (response.error) throw response.error;
 
-        // Get iframe URL from Edge Function and render Bunny player
-        const iframe = response.data?.iframeUrl || section.videoUrl;
-        console.log('[VideoPlayer] Using Bunny iframe embed:', iframe);
-        setVideoUrl(iframe);
+        // Use HLS URL for direct control (anti-skip)
+        const hlsUrl = response.data?.signedUrl || section.videoUrl;
+        console.log('[VideoPlayer] Using HLS URL for anti-skip:', hlsUrl);
+        setVideoUrl(hlsUrl);
         setLoading(false);
       } catch (err) {
         console.error("Error fetching video:", err);
@@ -107,6 +105,153 @@ const VideoPlayer = ({
 
     fetchVideoUrl();
   }, [isActive, section.videoUrl, videoId, libraryId]);
+
+  // Setup HLS player and anti-skip protection
+  useEffect(() => {
+    if (!videoUrl || !videoRef.current || !isActive) return;
+
+    const video = videoRef.current;
+
+    // Initialize HLS player
+    if (Hls.isSupported()) {
+      const hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: false,
+      });
+      
+      hls.loadSource(videoUrl);
+      hls.attachMedia(video);
+      hlsRef.current = hls;
+
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        console.log('[VideoPlayer] HLS manifest loaded');
+      });
+
+      hls.on(Hls.Events.ERROR, (event, data) => {
+        if (data.fatal) {
+          console.error('[VideoPlayer] Fatal HLS error:', data);
+          setError("Video playback error");
+        }
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      // Native HLS support (Safari)
+      video.src = videoUrl;
+    }
+
+    // Anti-skip: Reset maxWatched on new video
+    maxWatchedRef.current = 0;
+    lastTimeRef.current = 0;
+
+    return () => {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+    };
+  }, [videoUrl, isActive]);
+
+  // Anti-skip logic
+  useEffect(() => {
+    if (!videoRef.current || !isActive) return;
+
+    const video = videoRef.current;
+    const SNAP_TOLERANCE = 0.5;
+    const JUMP_THRESHOLD = 2;
+
+    const snapBack = (toTime: number) => {
+      if (isSnappingRef.current) return;
+      isSnappingRef.current = true;
+      
+      const wasPlaying = !video.paused && !video.ended;
+      video.pause();
+      video.currentTime = Math.max(0, toTime);
+      
+      if (wasPlaying) {
+        video.play().catch(() => {});
+      }
+      
+      setTimeout(() => {
+        isSnappingRef.current = false;
+      }, 150);
+    };
+
+    const handleLoadedMetadata = () => {
+      maxWatchedRef.current = 0;
+      lastTimeRef.current = 0;
+      video.playbackRate = 1;
+    };
+
+    const handleRateChange = () => {
+      if (video.playbackRate !== 1) {
+        video.playbackRate = 1;
+      }
+    };
+
+    const handleSeeking = () => {
+      const currentTime = video.currentTime;
+      const ahead = currentTime - maxWatchedRef.current;
+      
+      if (ahead > SNAP_TOLERANCE) {
+        console.log('[VideoPlayer] Forward seek blocked:', { currentTime, maxWatched: maxWatchedRef.current });
+        snapBack(maxWatchedRef.current);
+      }
+    };
+
+    const handleTimeUpdate = () => {
+      const currentTime = video.currentTime;
+      const delta = currentTime - lastTimeRef.current;
+
+      if (!isSnappingRef.current) {
+        const ahead = currentTime - maxWatchedRef.current;
+        
+        if ((ahead > SNAP_TOLERANCE && delta > JUMP_THRESHOLD) || ahead > SNAP_TOLERANCE) {
+          console.log('[VideoPlayer] Forward jump blocked:', { currentTime, maxWatched: maxWatchedRef.current, delta });
+          snapBack(maxWatchedRef.current);
+          return;
+        }
+      }
+
+      if (currentTime > maxWatchedRef.current) {
+        maxWatchedRef.current = currentTime;
+      }
+      
+      lastTimeRef.current = currentTime;
+    };
+
+    const handleEnded = () => {
+      console.log('[VideoPlayer] Video ended, showing countdown');
+      if (!hasCompletedRef.current) {
+        hasCompletedRef.current = true;
+        onSectionCompleted?.(section.id);
+        setShowAutoAdvance(true);
+      }
+    };
+
+    // Block keyboard shortcuts
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const key = e.key.toLowerCase();
+      if (['arrowright', 'arrowleft', ' ', 'l', 'j', 'k'].includes(key)) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+
+    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    video.addEventListener('ratechange', handleRateChange);
+    video.addEventListener('seeking', handleSeeking);
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    video.addEventListener('ended', handleEnded);
+    document.addEventListener('keydown', handleKeyDown, true);
+
+    return () => {
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      video.removeEventListener('ratechange', handleRateChange);
+      video.removeEventListener('seeking', handleSeeking);
+      video.removeEventListener('timeupdate', handleTimeUpdate);
+      video.removeEventListener('ended', handleEnded);
+      document.removeEventListener('keydown', handleKeyDown, true);
+    };
+  }, [isActive, section.id, onSectionCompleted]);
 
   const handleAutoAdvance = () => {
     setShowAutoAdvance(false);
@@ -168,12 +313,14 @@ const VideoPlayer = ({
       </CardHeader>
       <CardContent>
         <div className="relative rounded-xl overflow-hidden bg-black aspect-video">
-          <iframe
-            src={videoUrl}
+          <video
+            ref={videoRef}
             className="w-full h-full"
-            allow="autoplay; fullscreen; picture-in-picture"
-            allowFullScreen
-            loading="lazy"
+            controls
+            controlsList="nodownload noplaybackrate noremoteplayback"
+            disablePictureInPicture
+            playsInline
+            onContextMenu={(e) => e.preventDefault()}
             title={`Video section ${section.id}`}
           />
         </div>
@@ -183,6 +330,7 @@ const VideoPlayer = ({
           sectionTitle={section.title}
           onAdvance={handleAutoAdvance}
           onCancel={handleStayHere}
+          countdownSeconds={5}
         />
       </CardContent>
     </Card>
