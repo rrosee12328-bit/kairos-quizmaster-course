@@ -220,9 +220,9 @@ serve(async (req) => {
         referrer
       });
 
-      // First, get video metadata to find CDN zone
-      const videoResponse = await fetch(
-        `https://video.bunnycdn.com/library/${libraryId}/videos/${videoId}`,
+      // Fetch library info to get the correct CDN hostname
+      const libraryResponse = await fetch(
+        `https://video.bunnycdn.com/library/${libraryId}`,
         {
           headers: {
             'AccessKey': BUNNY_API_KEY,
@@ -231,18 +231,24 @@ serve(async (req) => {
         }
       );
 
-      if (!videoResponse.ok) {
-        const errorText = await videoResponse.text();
-        console.error(`Failed to fetch video metadata (${videoResponse.status}):`, errorText);
-        throw new Error(`Failed to fetch video metadata: ${videoResponse.status}`);
+      if (!libraryResponse.ok) {
+        const errorText = await libraryResponse.text();
+        console.error(`Failed to fetch library info (${libraryResponse.status}):`, errorText);
+        throw new Error(`Failed to fetch library info: ${libraryResponse.status}`);
       }
 
-      const videoData = await videoResponse.json();
-      console.log('Video metadata:', {
-        guid: videoData.guid,
-        status: videoData.status,
-        availableResolutions: videoData.availableResolutions
+      const libraryData = await libraryResponse.json();
+      const cdnHostname = libraryData.videoLibrary?.hostname || libraryData.hostName;
+      
+      console.log('Library CDN info:', {
+        libraryId,
+        cdnHostname,
+        hasHostname: !!cdnHostname
       });
+
+      if (!cdnHostname) {
+        throw new Error('CDN hostname not found in library data');
+      }
 
       // Get signing key
       const signingKey = getSigningKey(libraryId);
@@ -252,8 +258,7 @@ serve(async (req) => {
 
       const expiryTimestamp = Math.floor(Date.now() / 1000) + ((expiresInHours || 24) * 3600);
       
-      // HLS URL format: https://vz-{cdn-zone}.b-cdn.net/{video-guid}/playlist.m3u8
-      // For token auth: add ?token={hash}&expires={timestamp}
+      // Generate token for HLS URL
       const signatureString = `${signingKey}${videoId}${expiryTimestamp}`;
       const encoder = new TextEncoder();
       const data = encoder.encode(signatureString);
@@ -261,14 +266,12 @@ serve(async (req) => {
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       const token = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
       
-      // Extract CDN zone from video pull zone (e.g., "vz-abc123-456.b-cdn.net")
-      // If not available, use the video library's default pull zone
-      const pullZone = videoData.videoLibrary?.pullZone || `vz-${videoData.videoLibrary?.replicationRegions?.[0] || libraryId}`;
-      const hlsUrl = `https://${pullZone}.b-cdn.net/${videoId}/playlist.m3u8?token=${token}&expires=${expiryTimestamp}`;
+      // HLS URL format: https://{cdn-hostname}/{video-guid}/playlist.m3u8?token={hash}&expires={timestamp}
+      const hlsUrl = `https://${cdnHostname}/${videoId}/playlist.m3u8?token=${token}&expires=${expiryTimestamp}`;
       
       console.log(`Generated HLS URL for video ${videoId}`, {
         device,
-        pullZone,
+        cdnHostname,
         expires: new Date(expiryTimestamp * 1000).toISOString()
       });
 
