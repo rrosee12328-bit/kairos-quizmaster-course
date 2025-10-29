@@ -265,14 +265,30 @@ const VideoPlayer = ({
       playerRef.current = p;
 
       let duration = 0;
-      // Fallback: if player isn't ready in 6s, reload iframe (up to 2 retries)
+      // Fallback: if player isn't ready in 6s, refresh signed URL or reload (up to 2 retries)
       readyRef.current = false;
       if (fallbackTimeout) { try { clearTimeout(fallbackTimeout); } catch {} }
       fallbackTimeout = window.setTimeout(() => {
-        if (!readyRef.current && retryCountRef.current < 2 && isMounted) {
-          retryCountRef.current += 1;
-          setReloadTick((t) => t + 1);
-        }
+        (async () => {
+          if (!readyRef.current && retryCountRef.current < 2 && isMounted) {
+            retryCountRef.current += 1;
+            // Try to get a fresh signed URL first (handles 403/expired token cases)
+            if (videoId) {
+              try {
+                const { data, error } = await supabase.functions.invoke('bunny-video', {
+                  body: { action: 'getSignedUrl', libraryId, videoId, expiresInHours: 24 },
+                });
+                if (!error && data?.signedUrl) {
+                  setOverrideUrl(data.signedUrl);
+                  setReloadTick((t) => t + 1);
+                  return;
+                }
+              } catch {}
+            }
+            // Fallback to simple reload
+            setReloadTick((t) => t + 1);
+          }
+        })();
       }, 6000);
 
       // Bootstrap completion poll (runs even if 'ready' never fires')
