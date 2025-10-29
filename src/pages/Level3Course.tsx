@@ -61,8 +61,8 @@ const Course = () => {
           const { data, error } = await supabase.functions.invoke('bunny-video', {
             body: { action: 'getSignedUrl', libraryId: libId, videoId: vid, expiresInHours: 24 },
           });
-          if (!error && data?.signedUrl) {
-            return { ...s, videoUrl: data.signedUrl };
+          if (!error && data?.iframeUrl) {
+            return { ...s, videoUrl: data.iframeUrl };
           }
           return s;
         }));
