@@ -193,6 +193,12 @@ const VideoPlayer = ({
             allowFullScreen
             title={`Video section ${section.id}`}
           />
+          {/* Transparent overlay to block control interactions */}
+          <div 
+            className="absolute inset-0 z-10 cursor-not-allowed"
+            style={{ pointerEvents: 'auto' }}
+            title="Video controls are disabled during training"
+          />
         </div>
 
         <AutoAdvanceModal
