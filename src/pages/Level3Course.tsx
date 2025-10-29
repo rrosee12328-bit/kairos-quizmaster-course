@@ -135,7 +135,13 @@ const Course = () => {
       title: "Welcome",
       description: "Welcome to the Level 3 Security Officer Certification Course",
       duration: "1 minute",
-      videoUrl: "https://iframe.mediadelivery.net/embed/510506/571ebbaa-2ffc-4050-8670-a3e9d0c1c4f5",
+  const [courseSections, setCourseSections] = useState([
+    {
+      id: 1,
+      title: "Welcome",
+      description: "Welcome to the Level 3 Security Officer Certification Course",
+      duration: "1 minute",
+      videoUrl: "https://iframe.mediadelivery.net/embed/506173/571ebbaa-2ffc-4050-8670-a3e9d0c1c4f5",
       content: [
         "Course overview and objectives",
         "What to expect from the training",
@@ -148,7 +154,7 @@ const Course = () => {
       title: "Introduction",
       description: "Overview of security principles and basic operational procedures",
       duration: "2 minutes",
-      videoUrl: "https://iframe.mediadelivery.net/embed/510506/db2f0bdb-2977-47ea-ae37-38d776952152",
+      videoUrl: "https://iframe.mediadelivery.net/embed/506173/db2f0bdb-2977-47ea-ae37-38d776952152",
       content: [
         "Understanding the role of a Level 3 Security Officer",
         "Basic security terminology and concepts",
@@ -161,7 +167,7 @@ const Course = () => {
       title: "Applicable Rules and State Laws",
       description: "Identifying, analyzing, and mitigating security risks",
       duration: "45 minutes",
-      videoUrl: "https://iframe.mediadelivery.net/embed/510506/3a213a0e-1632-4600-89d6-b710eeac71be",
+      videoUrl: "https://iframe.mediadelivery.net/embed/506173/3a213a0e-1632-4600-89d6-b710eeac71be",
       content: [
         "Risk identification techniques",
         "Threat assessment methodologies",
@@ -174,7 +180,7 @@ const Course = () => {
       title: "Verbal and Written Communication Best Practices",
       description: "Managing and monitoring access to secured areas",
       duration: "33 minutes",
-      videoUrl: "https://iframe.mediadelivery.net/embed/510506/7d719c17-74cb-4c9a-b8b4-c98a065c4bcf",
+      videoUrl: "https://iframe.mediadelivery.net/embed/506173/7d719c17-74cb-4c9a-b8b4-c98a065c4bcf",
       content: [
         "Types of access control systems",
         "Card reader technologies",
@@ -187,7 +193,7 @@ const Course = () => {
       title: "Incident Scene Security",
       description: "Operating and monitoring surveillance equipment",
       duration: "17 minutes",
-      videoUrl: "https://iframe.mediadelivery.net/embed/510506/6350df04-1780-4e87-8ae7-a37b54c0050a",
+      videoUrl: "https://iframe.mediadelivery.net/embed/506173/6350df04-1780-4e87-8ae7-a37b54c0050a",
       content: [
         "Camera types and positioning",
         "Monitoring techniques",
@@ -200,7 +206,7 @@ const Course = () => {
       title: "Situational Awareness",
       description: "Handling various emergency situations effectively",
       duration: "11 minutes",
-      videoUrl: "https://iframe.mediadelivery.net/embed/510506/bb96462b-13f9-4197-b131-1ffa0e789772",
+      videoUrl: "https://iframe.mediadelivery.net/embed/506173/bb96462b-13f9-4197-b131-1ffa0e789772",
       content: [
         "Fire emergency procedures",
         "Medical emergency response",
@@ -213,7 +219,7 @@ const Course = () => {
       title: "Use of Force",
       description: "Proper documentation and reporting of security incidents",
       duration: "48 minutes",
-      videoUrl: "https://iframe.mediadelivery.net/embed/510506/987a687c-03fa-4e28-b07a-dc42c722c5f4",
+      videoUrl: "https://iframe.mediadelivery.net/embed/506173/987a687c-03fa-4e28-b07a-dc42c722c5f4",
       content: [
         "Incident report writing",
         "Evidence collection",
@@ -226,7 +232,7 @@ const Course = () => {
       title: "Conflict Resolution",
       description: "Effective communication in security contexts",
       duration: "13 minutes",
-      videoUrl: "https://iframe.mediadelivery.net/embed/510506/b94ee663-382f-4cfb-8b1d-73343b745638",
+      videoUrl: "https://iframe.mediadelivery.net/embed/506173/b94ee663-382f-4cfb-8b1d-73343b745638",
       content: [
         "Professional communication",
         "De-escalation techniques",
@@ -239,7 +245,7 @@ const Course = () => {
       title: "Defensive Tactics",
       description: "Understanding and implementing physical security controls",
       duration: "26 minutes",
-      videoUrl: "https://iframe.mediadelivery.net/embed/510506/12fb0f82-c9ae-4d57-9577-a3328632d3c7",
+      videoUrl: "https://iframe.mediadelivery.net/embed/506173/12fb0f82-c9ae-4d57-9577-a3328632d3c7",
       content: [
         "Perimeter security",
         "Barrier systems",
@@ -252,7 +258,7 @@ const Course = () => {
       title: "Handcuffing",
       description: "Proper handcuffing techniques and procedures for security operations",
       duration: "5 minutes",
-      videoUrl: "https://iframe.mediadelivery.net/embed/510506/8c142b15-c591-4f2b-9d09-1b39fca4fe38",
+      videoUrl: "https://iframe.mediadelivery.net/embed/506173/8c142b15-c591-4f2b-9d09-1b39fca4fe38",
       content: [
         "Handcuffing fundamentals",
         "Safety protocols",

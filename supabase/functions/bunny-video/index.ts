@@ -103,7 +103,7 @@ serve(async (req) => {
     }
 
     const { action, videoId, title, collectionId, libraryId, expiresInHours } = validationResult.data;
-    console.log(`Bunny.net request - Action: ${action}, VideoId: ${videoId}`);
+    console.log(`Bunny.net request - Action: ${action}, LibraryId: ${libraryId}, VideoId: ${videoId}, Expires: ${expiresInHours || 24}h`);
 
     // Get video details
     if (action === 'getVideo' && videoId) {
