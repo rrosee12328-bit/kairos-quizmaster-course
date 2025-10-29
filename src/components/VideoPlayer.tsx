@@ -1,10 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { Play, Pause } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import Hls from "hls.js";
 import AutoAdvanceModal from "./AutoAdvanceModal";
 
 interface VideoPlayerProps {
@@ -35,28 +31,12 @@ const VideoPlayer = ({
   onNext,
   onSectionCompleted,
 }: VideoPlayerProps) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const hlsRef = useRef<Hls | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [iframeUrl, setIframeUrl] = useState<string | null>(null);
-  const [useIframe, setUseIframe] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAutoAdvance, setShowAutoAdvance] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
   
   const hasCompletedRef = useRef(false);
-  const maxWatchedRef = useRef(0);
-  const lastTimeRef = useRef(0);
-  const snappingRef = useRef(false);
-  const lastPingRef = useRef(0);
-  const totalWatchTimeRef = useRef(0);
-  const videoStartTimeRef = useRef<number | null>(null);
-
-  const SNAP_TOL = 0.35;
-  const JUMP = 1.25;
-  const PING_EVERY = 10;
 
   // Extract Bunny.net video ID from URL
   const getBunnyVideoId = (url: string) => {
@@ -68,7 +48,7 @@ const VideoPlayer = ({
   const libraryIdMatch = section.videoUrl.match(/embed\/(\d+)\//);
   const libraryId = libraryIdMatch ? libraryIdMatch[1] : '510506';
 
-  // Fetch direct HLS URL from edge function
+  // Fetch signed iframe URL from edge function
   useEffect(() => {
     if (!isActive || !videoId) return;
 
@@ -85,18 +65,10 @@ const VideoPlayer = ({
 
         if (response.error) throw response.error;
 
-        // Get URLs from Edge Function
-        const hlsUrl = response.data?.signedUrl || response.data?.url || response.data;
-        const iframe = response.data?.iframeUrl || section.videoUrl || null;
-        console.log('[VideoPlayer] Fetched HLS URL:', hlsUrl);
-        if (iframe) {
-          console.log('[VideoPlayer] Using Bunny iframe embed');
-          setIframeUrl(iframe);
-          setUseIframe(true);
-          setVideoUrl(null);
-        } else {
-          setVideoUrl(hlsUrl);
-        }
+        // Get iframe URL from Edge Function
+        const iframe = response.data?.iframeUrl || section.videoUrl;
+        console.log('[VideoPlayer] Using Bunny iframe embed:', iframe);
+        setVideoUrl(iframe);
         setLoading(false);
       } catch (err) {
         console.error("Error fetching video:", err);
@@ -106,249 +78,7 @@ const VideoPlayer = ({
     };
 
     fetchVideoUrl();
-  }, [videoId, libraryId, isActive]);
-
-  // Load HLS video with hls.js
-  useEffect(() => {
-    if (useIframe) return; // prefer Bunny iframe player
-    if (!videoUrl || !videoRef.current) return;
-
-    const video = videoRef.current;
-
-    // Native HLS support (Safari, iOS)
-    if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      video.src = videoUrl;
-      console.log('[VideoPlayer] Using native HLS');
-    } 
-    // hls.js for other browsers
-    else if (Hls.isSupported()) {
-      const hls = new Hls({ enableWorker: true });
-      hlsRef.current = hls;
-      hls.loadSource(videoUrl);
-      hls.attachMedia(video);
-      console.log('[VideoPlayer] Using hls.js');
-      
-      hls.on(Hls.Events.ERROR, (event, data) => {
-        console.error("[VideoPlayer] HLS error:", data);
-        if (data.fatal) {
-          if (iframeUrl) {
-            console.warn("[VideoPlayer] Falling back to iframe embed.");
-            setUseIframe(true);
-          } else {
-            setError("Video playback error");
-          }
-        }
-      });
-    } else {
-      if (iframeUrl) {
-        console.warn("[VideoPlayer] HLS not supported, using iframe fallback.");
-        setUseIframe(true);
-      } else {
-        setError("Your browser doesn't support video playback");
-      }
-    }
-
-    return () => {
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-        hlsRef.current = null;
-      }
-    };
-  }, [videoUrl, useIframe]);
-
-  // Anti-skip enforcement on native video
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video || !isActive) return;
-
-    const snapBack = (toTime: number) => {
-      if (snappingRef.current) return;
-      snappingRef.current = true;
-      const playing = !video.paused && !video.ended;
-      video.pause();
-      video.currentTime = Math.max(0, toTime);
-      if (playing) video.play().catch(() => {});
-      setTimeout(() => {
-        snappingRef.current = false;
-      }, 120);
-    };
-
-    const handleLoadedMetadata = () => {
-      console.log('[VideoPlayer] Video loaded, duration:', video.duration);
-      maxWatchedRef.current = 0;
-      lastTimeRef.current = 0;
-      lastPingRef.current = 0;
-      totalWatchTimeRef.current = 0;
-      video.playbackRate = 1;
-      video.controls = false;
-      video.disablePictureInPicture = true;
-    };
-
-    const handleRateChange = () => {
-      if (video.playbackRate !== 1) {
-        video.playbackRate = 1;
-        toast.error("Playback speed is locked to 1x");
-      }
-    };
-
-    const handleSeeking = () => {
-      const t = video.currentTime;
-      if (t - maxWatchedRef.current > SNAP_TOL) {
-        console.log('[VideoPlayer] Forward seek blocked:', t, 'max:', maxWatchedRef.current);
-        toast.error("Forward seeking is disabled");
-        snapBack(maxWatchedRef.current);
-      }
-    };
-
-    const handleTimeUpdate = () => {
-      const t = video.currentTime;
-      const delta = t - lastTimeRef.current;
-
-      if (!snappingRef.current) {
-        const ahead = t - maxWatchedRef.current;
-        if ((ahead > SNAP_TOL && delta > JUMP) || ahead > SNAP_TOL) {
-          console.log('[VideoPlayer] Time jump detected, snapping back');
-          toast.error("Forward seeking is disabled");
-          snapBack(maxWatchedRef.current);
-          return;
-        }
-      }
-
-      if (t > maxWatchedRef.current) {
-        maxWatchedRef.current = t;
-      }
-      lastTimeRef.current = t;
-
-      // Update progress bar
-      if (video.duration > 0) {
-        setProgress((t / video.duration) * 100);
-      }
-
-      // Progress ping every 10 seconds
-      if (Math.floor(t) - lastPingRef.current >= PING_EVERY && delta >= 0) {
-        lastPingRef.current = Math.floor(t);
-        supabase.functions.invoke("progress-video-complete", {
-          body: { 
-            course_id: courseType,
-            section_id: section.id, 
-            seconds_watched: Math.floor(t),
-            has_quiz: section.has_quiz ?? false,
-          },
-        }).catch(console.error);
-      }
-    };
-
-    const handleEnded = async () => {
-      if (hasCompletedRef.current) return;
-      hasCompletedRef.current = true;
-
-      console.log('[VideoPlayer] Video ended, section:', section.id);
-
-      // Stop watch time tracking
-      if (videoStartTimeRef.current) {
-        totalWatchTimeRef.current += Math.floor((Date.now() - videoStartTimeRef.current) / 1000);
-        videoStartTimeRef.current = null;
-      }
-
-      try {
-        const payload = {
-          course_id: courseType,
-          section_id: section.id,
-          seconds_watched: totalWatchTimeRef.current,
-          has_quiz: section.has_quiz ?? false,
-        };
-
-        const { data, error } = await supabase.functions.invoke("progress-video-complete", {
-          body: payload,
-        });
-
-        if (error) {
-          console.error("Error marking video complete:", error);
-          return;
-        }
-
-        console.log('[VideoPlayer] Video completion posted:', data);
-        onComplete?.();
-        
-        // Check if section is complete
-        const sectionCompleted = data?.progress?.section_completed;
-        if (sectionCompleted) {
-          console.log('[VideoPlayer] Section completed, triggering modal');
-          onSectionCompleted?.(section.id);
-        }
-        
-        // Show auto-advance modal
-        setShowAutoAdvance(true);
-      } catch (error) {
-        console.error("Error marking video complete:", error);
-      }
-    };
-
-    const handlePlay = () => {
-      console.log('[VideoPlayer] Video playing');
-      setIsPlaying(true);
-      if (!videoStartTimeRef.current) {
-        videoStartTimeRef.current = Date.now();
-      }
-    };
-
-    const handlePause = () => {
-      console.log('[VideoPlayer] Video paused');
-      setIsPlaying(false);
-      if (videoStartTimeRef.current) {
-        totalWatchTimeRef.current += Math.floor((Date.now() - videoStartTimeRef.current) / 1000);
-        videoStartTimeRef.current = null;
-      }
-    };
-
-    video.addEventListener("loadedmetadata", handleLoadedMetadata);
-    video.addEventListener("ratechange", handleRateChange);
-    video.addEventListener("seeking", handleSeeking);
-    video.addEventListener("timeupdate", handleTimeUpdate);
-    video.addEventListener("ended", handleEnded);
-    video.addEventListener("play", handlePlay);
-    video.addEventListener("pause", handlePause);
-    video.addEventListener("contextmenu", (e) => e.preventDefault());
-
-    return () => {
-      // Save watch time before cleanup
-      if (videoStartTimeRef.current) {
-        totalWatchTimeRef.current += Math.floor((Date.now() - videoStartTimeRef.current) / 1000);
-        videoStartTimeRef.current = null;
-      }
-
-      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
-      video.removeEventListener("ratechange", handleRateChange);
-      video.removeEventListener("seeking", handleSeeking);
-      video.removeEventListener("timeupdate", handleTimeUpdate);
-      video.removeEventListener("ended", handleEnded);
-      video.removeEventListener("play", handlePlay);
-      video.removeEventListener("pause", handlePause);
-    };
-  }, [section.id, courseType, isActive, onComplete, onSectionCompleted]);
-
-  // Block keyboard seek shortcuts
-  useEffect(() => {
-    if (!isActive) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const key = e.key.toLowerCase();
-      const seekKeys = [
-        "arrowright", "arrowleft", "l", "j", "k",
-        ".", ",", ">", "<", "home", "end",
-        "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
-        " " // space bar
-      ];
-      
-      if (seekKeys.includes(key)) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown, true);
-    return () => document.removeEventListener("keydown", handleKeyDown, true);
-  }, [isActive]);
+  }, [videoId, libraryId, isActive, section.videoUrl]);
 
   const handleAutoAdvance = () => {
     setShowAutoAdvance(false);
@@ -357,15 +87,6 @@ const VideoPlayer = ({
 
   const handleStayHere = () => {
     setShowAutoAdvance(false);
-  };
-
-  const togglePlay = () => {
-    if (!videoRef.current) return;
-    if (isPlaying) {
-      videoRef.current.pause();
-    } else {
-      videoRef.current.play();
-    }
   };
 
   if (!isActive) {
@@ -417,56 +138,17 @@ const VideoPlayer = ({
       <CardHeader>
         <CardTitle>Section {section.id}: {section.title}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent>
         <div className="relative rounded-xl overflow-hidden bg-black aspect-video">
-          {useIframe && iframeUrl ? (
-            <iframe
-              src={iframeUrl}
-              className="w-full h-full"
-              allow="autoplay; fullscreen; picture-in-picture"
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer"
-              title={`Video section ${section.id}`}
-            />
-          ) : (
-            <video
-              ref={videoRef}
-              className="w-full h-full"
-              playsInline
-              preload="metadata"
-              disablePictureInPicture
-              controls={false}
-              controlsList="nodownload noplaybackrate noremoteplayback"
-            />
-          )}
+          <iframe
+            src={videoUrl}
+            className="w-full h-full"
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowFullScreen
+            loading="lazy"
+            title={`Video section ${section.id}`}
+          />
         </div>
-
-        {!useIframe && (
-          <div className="flex items-center gap-3">
-            <Button 
-              onClick={togglePlay} 
-              variant="outline" 
-              size="sm"
-              className="gap-2"
-            >
-              {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-              {isPlaying ? "Pause" : "Play"}
-            </Button>
-            <div className="flex-1">
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-primary transition-all duration-300"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
-            <span className="text-sm text-muted-foreground">
-              Forward seeking disabled
-            </span>
-          </div>
-        )}
-
 
         <AutoAdvanceModal
           isOpen={showAutoAdvance}
