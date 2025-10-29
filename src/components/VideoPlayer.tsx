@@ -71,11 +71,11 @@ const VideoPlayer = ({
   const lastTimeUpdateRef = useRef(0);
   const [isPlaying, setIsPlaying] = useState(false);
   
-  // Anti-skip constants
+  // Anti-skip constants - STRICT enforcement
   const GRACE = 5; // seconds ahead allowed
-  const FORWARD_GRACE = 2; // strict forward seek tolerance (seconds)
-  const HYST = 1.5; // hysteresis tolerance
-  const CORRECTION_COOLDOWN_MS = 1200;
+  const FORWARD_GRACE = 0.3; // strict forward seek tolerance (seconds) - minimal tolerance
+  const HYST = 0.3; // hysteresis tolerance - minimal buffer
+  const CORRECTION_COOLDOWN_MS = 800; // faster corrections
   const lastCorrectionAtRef = useRef(0);
   const isCorrectingRef = useRef(false);
   const lastPlayingStateRef = useRef(false);
@@ -124,6 +124,7 @@ const VideoPlayer = ({
         u.searchParams.set('preload', 'true');
         u.searchParams.set('playsinline', 'true');
         u.searchParams.set('showSpeed', 'false');
+        u.searchParams.set('controls', 'play-large,play,progress,current-time,mute,volume');
         u.searchParams.set('rememberPosition', 'false');
         u.searchParams.set('playerjs', '1');
         u.searchParams.set('rt', String(reloadTick));
@@ -134,7 +135,7 @@ const VideoPlayer = ({
     }
     // Fallback (shouldn't be needed if signed URL exists)
     return videoId
-      ? `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?autoplay=false&preload=true&playsinline=true&showSpeed=false&rememberPosition=false&playerjs=1&rt=${reloadTick}`
+      ? `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}?autoplay=false&preload=true&playsinline=true&showSpeed=false&rememberPosition=false&playerjs=1&controls=play-large,play,progress,current-time,mute,volume&rt=${reloadTick}`
       : '';
   }, [overrideUrl, section.videoUrl, videoId, libraryId, reloadTick]);
 
@@ -343,8 +344,8 @@ const VideoPlayer = ({
         lastTimeUpdateRef.current = 0;
         lastPlaybackTimeRef.current = 0;
         lastCorrectionAtRef.current = 0;
-        // Shorter startup suppression to enforce restrictions faster
-        startupSuppressUntilRef.current = Date.now() + 3000;
+        // Very short startup suppression - enforce immediately
+        startupSuppressUntilRef.current = Date.now() + 1500;
         
         // Force video to start at 0 with retry to overcome Bunny caching
         const forceStart = () => {
@@ -417,22 +418,22 @@ const VideoPlayer = ({
 
         // Watchdog disabled per request; relying on 'seeked' and guarded 'timeupdate' clamps only.
 
-        // Rate guard: prevent playback speed > 1.25x
+        // Rate guard: prevent playback speed > 1.0x (normal speed only)
         p.on('ratechange', () => {
           if (!isMounted) return;
           try {
             p.getPlaybackRate?.((rate: number) => {
               console.log('[Bunny] EVENT: ratechange', { rate });
-              if (rate > 1.25) {
-                console.log('[Bunny] RATE GUARD: Preventing speed-run', {
+              if (rate !== 1.0) {
+                console.log('[Bunny] RATE GUARD: Enforcing normal speed', {
                   attemptedRate: rate,
-                  enforcedRate: 1.25,
+                  enforcedRate: 1.0,
                 });
                 try {
-                  p.setPlaybackRate?.(1.25);
+                  p.setPlaybackRate?.(1.0);
                   toast({
-                    title: 'Max speed 1.25×',
-                    description: 'To ensure proper learning, videos cannot be played faster than 1.25×',
+                    title: 'Speed locked at 1×',
+                    description: 'Videos must be watched at normal speed to ensure proper learning',
                     duration: 2000,
                   });
                 } catch {}
@@ -666,15 +667,31 @@ const VideoPlayer = ({
 
     setup();
     
-    // Keyboard seek prevention (capture) while playing
+    // Keyboard seek prevention (capture) - ALWAYS active when video is active
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isActive || !lastPlayingStateRef.current) return;
+      if (!isActive) return;
 
-      const blockKeys = ['0','1','2','3','4','5','6','7','8','9','ArrowRight','ArrowLeft','l','j','Home','End'];
+      // Block ALL seek-related keys whether playing or paused
+      const blockKeys = [
+        '0','1','2','3','4','5','6','7','8','9', // number keys (seek to %)
+        'ArrowRight','ArrowLeft', // arrow keys
+        'l','j','k', // YouTube-style shortcuts
+        'Home','End', // seek to start/end
+        '.',',','<','>' // frame by frame
+      ];
+      
       if (blockKeys.includes(e.key)) {
         e.preventDefault();
         e.stopPropagation();
         console.log('[Bunny] KEYBOARD: Blocked seek key', { key: e.key });
+        // Show toast reminder
+        if (Math.random() < 0.3) { // Only show occasionally to avoid spam
+          toast({
+            title: 'Seeking disabled',
+            description: 'You must watch the video in sequence to complete this section',
+            duration: 2000,
+          });
+        }
       }
     };
     
