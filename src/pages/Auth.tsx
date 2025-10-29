@@ -22,10 +22,10 @@ const Auth = () => {
   const getCourseRedirectPath = () => {
     if (courseFromUrl) {
       const courseMap: Record<string, string> = {
-        'level2': '/level2',
-        'level3': '/level3',
-        'level4': '/level4',
-        'pepper-spray': '/pepper-spray'
+        'level2': '/course/level2',
+        'level3': '/course/level3',
+        'level4': '/course/level4',
+        'pepper-spray': '/course/pepper-spray'
       };
       return courseMap[courseFromUrl] || '/courses';
     }
@@ -67,6 +67,8 @@ const Auth = () => {
       setUser(session?.user ?? null);
       if (session?.user) {
         await processPendingEnrollment(session.user);
+        // Sync enrollments created before sign-in
+        await supabase.functions.invoke('sync-enrollment');
         navigate(redirectPath);
       }
     };
@@ -80,6 +82,8 @@ const Auth = () => {
         if (event === 'SIGNED_IN' && session?.user) {
           setTimeout(async () => {
             await processPendingEnrollment(session.user!);
+            // Ensure any pre-purchase enrollments are linked
+            await supabase.functions.invoke('sync-enrollment');
             navigate(redirectPath);
           }, 0);
         }
