@@ -303,14 +303,15 @@ const Level2Course = () => {
                 }
               });
 
-              if (signedError || !signedData?.signedUrl) {
+              if (signedError || (!signedData?.iframeUrl && !signedData?.signedUrl)) {
                 console.error(`[Level2Course] Failed to generate signed URL for ${matchingVideo.guid}:`, signedError || signedData);
                 return section;
               }
 
               return {
                 ...section,
-                videoUrl: signedData.signedUrl,
+                // Prefer Bunny iframe player for consistent UX
+                videoUrl: signedData.iframeUrl || signedData.signedUrl,
               };
             } catch (err) {
               console.error(`[Level2Course] Error generating signed URL:`, err);
