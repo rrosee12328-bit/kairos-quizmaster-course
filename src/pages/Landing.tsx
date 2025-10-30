@@ -152,7 +152,7 @@ const Landing = () => {
               needed to excel in any security role. Join the Kairos family and elevate your security career.
             </p>
             
-            <div className="mb-12 rounded-lg overflow-hidden shadow-lg max-w-2xl mx-auto aspect-video bg-gradient-to-br from-slate-900 to-slate-800">
+            <div className="mb-12 rounded-lg overflow-hidden shadow-lg max-w-3xl mx-auto aspect-video">
               <img 
                 src={securityOfficerImage} 
                 alt="Professional Security Officer with Kairos logo"
