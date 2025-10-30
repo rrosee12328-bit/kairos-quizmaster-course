@@ -263,7 +263,7 @@ const Profile = () => {
               <h1 className="text-xl font-bold">Kairos Security Academy</h1>
             </Link>
             <div className="flex items-center gap-2">
-              <BackButton />
+              <BackButton fallbackPath="/admin" />
               <Button variant="ghost" asChild>
                 <Link to="/courses">Courses</Link>
               </Button>
