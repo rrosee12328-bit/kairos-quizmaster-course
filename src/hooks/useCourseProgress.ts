@@ -18,12 +18,13 @@ export const useCourseProgress = (courseType: string, totalSections: number) => 
         return;
       }
 
+      // Only count sections where video has been completed with watch time
       const { data, error } = await supabase
         .from('course_progress')
-        .select('section_id, completed')
+        .select('section_id, video_completed')
         .eq('user_id', user.id)
         .eq('course_type', courseType)
-        .eq('completed', true);
+        .eq('video_completed', true);
 
       if (error) throw error;
 

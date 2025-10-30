@@ -11,6 +11,7 @@ import CourseHeader from "@/components/CourseHeader";
 import VideoPlayer from "@/components/VideoPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useCourseProgress } from "@/hooks/useCourseProgress";
 import {
   Carousel,
   CarouselContent,
@@ -20,7 +21,6 @@ import {
 
 const Course = () => {
   const navigate = useNavigate();
-  const [completedSections, setCompletedSections] = useState<number[]>([]);
   const [showQuiz, setShowQuiz] = useState(false);
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -28,6 +28,9 @@ const Course = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [videosLoaded, setVideosLoaded] = useState(false);
   const quizRef = useRef<HTMLDivElement>(null);
+  
+  const totalSections = 10;
+  const { completedSections, allSectionsComplete } = useCourseProgress('level3', totalSections);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -315,22 +318,8 @@ const Course = () => {
     }
   ]);
 
-  const handleSectionComplete = (sectionId: number) => {
-    setCompletedSections((prev) => {
-      const next = prev.includes(sectionId) ? prev : [...prev, sectionId];
-      console.log('[Course] Section complete', { sectionId, next });
-      return next;
-    });
-  };
-
   const handleNextSlide = () => {
     if (!carouselApi) return;
-
-    // Mark current section complete when moving forward (keeps progress bar in sync)
-    const curId = courseSections[currentSlide]?.id;
-    if (curId) {
-      handleSectionComplete(curId);
-    }
 
     try {
       if (carouselApi.canScrollNext()) {
@@ -369,9 +358,6 @@ const Course = () => {
     };
   }, [carouselApi]);
 
-  const totalSections = courseSections.length;
-  const progressPercentage = (completedSections.length / totalSections) * 100;
-  const allSectionsComplete = completedSections.length === totalSections;
   const currentSectionId = courseSections[currentSlide]?.id;
   const isCurrentSectionComplete = currentSectionId ? completedSections.includes(currentSectionId) : false;
 
@@ -427,7 +413,7 @@ const Course = () => {
                         }}
                         courseType="level3"
                         isActive={currentSlide === idx}
-                        onComplete={() => handleSectionComplete(section.id)}
+                        onComplete={() => {}}
                         onNext={handleNextSlide}
                       />
                     )}

@@ -10,18 +10,20 @@ import Quiz from "@/components/Quiz";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { pepperSprayExamQuestions } from "@/data/pepperSprayExamQuestions";
+import { useCourseProgress } from "@/hooks/useCourseProgress";
 
 const LIBRARY_ID = "512130";
 const VIDEO_GUID = "9ccd2d12-bbcf-4fd7-a74f-15cf1188e453";
 
 const PepperSprayCourse = () => {
   const navigate = useNavigate();
-  const [completed, setCompleted] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [videoUrl, setVideoUrl] = useState("");
   const [showQuiz, setShowQuiz] = useState(false);
   const quizRef = useRef<HTMLDivElement>(null);
+  
+  const { allSectionsComplete } = useCourseProgress('pepper_spray', 1);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -125,10 +127,6 @@ const PepperSprayCourse = () => {
     }
   };
 
-  const handleComplete = () => {
-    setCompleted(true);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <CourseHeader isAdmin={isAdmin} showAuthButtons={isAuthenticated} />
@@ -161,21 +159,23 @@ const PepperSprayCourse = () => {
             }}
             courseType="pepper_spray"
             isActive={true}
-            onComplete={handleComplete}
+            onComplete={() => {}}
             onNext={() => {}}
           />
           
           <div className="text-center mt-4">
             <Button
               onClick={() => setShowQuiz(true)}
+              disabled={!allSectionsComplete}
               size="sm"
+              title={!allSectionsComplete ? "Complete the video to unlock the exam" : ""}
             >
               Go to Final Exam
             </Button>
           </div>
         </div>
 
-        {completed && !showQuiz && (
+        {allSectionsComplete && !showQuiz && (
           <Card className="border-l-4 border-l-green-500 animate-fade-in mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-green-600">
