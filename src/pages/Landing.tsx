@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 import { Footer } from "@/components/Footer";
 import kairosLogo from "@/assets/kairos-logo.png";
-import securityOfficerImage from "@/assets/security-officer-professional.jpg";
+import securityOfficerImage from "@/assets/security-officer-hero-16x9.jpg";
 
 
 const Landing = () => {
@@ -156,8 +156,7 @@ const Landing = () => {
               <img 
                 src={securityOfficerImage} 
                 alt="Professional Security Officer with Kairos logo"
-                className="w-full h-full object-contain"
-                loading="lazy"
+                className="w-full h-full object-cover"
               />
             </div>
             
