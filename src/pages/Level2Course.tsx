@@ -624,11 +624,14 @@ const Level2Course = () => {
     
     if (firstIncompleteIndex > 0) {
       console.log('[Level2Course] Resuming at section', firstIncompleteIndex + 1);
-      setTimeout(() => {
-        carouselApi.scrollTo(firstIncompleteIndex, false);
-      }, 100);
+      // Use requestAnimationFrame for better cross-browser compatibility
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          carouselApi.scrollTo(firstIncompleteIndex, false);
+        }, 100);
+      });
     }
-  }, [carouselApi, completedSections.length]);
+  }, [carouselApi, completedSections, courseSections]);
 
   const progressPercentage = (completedSections.length / totalSections) * 100;
   const allSectionsComplete = examUnlocked;

@@ -293,8 +293,10 @@ const VideoPlayer = ({
             ref={iframeRef}
             src={iframeUrl}
             className="w-full h-full"
-            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"
+            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture; fullscreen"
             allowFullScreen
+            sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-presentation"
+            loading="eager"
             title={`Video section ${section.id}`}
           />
           {/* Overlay to block scrubber at bottom */}

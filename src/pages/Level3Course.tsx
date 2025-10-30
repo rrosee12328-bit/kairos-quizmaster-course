@@ -370,11 +370,14 @@ const Course = () => {
     
     if (firstIncompleteIndex > 0) {
       console.log('[Level3Course] Resuming at section', firstIncompleteIndex + 1);
-      setTimeout(() => {
-        carouselApi.scrollTo(firstIncompleteIndex, false);
-      }, 100);
+      // Use requestAnimationFrame for better cross-browser compatibility
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          carouselApi.scrollTo(firstIncompleteIndex, false);
+        }, 100);
+      });
     }
-  }, [carouselApi, completedSections.length]);
+  }, [carouselApi, completedSections, courseSections]);
 
   const currentSectionId = courseSections[currentSlide]?.id;
   const isCurrentSectionComplete = currentSectionId ? localCompletedSections.includes(currentSectionId) : false;
