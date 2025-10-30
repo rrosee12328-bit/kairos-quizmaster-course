@@ -156,7 +156,8 @@ const Landing = () => {
               <img 
                 src={securityOfficerImage} 
                 alt="Professional Security Officer with Kairos logo"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
+                loading="lazy"
               />
             </div>
             
