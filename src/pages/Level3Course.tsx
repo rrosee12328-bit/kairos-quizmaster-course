@@ -31,6 +31,7 @@ const Course = () => {
   
   const totalSections = 10;
   const { completedSections, allSectionsComplete, examUnlocked, completionPercentage } = useCourseProgress('level3', totalSections);
+  const [localCompletedSections, setLocalCompletedSections] = useState<number[]>([]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -359,7 +360,7 @@ const Course = () => {
   }, [carouselApi]);
 
   const currentSectionId = courseSections[currentSlide]?.id;
-  const isCurrentSectionComplete = currentSectionId ? completedSections.includes(currentSectionId) : false;
+  const isCurrentSectionComplete = currentSectionId ? localCompletedSections.includes(currentSectionId) : false;
 
   useEffect(() => {
     if (showQuiz) {
@@ -415,6 +416,11 @@ const Course = () => {
                         isActive={currentSlide === idx}
                         onComplete={() => {}}
                         onNext={handleNextSlide}
+                        onSectionCompleted={(id) =>
+                          setLocalCompletedSections((prev) =>
+                            prev.includes(id) ? prev : [...prev, id]
+                          )
+                        }
                       />
                     )}
                   </CarouselItem>
