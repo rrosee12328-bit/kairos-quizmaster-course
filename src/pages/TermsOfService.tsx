@@ -216,7 +216,7 @@ const TermsOfService = () => {
                         <li>Processing fees may be deducted from refund amounts</li>
                       </ul>
                       <p className="text-muted-foreground mt-2">
-                        To request a refund, contact us at <a href="mailto:support@kairossecurityacademy.com" className="text-primary hover:underline">support@kairossecurityacademy.com</a>
+                        To request a refund, contact us at <a href="mailto:info@kairossecurityacademy.com" className="text-primary hover:underline">info@kairossecurityacademy.com</a>
                       </p>
                     </div>
 
@@ -383,8 +383,7 @@ const TermsOfService = () => {
               </p>
               <div className="space-y-2 text-muted-foreground">
                 <p><strong>Kairos Security Academy</strong></p>
-                <p>Email: <a href="mailto:legal@kairossecurityacademy.com" className="text-primary hover:underline">legal@kairossecurityacademy.com</a></p>
-                <p>Support: <a href="mailto:support@kairossecurityacademy.com" className="text-primary hover:underline">support@kairossecurityacademy.com</a></p>
+                <p>Email: <a href="mailto:info@kairossecurityacademy.com" className="text-primary hover:underline">info@kairossecurityacademy.com</a></p>
                 <p className="text-sm">License #: F28623301</p>
               </div>
             </CardContent>

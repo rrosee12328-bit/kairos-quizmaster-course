@@ -326,8 +326,7 @@ const PrivacyPolicy = () => {
               </p>
               <div className="space-y-2 text-muted-foreground">
                 <p><strong>Kairos Security Academy</strong></p>
-                <p>Email: <a href="mailto:privacy@kairossecurityacademy.com" className="text-primary hover:underline">privacy@kairossecurityacademy.com</a></p>
-                <p>Support: <a href="mailto:support@kairossecurityacademy.com" className="text-primary hover:underline">support@kairossecurityacademy.com</a></p>
+                <p>Email: <a href="mailto:info@kairossecurityacademy.com" className="text-primary hover:underline">info@kairossecurityacademy.com</a></p>
                 <p className="text-sm">License #: F28623301</p>
               </div>
             </CardContent>

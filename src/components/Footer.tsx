@@ -38,6 +38,12 @@ export const Footer = () => {
             <p className="text-sm text-muted-foreground">
               Questions? We're here to help.
             </p>
+            <a 
+              href="mailto:info@kairossecurityacademy.com" 
+              className="text-sm text-primary hover:underline"
+            >
+              info@kairossecurityacademy.com
+            </a>
           </div>
         </div>
         <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
