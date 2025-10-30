@@ -4,7 +4,7 @@ project_id = "cpjamwmwzrgqhfnirikz"
 verify_jwt = false
 
 [functions.sync-enrollment]
-verify_jwt = false
+verify_jwt = true
 
 [functions.create-checkout]
 verify_jwt = false
