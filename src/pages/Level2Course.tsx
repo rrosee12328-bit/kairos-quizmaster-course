@@ -613,6 +613,23 @@ const Level2Course = () => {
     };
   }, [carouselApi]);
 
+  // Auto-resume: scroll to first incomplete section on load
+  useEffect(() => {
+    if (!carouselApi || completedSections.length === 0) return;
+    
+    // Find first incomplete section (section not in completedSections)
+    const firstIncompleteIndex = courseSections.findIndex(
+      section => !completedSections.includes(section.id)
+    );
+    
+    if (firstIncompleteIndex > 0) {
+      console.log('[Level2Course] Resuming at section', firstIncompleteIndex + 1);
+      setTimeout(() => {
+        carouselApi.scrollTo(firstIncompleteIndex, false);
+      }, 100);
+    }
+  }, [carouselApi, completedSections.length]);
+
   const progressPercentage = (completedSections.length / totalSections) * 100;
   const allSectionsComplete = examUnlocked;
   

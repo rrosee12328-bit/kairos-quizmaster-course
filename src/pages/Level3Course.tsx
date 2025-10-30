@@ -359,6 +359,23 @@ const Course = () => {
     };
   }, [carouselApi]);
 
+  // Auto-resume: scroll to first incomplete section on load
+  useEffect(() => {
+    if (!carouselApi || completedSections.length === 0) return;
+    
+    // Find first incomplete section (section not in completedSections)
+    const firstIncompleteIndex = courseSections.findIndex(
+      section => !completedSections.includes(section.id)
+    );
+    
+    if (firstIncompleteIndex > 0) {
+      console.log('[Level3Course] Resuming at section', firstIncompleteIndex + 1);
+      setTimeout(() => {
+        carouselApi.scrollTo(firstIncompleteIndex, false);
+      }, 100);
+    }
+  }, [carouselApi, completedSections.length]);
+
   const currentSectionId = courseSections[currentSlide]?.id;
   const isCurrentSectionComplete = currentSectionId ? localCompletedSections.includes(currentSectionId) : false;
 
