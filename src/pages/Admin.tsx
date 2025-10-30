@@ -136,10 +136,15 @@ const Admin = () => {
       const profile = profilesData?.find(p => p.id === comp.user_id);
       const cert = certsData?.find(c => c.completion_id === comp.id);
       
+      // Get clean name without email fallback
+      const fullName = profile?.full_name || '';
+      const isEmailAsName = fullName.includes('@');
+      const displayName = (fullName && !isEmailAsName) ? fullName : 'Name Not Set';
+      
       return {
         ...comp,
         user_email: profile?.email || 'Unknown',
-        user_name: profile?.full_name || profile?.email || 'Unknown',
+        user_name: displayName,
         certificate_id: cert?.registration_number,
         certificate_url: cert?.id,
       };
@@ -934,7 +939,11 @@ const Admin = () => {
                         return (
                           <TableRow key={approval.id}>
                             <TableCell className="font-mono font-bold">{approval.approval_code}</TableCell>
-                            <TableCell className="font-medium">{approval.profiles?.full_name || 'Unknown'}</TableCell>
+                            <TableCell className="font-medium">
+                              {approval.profiles?.full_name && !approval.profiles.full_name.includes('@') 
+                                ? approval.profiles.full_name 
+                                : 'Name Not Set'}
+                            </TableCell>
                             <TableCell className="text-sm text-muted-foreground">{approval.profiles?.email || 'Unknown'}</TableCell>
                             <TableCell>
                               {status === 'active' && (
@@ -1036,7 +1045,11 @@ const Admin = () => {
               <div className="p-4 bg-muted rounded-lg">
                 <h3 className="font-semibold mb-2">Profile Information</h3>
                 <div className="space-y-1 text-sm">
-                  <p><span className="text-muted-foreground">Name:</span> {userDetails.profile?.full_name}</p>
+                  <p><span className="text-muted-foreground">Name:</span> {
+                    userDetails.profile?.full_name && !userDetails.profile.full_name.includes('@')
+                      ? userDetails.profile.full_name
+                      : 'Name Not Set'
+                  }</p>
                   <p><span className="text-muted-foreground">Email:</span> {userDetails.profile?.email}</p>
                   <p><span className="text-muted-foreground">Phone:</span> {userDetails.profile?.phone_number || 'N/A'}</p>
                 </div>
