@@ -60,9 +60,6 @@ const Landing = () => {
                 </>
               ) : (
                 <>
-                  <Button variant="ghost" asChild size="sm" className="hidden md:flex">
-                    <Link to="/admin">Admin</Link>
-                  </Button>
                   <Button variant="ghost" asChild size="sm" className="hidden sm:flex">
                     <Link to="/courses">Courses</Link>
                   </Button>
