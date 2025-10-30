@@ -13,6 +13,7 @@ import EnrollmentForm from "@/components/EnrollmentForm";
 import AutoAdvanceModal from "@/components/AutoAdvanceModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useCourseProgress } from "@/hooks/useCourseProgress";
 import {
   Carousel,
   CarouselContent,
@@ -24,7 +25,6 @@ const Level2Course = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const showEnrollment = searchParams.get('enroll') === 'true';
-  const [completedSections, setCompletedSections] = useState<number[]>([]);
   const [showQuiz, setShowQuiz] = useState(false);
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -43,6 +43,9 @@ const Level2Course = () => {
   const [showAutoAdvanceModal, setShowAutoAdvanceModal] = useState(false);
   const [completedSectionTitle, setCompletedSectionTitle] = useState("");
   const [highestCompletedIndex, setHighestCompletedIndex] = useState(0);
+  
+  const totalSections = 9;
+  const { completedSections, examUnlocked, completionPercentage } = useCourseProgress('level2', totalSections);
   
   const [courseSections, setCourseSections] = useState([
     {
@@ -462,11 +465,8 @@ const Level2Course = () => {
       nextSectionExists: !!courseSections[currentSlide + 1]
     });
     
-    setCompletedSections((prev) => {
-      const next = prev.includes(sectionId) ? prev : [...prev, sectionId];
-      console.log('[Level2Course] Section complete', { sectionId, next });
-      return next;
-    });
+    // No need to update local state - useCourseProgress hook handles this
+    console.log('[Level2Course] Section complete', { sectionId });
   };
 
   const handleSectionCompleted = async (sectionId: number) => {
@@ -613,9 +613,8 @@ const Level2Course = () => {
     };
   }, [carouselApi]);
 
-  const totalSections = courseSections.length;
   const progressPercentage = (completedSections.length / totalSections) * 100;
-  const allSectionsComplete = completedSections.length === totalSections;
+  const allSectionsComplete = examUnlocked;
   
   // IDs logged once on mount
   const userId = debugUserId;
@@ -806,7 +805,9 @@ const Level2Course = () => {
                 onClick={() => {
                   setShowQuiz(true);
                 }}
+                disabled={!examUnlocked}
                 size="sm"
+                title={!examUnlocked ? `Watch 90% of course videos to unlock (${completionPercentage.toFixed(1)}% complete)` : ""}
               >
                 Go to Final Exam
               </Button>
@@ -849,7 +850,16 @@ const Level2Course = () => {
             completedSections={completedSections} 
             currentSection={currentSlide + 1}
             totalSections={totalSections}
+            showLocks={false}
           />
+          {!examUnlocked && (
+            <div className="mt-2 text-center">
+              <p className="text-sm text-muted-foreground">
+                Course completion: <span className="font-semibold text-primary">{completionPercentage.toFixed(1)}%</span> 
+                <span className="text-xs ml-1">(90% required for exam)</span>
+              </p>
+            </div>
+          )}
         </div>
 
         {/* PDF Resource */}
