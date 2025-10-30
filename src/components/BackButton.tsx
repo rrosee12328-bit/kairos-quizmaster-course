@@ -5,12 +5,17 @@ import { useNavigate } from "react-router-dom";
 interface BackButtonProps {
   fallbackPath?: string;
   label?: string;
+  preferHistory?: boolean;
 }
 
-export const BackButton = ({ fallbackPath = "/", label = "Back" }: BackButtonProps) => {
+export const BackButton = ({ fallbackPath = "/", label = "Back", preferHistory = true }: BackButtonProps) => {
   const navigate = useNavigate();
 
   const handleBack = () => {
+    if (!preferHistory) {
+      navigate(fallbackPath);
+      return;
+    }
     if (window.history.length > 1) {
       navigate(-1);
     } else {
