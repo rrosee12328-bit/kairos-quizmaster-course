@@ -289,7 +289,7 @@ const Admin = () => {
 
   const exportToCSV = () => {
     const headers = [
-      "Learner Name",
+      "Name",
       "Email",
       "Course",
       "Attempt #",
@@ -679,7 +679,7 @@ const Admin = () => {
                       <TableRow>
                         <TableHead>
                           <Button variant="ghost" size="sm" onClick={() => toggleSort('user_name')}>
-                            Learner Name
+                            Name
                             <ArrowUpDown className="ml-2 h-3 w-3" />
                           </Button>
                         </TableHead>
