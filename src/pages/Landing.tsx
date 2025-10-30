@@ -156,7 +156,7 @@ const Landing = () => {
               <img 
                 src={securityOfficerImage} 
                 alt="Professional Security Officer" 
-                className="w-full h-full object-cover object-center"
+                className="w-full h-full object-cover object-[center_20%]"
               />
             </div>
             
