@@ -7,12 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { BackButton } from "@/components/BackButton";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, Link } from "react-router-dom";
-import { Award, BookOpen, Users, CheckCircle, XCircle, Download, Filter, Search, ArrowUpDown, Eye } from "lucide-react";
+import { Award, BookOpen, Users, CheckCircle, XCircle, Download, Filter, Search, ArrowUpDown, Eye, Key, Plus, RefreshCw, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { toast as sonnerToast } from "sonner";
 import kairosLogo from "@/assets/kairos-logo.png";
@@ -43,6 +44,8 @@ const Admin = () => {
   const [completions, setCompletions] = useState<EnhancedCompletion[]>([]);
   const [filteredCompletions, setFilteredCompletions] = useState<EnhancedCompletion[]>([]);
   const [enrollments, setEnrollments] = useState<any[]>([]);
+  const [approvalCodes, setApprovalCodes] = useState<any[]>([]);
+  const [filteredApprovalCodes, setFilteredApprovalCodes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   
@@ -54,9 +57,17 @@ const Admin = () => {
   const [sortField, setSortField] = useState<string>("completed_at");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   
+  // Approval code filter states
+  const [codeSearchQuery, setCodeSearchQuery] = useState("");
+  const [codeStatusFilter, setCodeStatusFilter] = useState("all");
+  
   // Detail drawer state
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [userDetails, setUserDetails] = useState<any>(null);
+  
+  // Generate code dialog state
+  const [showGenerateDialog, setShowGenerateDialog] = useState(false);
+  const [selectedCompletion, setSelectedCompletion] = useState<any>(null);
 
   useEffect(() => {
     checkAdminAndFetchData();
@@ -65,6 +76,10 @@ const Admin = () => {
   useEffect(() => {
     applyFilters();
   }, [completions, searchQuery, courseFilter, resultFilter, attemptFilter, sortField, sortOrder]);
+
+  useEffect(() => {
+    applyApprovalFilters();
+  }, [approvalCodes, codeSearchQuery, codeStatusFilter]);
 
   const checkAdminAndFetchData = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -140,6 +155,19 @@ const Admin = () => {
       .order('created_at', { ascending: false });
     setEnrollments(enrollmentsData || []);
 
+    // Fetch approval codes with related data
+    const { data: approvalsData } = await supabase
+      .from('level3_approvals')
+      .select(`
+        *,
+        profiles!level3_approvals_user_id_fkey(full_name, email),
+        course_completions!level3_approvals_completion_id_fkey(course_type, percentage, completed_at)
+      `)
+      .order('created_at', { ascending: false });
+    
+    setApprovalCodes(approvalsData || []);
+    setFilteredApprovalCodes(approvalsData || []);
+
     setLoading(false);
   };
 
@@ -198,6 +226,36 @@ const Admin = () => {
     setFilteredCompletions(filtered);
   };
 
+  const applyApprovalFilters = () => {
+    let filtered = [...approvalCodes];
+
+    // Search filter
+    if (codeSearchQuery) {
+      const query = codeSearchQuery.toLowerCase();
+      filtered = filtered.filter(code => 
+        code.approval_code?.toLowerCase().includes(query) ||
+        code.profiles?.full_name?.toLowerCase().includes(query) ||
+        code.profiles?.email?.toLowerCase().includes(query)
+      );
+    }
+
+    // Status filter
+    if (codeStatusFilter !== "all") {
+      filtered = filtered.filter(code => {
+        const status = getApprovalStatus(code);
+        return status === codeStatusFilter;
+      });
+    }
+
+    setFilteredApprovalCodes(filtered);
+  };
+
+  const getApprovalStatus = (approval: any) => {
+    if (approval.used) return 'used';
+    if (new Date(approval.expires_at) < new Date()) return 'expired';
+    return 'active';
+  };
+
   const exportToCSV = () => {
     const headers = [
       "Learner Name",
@@ -241,6 +299,109 @@ const Admin = () => {
     window.URL.revokeObjectURL(url);
     
     sonnerToast.success(`Exported ${filteredCompletions.length} records to CSV`);
+  };
+
+  const handleGenerateCode = async () => {
+    if (!selectedCompletion) return;
+
+    try {
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 24);
+
+      const { data, error } = await supabase.rpc('generate_level3_approval_code');
+      
+      if (error) throw error;
+
+      const newCode = data;
+
+      // Insert the new approval code
+      const { error: insertError } = await supabase
+        .from('level3_approvals')
+        .insert({
+          user_id: selectedCompletion.user_id,
+          completion_id: selectedCompletion.id,
+          approval_code: newCode,
+          expires_at: expiresAt.toISOString(),
+          used: false,
+        });
+
+      if (insertError) throw insertError;
+
+      // Update user's profile
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ level3_approval_code: newCode })
+        .eq('id', selectedCompletion.user_id);
+
+      if (updateError) throw updateError;
+
+      sonnerToast.success(`Approval code ${newCode} generated successfully`);
+      setShowGenerateDialog(false);
+      setSelectedCompletion(null);
+      fetchAllData();
+    } catch (error: any) {
+      console.error('Error generating code:', error);
+      sonnerToast.error('Failed to generate approval code');
+    }
+  };
+
+  const handleMarkAsUsed = async (approvalId: string) => {
+    try {
+      const { error } = await supabase
+        .from('level3_approvals')
+        .update({ used: true })
+        .eq('id', approvalId);
+
+      if (error) throw error;
+
+      sonnerToast.success('Code marked as used');
+      fetchAllData();
+    } catch (error: any) {
+      console.error('Error marking code as used:', error);
+      sonnerToast.error('Failed to mark code as used');
+    }
+  };
+
+  const handleRegenerateCode = async (approval: any) => {
+    try {
+      // Mark old code as used
+      await handleMarkAsUsed(approval.id);
+
+      // Generate new code
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 24);
+
+      const { data, error } = await supabase.rpc('generate_level3_approval_code');
+      
+      if (error) throw error;
+
+      const newCode = data;
+
+      const { error: insertError } = await supabase
+        .from('level3_approvals')
+        .insert({
+          user_id: approval.user_id,
+          completion_id: approval.completion_id,
+          approval_code: newCode,
+          expires_at: expiresAt.toISOString(),
+          used: false,
+        });
+
+      if (insertError) throw insertError;
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ level3_approval_code: newCode })
+        .eq('id', approval.user_id);
+
+      if (updateError) throw updateError;
+
+      sonnerToast.success(`New code ${newCode} generated`);
+      fetchAllData();
+    } catch (error: any) {
+      console.error('Error regenerating code:', error);
+      sonnerToast.error('Failed to regenerate code');
+    }
   };
 
   const openUserDetails = async (userId: string) => {
@@ -374,6 +535,17 @@ const Admin = () => {
               <div className="text-2xl font-bold">{enrollments.length}</div>
             </CardContent>
           </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">L3 Codes</CardTitle>
+              <Key className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{approvalCodes.filter(c => getApprovalStatus(c) === 'active').length}</div>
+              <p className="text-xs text-muted-foreground mt-1">active codes</p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Main Content Tabs */}
@@ -382,6 +554,7 @@ const Admin = () => {
             <TabsTrigger value="attempts">Course Attempts</TabsTrigger>
             <TabsTrigger value="certificates">Certificates</TabsTrigger>
             <TabsTrigger value="enrollments">Enrollments</TabsTrigger>
+            <TabsTrigger value="approvals">Approval Codes</TabsTrigger>
           </TabsList>
 
           <TabsContent value="attempts">
@@ -635,6 +808,202 @@ const Admin = () => {
                     ))}
                   </TableBody>
                 </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="approvals">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Level 3 Approval Codes</CardTitle>
+                    <CardDescription>Manage Part 1 completion approval codes</CardDescription>
+                  </div>
+                  <Dialog open={showGenerateDialog} onOpenChange={setShowGenerateDialog}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Generate Code
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Generate Approval Code</DialogTitle>
+                        <DialogDescription>
+                          Select a Level 3 completion to generate an approval code for
+                        </DialogDescription>
+                      </DialogHeader>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-sm font-medium">Select Completion</label>
+                          <Select 
+                            value={selectedCompletion?.id || ""} 
+                            onValueChange={(value) => {
+                              const completion = completions.find(c => c.id === value);
+                              setSelectedCompletion(completion);
+                            }}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Choose a Level 3 completion..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {completions
+                                .filter(c => c.course_type === 'level3' && c.passed)
+                                .map(completion => (
+                                  <SelectItem key={completion.id} value={completion.id}>
+                                    {completion.user_name} - {format(new Date(completion.completed_at), 'MMM dd, yyyy')} ({completion.percentage}%)
+                                  </SelectItem>
+                                ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {selectedCompletion && (
+                          <div className="p-4 bg-muted rounded-lg space-y-2 text-sm">
+                            <p><span className="text-muted-foreground">Student:</span> {selectedCompletion.user_name}</p>
+                            <p><span className="text-muted-foreground">Email:</span> {selectedCompletion.user_email}</p>
+                            <p><span className="text-muted-foreground">Score:</span> {selectedCompletion.percentage}%</p>
+                            <p><span className="text-muted-foreground">Date:</span> {format(new Date(selectedCompletion.completed_at), 'MMM dd, yyyy')}</p>
+                            <div className="pt-2 border-t">
+                              <p className="text-xs text-muted-foreground">
+                                <Clock className="h-3 w-3 inline mr-1" />
+                                Code will expire in 24 hours
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowGenerateDialog(false)}>
+                          Cancel
+                        </Button>
+                        <Button onClick={handleGenerateCode} disabled={!selectedCompletion}>
+                          Generate Code
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {/* Filters */}
+                <div className="grid md:grid-cols-3 gap-4 mb-6">
+                  <div className="relative md:col-span-2">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search code, name, or email..."
+                      value={codeSearchQuery}
+                      onChange={(e) => setCodeSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  
+                  <Select value={codeStatusFilter} onValueChange={setCodeStatusFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Statuses" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Statuses</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="expired">Expired</SelectItem>
+                      <SelectItem value="used">Used</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Table */}
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Approval Code</TableHead>
+                        <TableHead>Student</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Created</TableHead>
+                        <TableHead>Expires</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredApprovalCodes.map((approval) => {
+                        const status = getApprovalStatus(approval);
+                        return (
+                          <TableRow key={approval.id}>
+                            <TableCell className="font-mono font-bold">{approval.approval_code}</TableCell>
+                            <TableCell className="font-medium">{approval.profiles?.full_name || 'Unknown'}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">{approval.profiles?.email || 'Unknown'}</TableCell>
+                            <TableCell>
+                              {status === 'active' && (
+                                <Badge className="bg-green-600">
+                                  <CheckCircle className="h-3 w-3 mr-1" />
+                                  Active
+                                </Badge>
+                              )}
+                              {status === 'expired' && (
+                                <Badge variant="secondary">
+                                  <Clock className="h-3 w-3 mr-1" />
+                                  Expired
+                                </Badge>
+                              )}
+                              {status === 'used' && (
+                                <Badge variant="outline">
+                                  <XCircle className="h-3 w-3 mr-1" />
+                                  Used
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-sm">
+                              {format(new Date(approval.created_at), 'MMM dd, yyyy')}
+                            </TableCell>
+                            <TableCell className="text-sm">
+                              {format(new Date(approval.expires_at), 'MMM dd, yyyy HH:mm')}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                {status === 'active' && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleMarkAsUsed(approval.id)}
+                                  >
+                                    Mark Used
+                                  </Button>
+                                )}
+                                {(status === 'expired' || status === 'used') && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleRegenerateCode(approval)}
+                                  >
+                                    <RefreshCw className="h-3 w-3 mr-1" />
+                                    Regenerate
+                                  </Button>
+                                )}
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => openUserDetails(approval.user_id)}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {filteredApprovalCodes.length === 0 && (
+                  <div className="text-center py-12 text-muted-foreground">
+                    No approval codes found
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
