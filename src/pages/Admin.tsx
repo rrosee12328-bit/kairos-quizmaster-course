@@ -131,15 +131,25 @@ const Admin = () => {
       .from('profiles')
       .select('id, full_name, email');
 
+    // Fetch enrollments to get actual student names
+    const { data: enrollmentsData } = await supabase
+      .from('enrollments')
+      .select('user_id, first_name, last_name, email');
+
     // Enrich completions with user info and certificate data
     const enrichedCompletions = (completionsData || []).map(comp => {
       const profile = profilesData?.find(p => p.id === comp.user_id);
       const cert = certsData?.find(c => c.completion_id === comp.id);
       
-      // Get clean name without email fallback
-      const fullName = profile?.full_name || '';
-      const isEmailAsName = fullName.includes('@');
-      const displayName = (fullName && !isEmailAsName) ? fullName : 'Name Not Set';
+      // Try to get name from enrollment first, then profile
+      const enrollment = enrollmentsData?.find(e => e.user_id === comp.user_id);
+      let displayName = 'Name Not Set';
+      
+      if (enrollment?.first_name && enrollment?.last_name) {
+        displayName = `${enrollment.first_name} ${enrollment.last_name}`;
+      } else if (profile?.full_name && !profile.full_name.includes('@')) {
+        displayName = profile.full_name;
+      }
       
       return {
         ...comp,
@@ -153,25 +163,41 @@ const Admin = () => {
     setCompletions(enrichedCompletions);
     setFilteredCompletions(enrichedCompletions);
 
-    // Fetch enrollments
-    const { data: enrollmentsData } = await supabase
+    // Fetch all enrollments for display
+    const { data: allEnrollmentsData } = await supabase
       .from('enrollments')
       .select('*')
       .order('created_at', { ascending: false });
-    setEnrollments(enrollmentsData || []);
+    setEnrollments(allEnrollmentsData || []);
 
-    // Fetch approval codes with related data
+    // Fetch approval codes
     const { data: approvalsData } = await supabase
       .from('level3_approvals')
-      .select(`
-        *,
-        profiles!level3_approvals_user_id_fkey(full_name, email),
-        course_completions!level3_approvals_completion_id_fkey(course_type, percentage, completed_at)
-      `)
+      .select('*')
       .order('created_at', { ascending: false });
     
-    setApprovalCodes(approvalsData || []);
-    setFilteredApprovalCodes(approvalsData || []);
+    // Enrich approval codes with enrollment and profile names
+    const enrichedApprovals = (approvalsData || []).map(approval => {
+      const enrollment = enrollmentsData?.find(e => e.user_id === approval.user_id);
+      const profile = profilesData?.find(p => p.id === approval.user_id);
+      
+      let displayName = 'Name Not Set';
+      
+      if (enrollment?.first_name && enrollment?.last_name) {
+        displayName = `${enrollment.first_name} ${enrollment.last_name}`;
+      } else if (profile?.full_name && !profile.full_name.includes('@')) {
+        displayName = profile.full_name;
+      }
+      
+      return {
+        ...approval,
+        display_name: displayName,
+        email: profile?.email || 'Unknown'
+      };
+    });
+    
+    setApprovalCodes(enrichedApprovals);
+    setFilteredApprovalCodes(enrichedApprovals);
 
     setLoading(false);
   };
@@ -239,8 +265,8 @@ const Admin = () => {
       const query = codeSearchQuery.toLowerCase();
       filtered = filtered.filter(code => 
         code.approval_code?.toLowerCase().includes(query) ||
-        code.profiles?.full_name?.toLowerCase().includes(query) ||
-        code.profiles?.email?.toLowerCase().includes(query)
+        code.display_name?.toLowerCase().includes(query) ||
+        code.email?.toLowerCase().includes(query)
       );
     }
 
@@ -436,8 +462,23 @@ const Admin = () => {
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
+    const { data: userEnrollment } = await supabase
+      .from('enrollments')
+      .select('*')
+      .eq('user_id', userId)
+      .limit(1)
+      .single();
+
+    // Construct display name from enrollment or profile
+    let displayName = 'Name Not Set';
+    if (userEnrollment?.first_name && userEnrollment?.last_name) {
+      displayName = `${userEnrollment.first_name} ${userEnrollment.last_name}`;
+    } else if (userProfile?.full_name && !userProfile.full_name.includes('@')) {
+      displayName = userProfile.full_name;
+    }
+
     setUserDetails({
-      profile: userProfile,
+      profile: { ...userProfile, display_name: displayName },
       completions: userCompletions || [],
       certificates: userCerts || [],
       progress: userProgress || [],
@@ -939,12 +980,8 @@ const Admin = () => {
                         return (
                           <TableRow key={approval.id}>
                             <TableCell className="font-mono font-bold">{approval.approval_code}</TableCell>
-                            <TableCell className="font-medium">
-                              {approval.profiles?.full_name && !approval.profiles.full_name.includes('@') 
-                                ? approval.profiles.full_name 
-                                : 'Name Not Set'}
-                            </TableCell>
-                            <TableCell className="text-sm text-muted-foreground">{approval.profiles?.email || 'Unknown'}</TableCell>
+                            <TableCell className="font-medium">{approval.display_name || 'Name Not Set'}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">{approval.email || 'Unknown'}</TableCell>
                             <TableCell>
                               {status === 'active' && (
                                 <Badge className="bg-green-600">
@@ -1045,11 +1082,7 @@ const Admin = () => {
               <div className="p-4 bg-muted rounded-lg">
                 <h3 className="font-semibold mb-2">Profile Information</h3>
                 <div className="space-y-1 text-sm">
-                  <p><span className="text-muted-foreground">Name:</span> {
-                    userDetails.profile?.full_name && !userDetails.profile.full_name.includes('@')
-                      ? userDetails.profile.full_name
-                      : 'Name Not Set'
-                  }</p>
+                  <p><span className="text-muted-foreground">Name:</span> {userDetails.profile?.display_name || 'Name Not Set'}</p>
                   <p><span className="text-muted-foreground">Email:</span> {userDetails.profile?.email}</p>
                   <p><span className="text-muted-foreground">Phone:</span> {userDetails.profile?.phone_number || 'N/A'}</p>
                 </div>
