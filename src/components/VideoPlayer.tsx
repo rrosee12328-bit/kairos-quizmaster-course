@@ -139,7 +139,7 @@ const VideoPlayer = ({
             saveWatchProgress(seconds, duration);
           }
           
-          if (percent >= 99.5 && !hasCompletedRef.current) {
+          if (percent >= 99.9 && !hasCompletedRef.current) {
             hasCompletedRef.current = true;
             saveWatchProgress(seconds, duration, true);
             onSectionCompleted?.(section.id);
