@@ -20,3 +20,9 @@ verify_jwt = false
 
 [functions.download-certificate]
 verify_jwt = false
+
+[functions.progress-video-complete]
+verify_jwt = false
+
+[functions.check-course-completion]
+verify_jwt = false

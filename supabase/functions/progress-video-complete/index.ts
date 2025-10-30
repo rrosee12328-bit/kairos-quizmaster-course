@@ -50,6 +50,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const course_id = String(body?.course_id || '').trim();
     const section_id = Number(body?.section_id);
     const seconds_watched = Number(body?.seconds_watched || 0);
+    const total_duration = Number(body?.total_duration || 0);
     const has_quiz = Boolean(body?.has_quiz);
 
     if (!course_id || !Number.isFinite(section_id)) {
@@ -77,7 +78,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     const payload: any = {
       video_watch_time_seconds: Math.max(0, Math.floor(seconds_watched)),
-      video_completed: true,
+      video_completed: total_duration > 0 ? (seconds_watched / total_duration) >= 0.90 : true,
       has_quiz,
       completed_at: new Date().toISOString(),
     };

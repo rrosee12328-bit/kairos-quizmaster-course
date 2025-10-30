@@ -5,6 +5,8 @@ import { toast } from "sonner";
 export const useCourseProgress = (courseType: string, totalSections: number) => {
   const [completedSections, setCompletedSections] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
+  const [examUnlocked, setExamUnlocked] = useState(false);
+  const [completionPercentage, setCompletionPercentage] = useState(0);
 
   useEffect(() => {
     fetchProgress();
@@ -30,6 +32,19 @@ export const useCourseProgress = (courseType: string, totalSections: number) => 
 
       const completed = data?.map(p => p.section_id) || [];
       setCompletedSections(completed);
+
+      // Check total course completion percentage
+      const { data: { session } } = await supabase.auth.getSession();
+      const { data: completionData } = await supabase.functions.invoke('check-course-completion', {
+        headers: session ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+        body: { course_type: courseType }
+      });
+
+      if (completionData) {
+        setCompletionPercentage(completionData.completion_percentage || 0);
+        setExamUnlocked(completionData.exam_unlocked || false);
+      }
+
       setLoading(false);
     } catch (error) {
       console.error('Error fetching course progress:', error);
@@ -131,7 +146,7 @@ export const useCourseProgress = (courseType: string, totalSections: number) => 
   };
 
   const progressPercentage = (completedSections.length / totalSections) * 100;
-  const allSectionsComplete = completedSections.length === totalSections;
+  const allSectionsComplete = examUnlocked;
 
   return {
     completedSections,
@@ -139,6 +154,8 @@ export const useCourseProgress = (courseType: string, totalSections: number) => 
     markSectionStart,
     markSectionComplete,
     progressPercentage,
-    allSectionsComplete
+    allSectionsComplete,
+    examUnlocked,
+    completionPercentage
   };
 };

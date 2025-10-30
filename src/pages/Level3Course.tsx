@@ -30,7 +30,7 @@ const Course = () => {
   const quizRef = useRef<HTMLDivElement>(null);
   
   const totalSections = 10;
-  const { completedSections, allSectionsComplete } = useCourseProgress('level3', totalSections);
+  const { completedSections, allSectionsComplete, examUnlocked, completionPercentage } = useCourseProgress('level3', totalSections);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -452,7 +452,9 @@ const Course = () => {
                 onClick={() => {
                   setShowQuiz(true);
                 }}
+                disabled={!examUnlocked}
                 size="sm"
+                title={!examUnlocked ? `Watch 90% of course videos to unlock (${completionPercentage.toFixed(1)}% complete)` : ""}
               >
                 Go to Part 1 Final Exam
               </Button>
@@ -465,7 +467,16 @@ const Course = () => {
             completedSections={completedSections} 
             currentSection={currentSlide + 1}
             totalSections={totalSections}
+            showLocks={false}
           />
+          {!examUnlocked && (
+            <div className="mt-2 text-center">
+              <p className="text-sm text-muted-foreground">
+                Course completion: <span className="font-semibold text-primary">{completionPercentage.toFixed(1)}%</span> 
+                <span className="text-xs ml-1">(90% required for exam)</span>
+              </p>
+            </div>
+          )}
         </div>
 
         {/* PDF Resource */}
@@ -536,7 +547,7 @@ const Course = () => {
         </div>
 
         {/* Final Quiz */}
-        {allSectionsComplete && !showQuiz && (
+        {examUnlocked && !showQuiz && (
           <Card className="border-l-4 border-l-green-500 animate-fade-in">
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-green-600">
@@ -544,13 +555,13 @@ const Course = () => {
                 Ready for Part 1 Final Exam
               </CardTitle>
               <CardDescription>
-                Congratulations! You&apos;ve completed all {totalSections} Part 1 sections. Pass the final exam, then complete Part 2 in-person training for full certification.
+                You've completed 90% of the course! Pass the final exam, then complete Part 2 in-person training for full certification.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="mb-4 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
                 <p className="text-sm text-green-800 dark:text-green-200">
-                  ✓ All sections completed ({completedSections.length}/{totalSections})
+                  ✓ Course progress: {completionPercentage.toFixed(1)}% complete
                 </p>
               </div>
                <Button onClick={() => {

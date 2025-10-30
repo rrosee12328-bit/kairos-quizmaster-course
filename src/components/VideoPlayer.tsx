@@ -133,13 +133,39 @@ const VideoPlayer = ({
           const percent = (seconds / duration) * 100;
           const newPercent = Math.max(percent, 0);
           setWatchedPercent((prev) => Math.max(prev, newPercent));
+          
+          // Save watch time to database every 10%
+          if (courseType && Math.floor(newPercent) % 10 === 0 && Math.floor(newPercent) > 0) {
+            saveWatchProgress(seconds, duration);
+          }
+          
           if (percent >= 99.5 && !hasCompletedRef.current) {
             hasCompletedRef.current = true;
+            saveWatchProgress(seconds, duration, true);
             onSectionCompleted?.(section.id);
             setShowAutoAdvance(true);
           }
         }
       } catch {}
+    };
+
+    const saveWatchProgress = async (seconds: number, duration: number, completed = false) => {
+      if (!courseType) return;
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        await supabase.functions.invoke('progress-video-complete', {
+          headers: session ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+          body: {
+            course_id: courseType,
+            section_id: section.id,
+            seconds_watched: Math.floor(seconds),
+            total_duration: Math.floor(duration),
+            has_quiz: section.has_quiz || false
+          }
+        });
+      } catch (err) {
+        console.error('[VideoPlayer] Error saving watch progress:', err);
+      }
     };
 
     if (player) {
