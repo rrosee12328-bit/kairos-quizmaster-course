@@ -78,7 +78,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     const payload: any = {
       video_watch_time_seconds: Math.max(0, Math.floor(seconds_watched)),
-      video_completed: total_duration > 0 ? (seconds_watched / total_duration) >= 0.90 : true,
+      video_completed: total_duration > 0 ? (seconds_watched / total_duration) >= 0.995 : true,
       has_quiz,
       completed_at: new Date().toISOString(),
     };
