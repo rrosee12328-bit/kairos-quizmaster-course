@@ -14,6 +14,7 @@ import AutoAdvanceModal from "@/components/AutoAdvanceModal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCourseProgress } from "@/hooks/useCourseProgress";
+import { trackCourseStarted } from "@/lib/tracking";
 import {
   Carousel,
   CarouselContent,
@@ -341,6 +342,9 @@ const Level2Course = () => {
         }
 
         setVideosLoaded(true);
+        
+        // Track course started once videos are loaded
+        trackCourseStarted('level2');
       } catch (err) {
         console.error('[Level2Course] Error fetching videos:', err);
         toast.error('Failed to load course videos. Please refresh the page.');

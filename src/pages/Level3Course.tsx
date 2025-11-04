@@ -12,6 +12,7 @@ import VideoPlayer from "@/components/VideoPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCourseProgress } from "@/hooks/useCourseProgress";
+import { trackCourseStarted } from "@/lib/tracking";
 import {
   Carousel,
   CarouselContent,
@@ -119,6 +120,9 @@ const Course = () => {
         setCourseSections(updatedSections);
         setVideosLoaded(true);
         console.log('[Level3Course] All video URLs signed');
+        
+        // Track course started once videos are loaded
+        trackCourseStarted('level3');
       } catch (err) {
         console.error('[Level3Course] Fatal error generating signed URLs:', err);
         toast.error('Failed to load course videos. Please refresh the page.');

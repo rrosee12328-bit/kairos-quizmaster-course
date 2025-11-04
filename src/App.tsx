@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ScrollToTop } from "./components/ScrollToTop";
+import { useTracking } from "./hooks/useTracking";
 import Landing from "./pages/Landing";
 import Courses from "./pages/Courses";
 import CourseCheckout from "./pages/CourseCheckout";
@@ -24,12 +25,18 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const TrackingWrapper = () => {
+  useTracking();
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <TrackingWrapper />
         <ScrollToTop />
         <Routes>
           <Route path="/" element={<Landing />} />

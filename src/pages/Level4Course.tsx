@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { level4ExamQuestions } from "@/data/level4ExamQuestions";
 import { useCourseProgress } from "@/hooks/useCourseProgress";
+import { trackCourseStarted } from "@/lib/tracking";
 
 const LIBRARY_ID = "512706";
 const VIDEO_GUID = "f5fc34de-7c2a-445a-9a5b-cd36225549a2";
@@ -56,12 +57,16 @@ const Level4Course = () => {
         });
         if (!error && (data?.iframeUrl || data?.signedUrl)) {
           setVideoUrl(data.iframeUrl || `https://iframe.mediadelivery.net/embed/${LIBRARY_ID}/${VIDEO_GUID}`);
+          // Track course started
+          trackCourseStarted('level4');
         } else {
           setVideoUrl(`https://iframe.mediadelivery.net/embed/${LIBRARY_ID}/${VIDEO_GUID}`);
+          trackCourseStarted('level4');
         }
       } catch (e) {
         console.error('[Level4Course] Signing error', e);
         setVideoUrl(`https://iframe.mediadelivery.net/embed/${LIBRARY_ID}/${VIDEO_GUID}`);
+        trackCourseStarted('level4');
       }
     })();
   }, []);

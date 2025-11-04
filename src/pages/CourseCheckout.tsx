@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import kairosLogo from "@/assets/kairos-logo.png";
+import { trackViewContent, trackInitiateCheckout, getCoursePriceMap } from "@/lib/tracking";
 import level3SecurityImage from "@/assets/level3-security-professional.jpg";
 import level2SecurityImage from "@/assets/level2-security-vehicle.jpg";
 import level4BodyguardImage from "@/assets/level4-bodyguard.jpg";
@@ -38,6 +39,15 @@ const CourseCheckout = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Track ViewContent when course page loads
+  useEffect(() => {
+    if (courseType) {
+      const priceMap = getCoursePriceMap();
+      const price = priceMap[courseType as keyof typeof priceMap];
+      trackViewContent(courseType, price);
+    }
+  }, [courseType]);
 
   const fetchEnrollments = async (userId: string) => {
     const { data, error } = await supabase
@@ -165,6 +175,11 @@ const CourseCheckout = () => {
       navigate(`/course/${courseType}`);
       return;
     }
+
+    // Track InitiateCheckout
+    const priceMap = getCoursePriceMap();
+    const price = priceMap[courseType as keyof typeof priceMap];
+    trackInitiateCheckout(courseType!, price);
 
     setProcessingPayment(true);
     try {

@@ -11,6 +11,7 @@ import { BackButton } from "@/components/BackButton";
 import { Footer } from "@/components/Footer";
 import kairosLogo from "@/assets/kairos-logo.png";
 import securityTrainingImage from "@/assets/security-training-courses.jpg";
+import { trackAddToCart, getCoursePriceMap } from "@/lib/tracking";
 
 const Courses = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -187,6 +188,11 @@ const Courses = () => {
       toast.info("You already own this course");
       return;
     }
+
+    // Track AddToCart
+    const priceMap = getCoursePriceMap();
+    const price = priceMap[courseType as keyof typeof priceMap];
+    trackAddToCart(courseType, price);
 
     setProcessingPayment(true);
     try {

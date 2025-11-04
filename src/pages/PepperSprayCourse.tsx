@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { pepperSprayExamQuestions } from "@/data/pepperSprayExamQuestions";
 import { useCourseProgress } from "@/hooks/useCourseProgress";
+import { trackCourseStarted } from "@/lib/tracking";
 
 const LIBRARY_ID = "512130";
 const VIDEO_GUID = "9ccd2d12-bbcf-4fd7-a74f-15cf1188e453";
@@ -55,12 +56,16 @@ const PepperSprayCourse = () => {
         });
         if (!error && (data?.iframeUrl || data?.signedUrl)) {
           setVideoUrl(data.iframeUrl || `https://iframe.mediadelivery.net/embed/${LIBRARY_ID}/${VIDEO_GUID}`);
+          // Track course started
+          trackCourseStarted('pepper-spray');
         } else {
           setVideoUrl(`https://iframe.mediadelivery.net/embed/${LIBRARY_ID}/${VIDEO_GUID}`);
+          trackCourseStarted('pepper-spray');
         }
       } catch (e) {
         console.error('[PepperSprayCourse] Signing error', e);
         setVideoUrl(`https://iframe.mediadelivery.net/embed/${LIBRARY_ID}/${VIDEO_GUID}`);
+        trackCourseStarted('pepper-spray');
       }
     })();
   }, []);
