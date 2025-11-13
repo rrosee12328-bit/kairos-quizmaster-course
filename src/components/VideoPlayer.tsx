@@ -42,6 +42,7 @@ const VideoPlayer = ({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const hasCompletedRef = useRef(false);
   const messageListenerRef = useRef<((event: MessageEvent) => void) | null>(null);
+  const playerInstanceRef = useRef<any>(null);
 
   // Extract Bunny.net identifiers from either iframe or HLS URL
   const extractIdsFromUrl = (url: string) => {
@@ -169,6 +170,8 @@ const VideoPlayer = ({
     };
 
     if (player) {
+      playerInstanceRef.current = player; // Store for later use
+      
       player.on('ready', () => {
         // Listen for events
         player.on('play', () => setIsPlaying(true));
@@ -180,6 +183,15 @@ const VideoPlayer = ({
           if (!hasCompletedRef.current) {
             hasCompletedRef.current = true;
             onSectionCompleted?.(section.id);
+            
+            // Pause the video when showing the modal
+            try {
+              player.pause();
+              console.log('[VideoPlayer] Paused video on completion');
+            } catch (err) {
+              console.error('[VideoPlayer] Error pausing:', err);
+            }
+            
             setShowAutoAdvance(true);
           }
         });
@@ -201,6 +213,15 @@ const VideoPlayer = ({
           if (!hasCompletedRef.current) {
             hasCompletedRef.current = true;
             onSectionCompleted?.(section.id);
+            
+            // Try to pause via postMessage (fallback method)
+            try {
+              iframe?.contentWindow?.postMessage({ method: 'pause' }, '*');
+              console.log('[VideoPlayer] Sent pause message on completion (fallback)');
+            } catch (err) {
+              console.error('[VideoPlayer] Error sending pause message:', err);
+            }
+            
             setShowAutoAdvance(true);
           }
         }
@@ -216,17 +237,24 @@ const VideoPlayer = ({
         window.removeEventListener('message', messageListenerRef.current);
         messageListenerRef.current = null;
       }
+      // Clean up player instance ref
+      playerInstanceRef.current = null;
     };
   }, [isActive, iframeUrl, section.id, onSectionCompleted]);
 
 
   const handleAutoAdvance = () => {
+    console.log('[VideoPlayer] User advancing to next section');
     setShowAutoAdvance(false);
     onNext?.();
   };
 
   const handleStayHere = () => {
+    console.log('[VideoPlayer] User staying on current section');
     setShowAutoAdvance(false);
+    
+    // Ensure video controls are responsive after dismissing modal
+    // No need to unpause - user can manually play if they want
   };
 
   const handleCompleteSection = () => {
@@ -299,12 +327,14 @@ const VideoPlayer = ({
             loading="eager"
             title={`Video section ${section.id}`}
           />
-          {/* Overlay to block scrubber at bottom */}
-          <div 
-            className="absolute left-0 right-0 bottom-0 h-24 z-10 cursor-not-allowed"
-            style={{ pointerEvents: 'auto' }}
-            title="Scrubbing is disabled during training"
-          />
+          {/* Overlay to block scrubber at bottom - only when not showing modal */}
+          {!showAutoAdvance && (
+            <div 
+              className="absolute left-0 right-0 bottom-0 h-24 z-10 cursor-not-allowed"
+              style={{ pointerEvents: 'auto' }}
+              title="Scrubbing is disabled during training"
+            />
+          )}
         </div>
 
         <AutoAdvanceModal
