@@ -3,6 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import AutoAdvanceModal from "./AutoAdvanceModal";
 import playerjs from "player.js";
+import { useVideoResume } from "@/hooks/useVideoResume";
+import { Button } from "@/components/ui/button";
+import { Play } from "lucide-react";
+import { toast } from "sonner";
 
 interface VideoPlayerProps {
   section: {
@@ -38,11 +42,18 @@ const VideoPlayer = ({
   const [showAutoAdvance, setShowAutoAdvance] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [watchedPercent, setWatchedPercent] = useState(0);
+  const [showResumePrompt, setShowResumePrompt] = useState(false);
+  
+  const { savedPosition } = useVideoResume(courseType || '', section.id);
   
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const hasCompletedRef = useRef(false);
   const messageListenerRef = useRef<((event: MessageEvent) => void) | null>(null);
   const playerInstanceRef = useRef<any>(null);
+  const lastSavedPositionRef = useRef<number>(0);
+  const saveIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const currentTimeRef = useRef<number>(0);
+  const durationRef = useRef<number>(0);
 
   // Extract Bunny.net identifiers from either iframe or HLS URL
   const extractIdsFromUrl = (url: string) => {
@@ -67,6 +78,35 @@ const VideoPlayer = ({
   const { videoId: extractedVideoId, libraryId: extractedLibraryId } = extractIdsFromUrl(section.videoUrl || '');
   const videoId = extractedVideoId;
   const libraryId = extractedLibraryId || '510506';
+
+  // Save video position function (shared across effects)
+  const saveVideoPosition = async (seconds: number) => {
+    if (!courseType || seconds < 1) return;
+    
+    // Don't save if position hasn't changed significantly (at least 2 seconds difference)
+    if (Math.abs(seconds - lastSavedPositionRef.current) < 2) return;
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      lastSavedPositionRef.current = seconds;
+      
+      await supabase
+        .from('course_progress')
+        .update({
+          last_video_position_seconds: Math.floor(seconds),
+          last_updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
+        .eq('course_type', courseType)
+        .eq('section_id', section.id);
+
+      console.log('[VideoPlayer] Saved position:', Math.floor(seconds));
+    } catch (err) {
+      console.error('[VideoPlayer] Error saving position:', err);
+    }
+  };
 
   // Fetch signed iframe URL from Bunny.net (skip if already signed)
   useEffect(() => {
@@ -112,6 +152,39 @@ const VideoPlayer = ({
     fetchIframeUrl();
   }, [isActive, videoId, libraryId, section.videoUrl]);
 
+  // Auto-save position every 10 seconds
+  useEffect(() => {
+    if (!isActive || !isPlaying) return;
+
+    saveIntervalRef.current = setInterval(() => {
+      if (currentTimeRef.current > 0) {
+        saveVideoPosition(currentTimeRef.current);
+      }
+    }, 10000); // Every 10 seconds
+
+    return () => {
+      if (saveIntervalRef.current) {
+        clearInterval(saveIntervalRef.current);
+        saveIntervalRef.current = null;
+      }
+    };
+  }, [isActive, isPlaying, courseType, section.id]);
+
+  // Save position on window blur (user switching tabs/windows)
+  useEffect(() => {
+    if (!isActive) return;
+
+    const handleBlur = () => {
+      if (currentTimeRef.current > 0) {
+        console.log('[VideoPlayer] Window blur - saving position');
+        saveVideoPosition(currentTimeRef.current);
+      }
+    };
+
+    window.addEventListener('blur', handleBlur);
+    return () => window.removeEventListener('blur', handleBlur);
+  }, [isActive, courseType, section.id]);
+
   // Wire Player.js to the Bunny iframe for reliable events
   useEffect(() => {
     if (!isActive || !iframeUrl || !iframeRef.current) return;
@@ -130,6 +203,11 @@ const VideoPlayer = ({
         const data = typeof payload === 'string' ? JSON.parse(payload) : payload;
         const seconds = data?.seconds ?? data?.currentTime;
         const duration = data?.duration ?? data?.length;
+        
+        // Store current time and duration in refs
+        if (typeof seconds === 'number') currentTimeRef.current = seconds;
+        if (typeof duration === 'number') durationRef.current = duration;
+        
         if (typeof seconds === 'number' && typeof duration === 'number' && duration > 0) {
           const percent = (seconds / duration) * 100;
           const newPercent = Math.max(percent, 0);
@@ -173,9 +251,40 @@ const VideoPlayer = ({
       playerInstanceRef.current = player; // Store for later use
       
       player.on('ready', () => {
+        // Show resume prompt if there's a saved position
+        if (savedPosition > 10) {
+          setShowResumePrompt(true);
+          toast('Resume from where you left off?', {
+            description: `Jump to ${Math.floor(savedPosition / 60)}:${String(Math.floor(savedPosition % 60)).padStart(2, '0')}`,
+            action: {
+              label: 'Resume',
+              onClick: () => {
+                try {
+                  player.setCurrentTime(savedPosition);
+                  player.play();
+                  setShowResumePrompt(false);
+                } catch (err) {
+                  console.error('[VideoPlayer] Error seeking to saved position:', err);
+                }
+              }
+            },
+            cancel: {
+              label: 'Start Over',
+              onClick: () => setShowResumePrompt(false)
+            },
+            duration: 10000
+          });
+        }
+        
         // Listen for events
         player.on('play', () => setIsPlaying(true));
-        player.on('pause', () => setIsPlaying(false));
+        player.on('pause', () => {
+          setIsPlaying(false);
+          // Save position on pause
+          if (currentTimeRef.current > 0) {
+            saveVideoPosition(currentTimeRef.current);
+          }
+        });
         player.on('timeupdate', handleTimeUpdate);
         player.on('ended', () => {
           setIsPlaying(false);
@@ -226,13 +335,25 @@ const VideoPlayer = ({
           }
         }
         if (d?.event === 'play' || d?.type === 'play') setIsPlaying(true);
-        if (d?.event === 'pause' || d?.type === 'pause') setIsPlaying(false);
+        if (d?.event === 'pause' || d?.type === 'pause') {
+          setIsPlaying(false);
+          // Save position on pause (fallback)
+          if (currentTimeRef.current > 0) {
+            saveVideoPosition(currentTimeRef.current);
+          }
+        }
       };
       window.addEventListener('message', onMessage);
       messageListenerRef.current = onMessage;
     }
 
     return () => {
+      // Clear auto-save interval
+      if (saveIntervalRef.current) {
+        clearInterval(saveIntervalRef.current);
+        saveIntervalRef.current = null;
+      }
+      
       if (messageListenerRef.current) {
         window.removeEventListener('message', messageListenerRef.current);
         messageListenerRef.current = null;
