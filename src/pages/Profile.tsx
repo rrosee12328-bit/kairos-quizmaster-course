@@ -539,11 +539,19 @@ const Profile = () => {
           </CardHeader>
           <CardContent>
             {enrollments.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p className="mb-4">You haven't enrolled in any courses yet</p>
-                <Button asChild>
-                  <Link to="/courses">Browse Courses</Link>
+              <div className="text-center py-12">
+                <div className="bg-primary/5 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+                  <BookOpen className="h-12 w-12 text-primary" />
+                </div>
+                <h3 className="text-xl font-semibold mb-3">No Courses Yet</h3>
+                <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
+                  Start your security training journey today and earn professional certifications!
+                </p>
+                <Button asChild size="lg" className="gap-2">
+                  <Link to="/courses">
+                    Browse Available Courses
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
                 </Button>
               </div>
             ) : (
