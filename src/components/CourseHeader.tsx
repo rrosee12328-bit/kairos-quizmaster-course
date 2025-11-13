@@ -1,6 +1,13 @@
-import { Shield, BookOpen, Users, LogOut } from "lucide-react";
+import { Shield, BookOpen, Users, LogOut, Home, Menu } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import kairosLogo from "@/assets/kairos-logo.png";
@@ -36,26 +43,47 @@ const CourseHeader = ({ isAdmin = false, showAuthButtons = false }: CourseHeader
           </Link>
           <div className="flex items-center gap-4 text-sm">
             {showAuthButtons && (
-              <>
-                <Button variant="ghost" size="sm" asChild className="text-primary-foreground hover:bg-primary-foreground/10">
-                  <Link to="/">Home</Link>
-                </Button>
-                <Button variant="ghost" size="sm" asChild className="text-primary-foreground hover:bg-primary-foreground/10">
-                  <Link to="/courses">Courses</Link>
-                </Button>
-                <Button variant="ghost" size="sm" asChild className="text-primary-foreground hover:bg-primary-foreground/10">
-                  <Link to="/profile">Profile</Link>
-                </Button>
-                {isAdmin && (
-                  <Button variant="outline" size="sm" asChild className="text-foreground">
-                    <Link to="/admin">Admin</Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="text-primary-foreground border-primary-foreground/20 hover:bg-primary-foreground/10">
+                    <Menu className="h-4 w-4 mr-2" />
+                    Menu
                   </Button>
-                )}
-                <Button variant="outline" size="sm" onClick={handleSignOut} className="text-foreground">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
-                </Button>
-              </>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48 bg-background">
+                  <DropdownMenuItem asChild>
+                    <Link to="/" className="flex items-center cursor-pointer">
+                      <Home className="h-4 w-4 mr-2" />
+                      Home
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/courses" className="flex items-center cursor-pointer">
+                      <BookOpen className="h-4 w-4 mr-2" />
+                      Courses
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="flex items-center cursor-pointer">
+                      <Users className="h-4 w-4 mr-2" />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin" className="flex items-center cursor-pointer">
+                        <Shield className="h-4 w-4 mr-2" />
+                        Admin
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
         </div>
