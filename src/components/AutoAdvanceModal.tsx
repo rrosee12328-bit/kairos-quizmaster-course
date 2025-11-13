@@ -18,7 +18,7 @@ const AutoAdvanceModal = ({
   sectionTitle,
   onAdvance,
   onCancel,
-  countdownSeconds = 5,
+  countdownSeconds = 10,
   isFinalSection = false,
 }: AutoAdvanceModalProps) => {
   const [secondsLeft, setSecondsLeft] = useState(countdownSeconds);
