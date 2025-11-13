@@ -342,7 +342,7 @@ const VideoPlayer = ({
           sectionTitle={section.title}
           onAdvance={handleAutoAdvance}
           onCancel={handleStayHere}
-          countdownSeconds={5}
+          countdownSeconds={10}
         />
       </CardContent>
     </Card>
