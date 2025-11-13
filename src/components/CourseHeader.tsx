@@ -45,7 +45,7 @@ const CourseHeader = ({ isAdmin = false, showAuthButtons = false }: CourseHeader
             {showAuthButtons && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="text-primary-foreground border-primary-foreground/20 hover:bg-primary-foreground/10">
+                  <Button variant="ghost" size="sm" className="text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground">
                     <Menu className="h-4 w-4 mr-2" />
                     Menu
                   </Button>
