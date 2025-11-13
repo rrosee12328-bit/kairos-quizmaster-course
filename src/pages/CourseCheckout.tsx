@@ -7,7 +7,7 @@ import { Shield, Clock, BookOpen, CheckCircle, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
-import kairosLogo from "@/assets/kairos-logo.png";
+import CourseHeader from "@/components/CourseHeader";
 import { trackViewContent, trackInitiateCheckout, getCoursePriceMap } from "@/lib/tracking";
 import level3SecurityImage from "@/assets/level3-security-professional.jpg";
 import level2SecurityImage from "@/assets/level2-security-vehicle.jpg";
@@ -207,23 +207,7 @@ const CourseCheckout = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      {/* Header */}
-      <header className="border-b bg-background sticky top-0 z-50 backdrop-blur-sm bg-background/95">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <img src={kairosLogo} alt="Kairos Security Academy" className="h-8 w-8" />
-              <h1 className="text-2xl font-bold">Kairos Security Academy</h1>
-            </Link>
-            <Button variant="ghost" asChild>
-              <Link to="/courses">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Courses
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+      <CourseHeader showAuthButtons={!!user} />
 
       {/* Main Content */}
       <main className="container mx-auto px-6 py-12">

@@ -9,6 +9,7 @@ import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { BackButton } from "@/components/BackButton";
 import { Footer } from "@/components/Footer";
+import CourseHeader from "@/components/CourseHeader";
 import kairosLogo from "@/assets/kairos-logo.png";
 import securityTrainingImage from "@/assets/security-training-courses.jpg";
 import { trackAddToCart, getCoursePriceMap } from "@/lib/tracking";
@@ -324,41 +325,7 @@ const Courses = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
-      {/* Header */}
-      <header className="border-b bg-background sticky top-0 z-50 backdrop-blur-sm bg-background/95">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <img src={kairosLogo} alt="Kairos Security Academy" className="h-8 w-8" />
-              <h1 className="text-2xl font-bold">Kairos Security Academy</h1>
-            </Link>
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" asChild>
-                <Link to="/">Home</Link>
-              </Button>
-              {user ? (
-                <>
-                  <Button variant="ghost" asChild>
-                    <Link to="/profile">Profile</Link>
-                  </Button>
-                  {isAdmin && (
-                    <Button variant="ghost" asChild>
-                      <Link to="/admin">Admin</Link>
-                    </Button>
-                  )}
-                  <Button variant="outline" onClick={handleSignOut}>
-                    Sign Out
-                  </Button>
-                </>
-              ) : (
-                <Button asChild>
-                  <Link to="/auth">Sign In</Link>
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <CourseHeader isAdmin={isAdmin} showAuthButtons={!!user} />
 
       {/* Main Content */}
       <main className="flex-1 container mx-auto px-6 py-12">

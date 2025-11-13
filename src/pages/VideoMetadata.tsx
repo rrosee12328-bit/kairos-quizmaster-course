@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/BackButton";
 import { Footer } from "@/components/Footer";
+import CourseHeader from "@/components/CourseHeader";
 import { Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import kairosLogo from "@/assets/kairos-logo.png";
@@ -19,6 +20,13 @@ const VideoMetadata = () => {
   const [videos, setVideos] = useState<BunnyVideo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+  }, []);
 
   const videoIds = [
     "571ebbaa-2ffc-4050-8670-a3e9d0c1c4f5",
@@ -62,23 +70,7 @@ const VideoMetadata = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      {/* Header */}
-      <header className="border-b bg-background sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <img src={kairosLogo} alt="Kairos Security Academy" className="h-8 w-8" />
-              <h1 className="text-2xl font-bold">Kairos Security Academy</h1>
-            </Link>
-            <div className="flex items-center gap-2">
-              <BackButton />
-              <Button variant="ghost" asChild>
-                <Link to="/">Home</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <CourseHeader showAuthButtons={!!user} />
 
       <div className="container mx-auto max-w-4xl p-8">
         <Card>
