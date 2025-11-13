@@ -7,6 +7,7 @@ export const useCourseProgress = (courseType: string, totalSections: number) => 
   const [loading, setLoading] = useState(true);
   const [examUnlocked, setExamUnlocked] = useState(false);
   const [completionPercentage, setCompletionPercentage] = useState(0);
+  const [examLockReason, setExamLockReason] = useState<string>('');
 
   useEffect(() => {
     fetchProgress();
@@ -35,7 +36,7 @@ export const useCourseProgress = (courseType: string, totalSections: number) => 
 
       // Check total course completion percentage
       const { data: { session } } = await supabase.auth.getSession();
-      const { data: completionData } = await supabase.functions.invoke('check-course-completion', {
+      const { data: completionData, error: completionError } = await supabase.functions.invoke('check-course-completion', {
         headers: session ? { Authorization: `Bearer ${session.access_token}` } : undefined,
         body: { course_type: courseType }
       });
@@ -43,6 +44,15 @@ export const useCourseProgress = (courseType: string, totalSections: number) => 
       if (completionData) {
         setCompletionPercentage(completionData.completion_percentage || 0);
         setExamUnlocked(completionData.exam_unlocked || false);
+        setExamLockReason(completionData.reason || '');
+        
+        if (!completionData.exam_unlocked && completionData.error) {
+          console.log('[useCourseProgress] Exam locked:', completionData.reason);
+        }
+      } else if (completionError) {
+        console.error('[useCourseProgress] Error checking completion:', completionError);
+        setExamUnlocked(false);
+        setExamLockReason('Unable to verify exam eligibility. Please try again.');
       }
 
       setLoading(false);
@@ -156,6 +166,7 @@ export const useCourseProgress = (courseType: string, totalSections: number) => 
     progressPercentage,
     allSectionsComplete,
     examUnlocked,
-    completionPercentage
+    completionPercentage,
+    examLockReason
   };
 };
