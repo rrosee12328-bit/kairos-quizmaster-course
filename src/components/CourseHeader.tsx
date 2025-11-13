@@ -69,14 +69,6 @@ const CourseHeader = ({ isAdmin = false, showAuthButtons = false }: CourseHeader
                       Profile
                     </Link>
                   </DropdownMenuItem>
-                  {isAdmin && (
-                    <DropdownMenuItem asChild>
-                      <Link to="/admin" className="flex items-center cursor-pointer">
-                        <Shield className="h-4 w-4 mr-2" />
-                        Admin
-                      </Link>
-                    </DropdownMenuItem>
-                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
                     <LogOut className="h-4 w-4 mr-2" />

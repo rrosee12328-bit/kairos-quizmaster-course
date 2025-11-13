@@ -1,32 +1,25 @@
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
-import kairosLogo from "@/assets/kairos-logo.png";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/Footer";
+import CourseHeader from "@/components/CourseHeader";
+import { supabase } from "@/integrations/supabase/client";
 
 const NotFound = () => {
   const location = window.location;
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
+    
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
   }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
-      {/* Header */}
-      <header className="border-b bg-background sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <img src={kairosLogo} alt="Kairos Security Academy" className="h-8 w-8" />
-              <h1 className="text-2xl font-bold">Kairos Security Academy</h1>
-            </Link>
-            <Button variant="ghost" asChild>
-              <Link to="/">Home</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+      <CourseHeader showAuthButtons={!!user} />
 
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center">

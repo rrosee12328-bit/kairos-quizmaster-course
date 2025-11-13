@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser } from "@supabase/supabase-js";
 import { Footer } from "@/components/Footer";
+import CourseHeader from "@/components/CourseHeader";
 import kairosLogo from "@/assets/kairos-logo.png";
 import securityOfficerImage from "@/assets/security-officer-hero-16x9.jpg";
 
@@ -36,45 +37,7 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-background sticky top-0 z-50">
-        <div className="container mx-auto px-3 sm:px-6 py-3 sm:py-4">
-          <div className="flex items-center justify-between gap-2">
-            <a href="/" className="flex items-center gap-2 sm:gap-3 max-w-[60%] sm:max-w-none hover:opacity-80 transition-opacity">
-              <img src={kairosLogo} alt="Kairos Security Academy" className="h-6 sm:h-8 w-6 sm:w-8 flex-shrink-0" />
-              <h1 className="text-sm sm:text-xl font-bold truncate">Kairos Security Academy</h1>
-            </a>
-            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-              {user ? (
-                <>
-                  <Button variant="ghost" asChild size="sm" className="hidden sm:flex">
-                    <Link to="/profile">
-                      <User className="h-4 w-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Profile</span>
-                    </Link>
-                  </Button>
-                  <Button variant="outline" onClick={handleSignOut} size="sm">
-                    <LogOut className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Sign Out</span>
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button variant="ghost" asChild size="sm" className="hidden sm:flex">
-                    <Link to="/courses">Courses</Link>
-                  </Button>
-                  <Button variant="ghost" asChild size="sm">
-                    <Link to="/auth">Sign In</Link>
-                  </Button>
-                  <Button asChild size="sm" className="text-xs sm:text-sm px-2 sm:px-4">
-                    <Link to="/courses">Register</Link>
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <CourseHeader showAuthButtons={!!user} />
 
       <main>
         {/* Hero with Video Section */}
