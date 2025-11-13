@@ -14,7 +14,14 @@ import CourseHeader from "@/components/CourseHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, Link } from "react-router-dom";
-import { Award, BookOpen, Users, CheckCircle, XCircle, Download, Filter, Search, ArrowUpDown, Eye, Key, Plus, RefreshCw, Clock } from "lucide-react";
+import { Award, BookOpen, Users, CheckCircle, XCircle, Download, Filter, Search, ArrowUpDown, Eye, Key, Plus, RefreshCw, Clock, MoreVertical } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 import { toast as sonnerToast } from "sonner";
 import kairosLogo from "@/assets/kairos-logo.png";
@@ -995,34 +1002,46 @@ const Admin = () => {
                               {format(new Date(approval.expires_at), 'MMM dd, yyyy HH:mm')}
                             </TableCell>
                             <TableCell>
-                              <div className="flex gap-2">
-                                {status === 'active' && (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleMarkAsUsed(approval.id)}
-                                  >
-                                    Mark Used
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreVertical className="h-4 w-4" />
                                   </Button>
-                                )}
-                                {(status === 'expired' || status === 'used') && (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleRegenerateCode(approval)}
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-48 bg-background">
+                                  <DropdownMenuItem
+                                    className="cursor-pointer"
+                                    onClick={() => openUserDetails(approval.user_id)}
                                   >
-                                    <RefreshCw className="h-3 w-3 mr-1" />
-                                    Regenerate
-                                  </Button>
-                                )}
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => openUserDetails(approval.user_id)}
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                              </div>
+                                    <Eye className="h-4 w-4 mr-2" />
+                                    View Details
+                                  </DropdownMenuItem>
+                                  {status === 'active' && (
+                                    <>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem
+                                        className="cursor-pointer"
+                                        onClick={() => handleMarkAsUsed(approval.id)}
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-2" />
+                                        Mark as Used
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
+                                  {(status === 'expired' || status === 'used') && (
+                                    <>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem
+                                        className="cursor-pointer"
+                                        onClick={() => handleRegenerateCode(approval)}
+                                      >
+                                        <RefreshCw className="h-4 w-4 mr-2" />
+                                        Regenerate Code
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </TableCell>
                           </TableRow>
                         );
