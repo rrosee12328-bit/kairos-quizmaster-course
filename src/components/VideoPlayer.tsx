@@ -92,15 +92,15 @@ const VideoPlayer = ({
 
       lastSavedPositionRef.current = seconds;
       
-      await supabase
-        .from('course_progress')
-        .update({
-          last_video_position_seconds: Math.floor(seconds),
-          last_updated_at: new Date().toISOString()
-        })
-        .eq('user_id', user.id)
-        .eq('course_type', courseType)
-        .eq('section_id', section.id);
+        await supabase
+          .from('course_progress')
+          .update({
+            last_video_position_seconds: Math.floor(seconds),
+            last_updated_at: new Date().toISOString()
+          } as any)
+          .eq('user_id', user.id)
+          .eq('course_type', courseType)
+          .eq('section_id', section.id);
 
       console.log('[VideoPlayer] Saved position:', Math.floor(seconds));
     } catch (err) {

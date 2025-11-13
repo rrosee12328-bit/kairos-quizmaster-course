@@ -55,7 +55,55 @@ Deno.serve(async (req: Request): Promise<Response> => {
       });
     }
 
-    // Get all progress records for this user and course
+    // 1. Check if user has enrolled/purchased the course
+    const { data: enrollment, error: enrollmentError } = await supabase
+      .from('enrollments')
+      .select('enrollment_status')
+      .eq('user_id', user.id)
+      .eq('course_type', course_type)
+      .eq('enrollment_status', 'completed')
+      .maybeSingle();
+
+    if (enrollmentError) {
+      console.error('[check-course-completion] Enrollment check error:', enrollmentError);
+    }
+
+    if (!enrollment) {
+      return new Response(JSON.stringify({ 
+        error: 'Course not purchased',
+        exam_unlocked: false,
+        completion_percentage: 0,
+        reason: 'You must purchase this course before accessing the exam.'
+      }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // 2. Check prerequisites for Level 3 (requires Level 2 completion)
+    if (course_type === 'level3') {
+      const { data: level2Completion } = await supabase
+        .from('course_completions')
+        .select('id, passed')
+        .eq('user_id', user.id)
+        .eq('course_type', 'level2')
+        .eq('passed', true)
+        .maybeSingle();
+
+      if (!level2Completion) {
+        return new Response(JSON.stringify({ 
+          error: 'Prerequisite not met',
+          exam_unlocked: false,
+          completion_percentage: 0,
+          reason: 'You must complete Level 2 Security Officer course before accessing Level 3.'
+        }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    // 3. Calculate total watch time from all sections
     const { data: progress, error: progressError } = await supabase
       .from('course_progress')
       .select('video_watch_time_seconds')
@@ -86,6 +134,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     console.log('[check-course-completion]', {
       userId: user.id,
       course_type,
+      hasEnrollment: !!enrollment,
       totalWatchTime,
       expectedDuration,
       completionPercentage: completionPercentage.toFixed(2),
@@ -96,7 +145,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
       total_watch_time_seconds: totalWatchTime,
       expected_duration_seconds: expectedDuration,
       completion_percentage: Math.round(completionPercentage * 10) / 10,
-      exam_unlocked: isUnlocked
+      exam_unlocked: isUnlocked,
+      has_enrollment: true,
+      reason: isUnlocked ? 'Exam unlocked' : `Complete ${(90 - completionPercentage).toFixed(1)}% more of the course to unlock the exam.`
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

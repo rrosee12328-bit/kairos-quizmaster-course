@@ -46,7 +46,7 @@ const Level2Course = () => {
   const [highestCompletedIndex, setHighestCompletedIndex] = useState(0);
   
   const totalSections = 9;
-  const { completedSections, examUnlocked, completionPercentage } = useCourseProgress('level2', totalSections);
+  const { completedSections, examUnlocked, completionPercentage, examLockReason } = useCourseProgress('level2', totalSections);
   
   const [courseSections, setCourseSections] = useState([
     {
@@ -877,12 +877,21 @@ const Level2Course = () => {
             showLocks={false}
           />
           {!examUnlocked && (
-            <div className="mt-2 text-center">
-              <p className="text-sm text-muted-foreground">
-                Course completion: <span className="font-semibold text-primary">{completionPercentage.toFixed(1)}%</span> 
-                <span className="text-xs ml-1">(90% required for exam)</span>
-              </p>
-            </div>
+            <>
+              {examLockReason && (
+                <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-sm text-amber-800">
+                    <strong>Exam Locked:</strong> {examLockReason}
+                  </p>
+                </div>
+              )}
+              <div className="mt-2 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Course completion: <span className="font-semibold text-primary">{completionPercentage.toFixed(1)}%</span> 
+                  <span className="text-xs ml-1">(90% required for exam)</span>
+                </p>
+              </div>
+            </>
           )}
         </div>
 

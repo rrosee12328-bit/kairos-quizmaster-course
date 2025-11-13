@@ -24,7 +24,7 @@ export const useVideoResume = (courseType: string, sectionId: number) => {
 
         if (error) throw error;
 
-        const position = data?.last_video_position_seconds || 0;
+        const position = (data as any)?.last_video_position_seconds || 0;
         
         // Only offer resume if more than 10 seconds in
         if (position > 10) {
