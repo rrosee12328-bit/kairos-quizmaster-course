@@ -9,6 +9,7 @@ import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { BackButton } from "@/components/BackButton";
 import { Footer } from "@/components/Footer";
+import CourseHeader from "@/components/CourseHeader";
 import { Shield, Award, BookOpen, Download, Settings, CheckCircle, Clock, XCircle, ArrowRight } from "lucide-react";
 import { format } from "date-fns";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -254,29 +255,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <header className="border-b bg-background sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <img src={kairosLogo} alt="Kairos Security Academy" className="h-8 w-8" />
-              <h1 className="text-xl font-bold">Kairos Security Academy</h1>
-            </Link>
-            <div className="flex items-center gap-2">
-              <BackButton fallbackPath={isAdmin ? "/admin" : "/courses"} preferHistory={false} />
-              <Button variant="ghost" asChild>
-                <Link to="/courses">Courses</Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link to="/settings">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Settings
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <CourseHeader isAdmin={isAdmin} showAuthButtons={true} />
 
       <main className="flex-1 container mx-auto px-6 py-12">
         {/* Admin Viewing Banner */}

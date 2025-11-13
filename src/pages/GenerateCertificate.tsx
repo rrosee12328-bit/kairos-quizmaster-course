@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Shield, FileCheck, Loader2 } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
 import { Footer } from "@/components/Footer";
+import CourseHeader from "@/components/CourseHeader";
 
 interface Completion {
   id: string;
@@ -22,9 +23,13 @@ const GenerateCertificate = () => {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState<string | null>(null);
   const [completions, setCompletions] = useState<Completion[]>([]);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     checkUser();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
   }, []);
 
   const checkUser = async () => {
@@ -118,13 +123,7 @@ const GenerateCertificate = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
-      <header className="border-b bg-background/95 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <BackButton />
-          <h1 className="text-xl font-bold">Generate Missing Certificates</h1>
-          <div className="w-24" />
-        </div>
-      </header>
+      <CourseHeader showAuthButtons={!!user} />
 
       <main className="flex-1 container mx-auto px-6 py-12">
         {completions.length === 0 ? (

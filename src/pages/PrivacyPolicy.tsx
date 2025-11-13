@@ -1,28 +1,25 @@
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Shield, Lock, Eye, Database, Mail, UserCheck } from "lucide-react";
 import { Footer } from "@/components/Footer";
+import CourseHeader from "@/components/CourseHeader";
+import { supabase } from "@/integrations/supabase/client";
 import kairosLogo from "@/assets/kairos-logo.png";
 
 const PrivacyPolicy = () => {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container mx-auto max-w-6xl px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <img src={kairosLogo} alt="Kairos Security Academy" className="h-10 w-10" />
-            <span className="font-bold text-xl">Kairos Security Academy</span>
-          </Link>
-          <Link to="/">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Home
-            </Button>
-          </Link>
-        </div>
-      </header>
+      <CourseHeader showAuthButtons={!!user} />
 
       {/* Main Content */}
       <main className="flex-1 container mx-auto max-w-4xl px-6 py-12">

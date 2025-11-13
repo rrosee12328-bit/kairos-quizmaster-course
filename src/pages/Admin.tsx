@@ -10,6 +10,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { BackButton } from "@/components/BackButton";
 import { Footer } from "@/components/Footer";
+import CourseHeader from "@/components/CourseHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, Link } from "react-router-dom";
@@ -519,22 +520,7 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b bg-background sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <img src={kairosLogo} alt="Kairos Security Academy" className="h-8 w-8" />
-              <h1 className="text-2xl font-bold">Kairos Admin</h1>
-            </Link>
-            <div className="flex items-center gap-2">
-              <BackButton />
-              <Button variant="ghost" asChild>
-                <Link to="/">Home</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <CourseHeader isAdmin={isAdmin} showAuthButtons={true} />
 
       <main className="container mx-auto px-6 py-8">
         {/* Stats Overview */}
