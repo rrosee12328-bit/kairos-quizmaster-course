@@ -312,11 +312,17 @@ const Profile = () => {
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Enrolled Courses</CardTitle>
+              <CardTitle className="text-sm font-medium">My Courses</CardTitle>
               <BookOpen className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{enrollments.length}</div>
+              <div className="text-2xl font-bold">
+                {/* Count unique courses from both enrollments and completions */}
+                {new Set([
+                  ...enrollments.map(e => e.course_type),
+                  ...completions.map(c => c.course_type)
+                ]).size}
+              </div>
             </CardContent>
           </Card>
 
@@ -538,7 +544,7 @@ const Profile = () => {
             <CardDescription>Track your enrolled and completed courses</CardDescription>
           </CardHeader>
           <CardContent>
-            {enrollments.length === 0 ? (
+            {enrollments.length === 0 && completions.length === 0 ? (
               <div className="text-center py-12">
                 <div className="bg-primary/5 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
                   <BookOpen className="h-12 w-12 text-primary" />
@@ -556,6 +562,7 @@ const Profile = () => {
               </div>
             ) : (
               <div className="space-y-4">
+                {/* Show all enrollments */}
                 {enrollments.map((enrollment) => {
                   const completion = completions.find(c => c.course_type === enrollment.course_type);
                   const canAccess = (enrollment.enrollment_status === 'enrolled' || enrollment.enrollment_status === 'pending') && !completion;
@@ -600,6 +607,37 @@ const Profile = () => {
                     </div>
                   );
                 })}
+                
+                {/* Show completions without enrollments */}
+                {completions
+                  .filter(completion => !enrollments.find(e => e.course_type === completion.course_type))
+                  .map((completion) => (
+                    <div 
+                      key={completion.id} 
+                      className="border rounded-lg p-4 transition-all"
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h4 className="font-semibold mb-1">{getCourseTitle(completion.course_type)}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Completed: {format(new Date(completion.completed_at), 'MMMM d, yyyy')}
+                          </p>
+                        </div>
+                        {getStatusBadge('completed')}
+                      </div>
+                      
+                      <div className="mt-3 pt-3 border-t">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium">Final Exam Score</span>
+                          <span className={`text-sm font-semibold ${completion.passed ? 'text-green-600' : 'text-red-600'}`}>
+                            {completion.percentage}% ({completion.score}/{completion.total_questions})
+                          </span>
+                        </div>
+                        <Progress value={completion.percentage} className="h-2" />
+                      </div>
+                    </div>
+                  ))
+                }
               </div>
             )}
           </CardContent>
