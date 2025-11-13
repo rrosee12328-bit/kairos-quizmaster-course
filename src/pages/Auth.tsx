@@ -125,16 +125,16 @@ const Auth = () => {
           </div>
 
           <Tabs defaultValue="enroll" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="enroll">Enroll</TabsTrigger>
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2" role="tablist" aria-label="Authentication options">
+              <TabsTrigger value="enroll" aria-label="Enroll in a course">Enroll</TabsTrigger>
+              <TabsTrigger value="signin" aria-label="Sign in to your account">Sign In</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="enroll" className="mt-6">
+            <TabsContent value="enroll" className="mt-6" role="tabpanel" aria-labelledby="enroll-tab">
               <EnrollmentForm onSuccess={handleAuthSuccess} defaultCourseType={courseFromUrl} />
             </TabsContent>
             
-            <TabsContent value="signin" className="mt-6">
+            <TabsContent value="signin" className="mt-6" role="tabpanel" aria-labelledby="signin-tab">
               <SignInForm onSuccess={handleAuthSuccess} />
             </TabsContent>
           </Tabs>
