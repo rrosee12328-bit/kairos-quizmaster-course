@@ -61,7 +61,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       .select('enrollment_status')
       .eq('user_id', user.id)
       .eq('course_type', course_type)
-      .eq('enrollment_status', 'completed')
+      .in('enrollment_status', ['enrolled', 'completed'])
       .maybeSingle();
 
     if (enrollmentError) {
