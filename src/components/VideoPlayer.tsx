@@ -206,30 +206,32 @@ const VideoPlayer = ({
         const seconds = data?.seconds ?? data?.currentTime;
         const duration = data?.duration ?? data?.length;
         
-        // Store current time and duration in refs
+        // Store current time and duration in refs and enforce no fast-forward beyond furthest watched
         if (typeof seconds === 'number') {
+          const prevTime = currentTimeRef.current;
+          const prevFurthest = furthestWatchedTime;
+          
           currentTimeRef.current = seconds;
           
-          // Track furthest watched time (for scrubbing restrictions)
-          setFurthestWatchedTime(prev => Math.max(prev, seconds));
+          // Update furthest watched (state + ref) when user truly progresses
+          if (seconds > prevFurthest) {
+            setFurthestWatchedTime(seconds);
+          }
           
-          // Detect forward seeking beyond watched content
-          if (lastSeekTimeRef.current > 0 && seconds > lastSeekTimeRef.current + 2) {
-            const wasForwardSeek = seconds > furthestWatchedTime + 1;
-            if (wasForwardSeek && player) {
-              console.log('[VideoPlayer] Prevented forward seek beyond watched:', { 
-                attempted: seconds, 
-                furthest: furthestWatchedTime 
-              });
-              // Rewind to furthest watched position
-              try {
-                player.setCurrentTime(furthestWatchedTime);
-              } catch (err) {
-                console.error('[VideoPlayer] Error preventing forward seek:', err);
-              }
+          const jumpedForward = prevTime > 0 && seconds > prevTime + 2;
+          const attemptedBeyondFurthest = seconds > prevFurthest + 1;
+          
+          if (jumpedForward && attemptedBeyondFurthest && player) {
+            console.log('[VideoPlayer] Prevented forward seek beyond watched:', { 
+              attempted: seconds, 
+              furthest: prevFurthest 
+            });
+            try {
+              player.setCurrentTime(prevFurthest);
+            } catch (err) {
+              console.error('[VideoPlayer] Error preventing forward seek:', err);
             }
           }
-          lastSeekTimeRef.current = seconds;
         }
         if (typeof duration === 'number') durationRef.current = duration;
         
