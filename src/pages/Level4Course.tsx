@@ -165,17 +165,6 @@ const Level4Course = () => {
             onComplete={() => {}}
             onNext={() => {}}
           />
-          
-          <div className="text-center mt-4">
-            <Button
-              onClick={() => setShowQuiz(true)}
-              disabled={!allSectionsComplete}
-              size="sm"
-              title={!allSectionsComplete ? "Complete the video to unlock the exam" : ""}
-            >
-              Go to Final Exam
-            </Button>
-          </div>
         </div>
 
         {allSectionsComplete && !showQuiz && (
