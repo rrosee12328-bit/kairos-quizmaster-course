@@ -165,6 +165,8 @@ export type Database = {
           created_at: string
           has_quiz: boolean | null
           id: string
+          last_updated_at: string | null
+          last_video_position_seconds: number | null
           quiz_passed: boolean | null
           section_completed: boolean | null
           section_id: number
@@ -181,6 +183,8 @@ export type Database = {
           created_at?: string
           has_quiz?: boolean | null
           id?: string
+          last_updated_at?: string | null
+          last_video_position_seconds?: number | null
           quiz_passed?: boolean | null
           section_completed?: boolean | null
           section_id: number
@@ -197,6 +201,8 @@ export type Database = {
           created_at?: string
           has_quiz?: boolean | null
           id?: string
+          last_updated_at?: string | null
+          last_video_position_seconds?: number | null
           quiz_passed?: boolean | null
           section_completed?: boolean | null
           section_id?: number
