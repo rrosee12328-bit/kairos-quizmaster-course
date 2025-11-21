@@ -650,8 +650,8 @@ const Level2Course = () => {
   const isCurrentSectionComplete = currentSectionId ? completedSections.includes(currentSectionId) : false;
   const isNextSectionComplete = nextSectionId ? completedSections.includes(nextSectionId) : false;
   
-  // canProceed: Allow if bypassed, current section just completed, OR next section already completed (going back)
-  const canProceed = bypassGate || (serverCompleted && graceTimerDone) || isNextSectionComplete;
+  // canProceed: Allow if bypassed, server-confirmed current section, OR next section already completed (going back)
+  const canProceed = bypassGate || serverCompleted || isNextSectionComplete;
   
   // Log IDs once on mount
   useEffect(() => {
