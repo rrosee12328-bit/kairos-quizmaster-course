@@ -43,6 +43,7 @@ const VideoPlayer = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [watchedPercent, setWatchedPercent] = useState(0);
   const [showResumePrompt, setShowResumePrompt] = useState(false);
+  const [furthestWatchedTime, setFurthestWatchedTime] = useState(0);
   
   const { savedPosition } = useVideoResume(courseType || '', section.id);
   
@@ -54,6 +55,7 @@ const VideoPlayer = ({
   const saveIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const currentTimeRef = useRef<number>(0);
   const durationRef = useRef<number>(0);
+  const lastSeekTimeRef = useRef<number>(0);
 
   // Extract Bunny.net identifiers from either iframe or HLS URL
   const extractIdsFromUrl = (url: string) => {
@@ -205,7 +207,30 @@ const VideoPlayer = ({
         const duration = data?.duration ?? data?.length;
         
         // Store current time and duration in refs
-        if (typeof seconds === 'number') currentTimeRef.current = seconds;
+        if (typeof seconds === 'number') {
+          currentTimeRef.current = seconds;
+          
+          // Track furthest watched time (for scrubbing restrictions)
+          setFurthestWatchedTime(prev => Math.max(prev, seconds));
+          
+          // Detect forward seeking beyond watched content
+          if (lastSeekTimeRef.current > 0 && seconds > lastSeekTimeRef.current + 2) {
+            const wasForwardSeek = seconds > furthestWatchedTime + 1;
+            if (wasForwardSeek && player) {
+              console.log('[VideoPlayer] Prevented forward seek beyond watched:', { 
+                attempted: seconds, 
+                furthest: furthestWatchedTime 
+              });
+              // Rewind to furthest watched position
+              try {
+                player.setCurrentTime(furthestWatchedTime);
+              } catch (err) {
+                console.error('[VideoPlayer] Error preventing forward seek:', err);
+              }
+            }
+          }
+          lastSeekTimeRef.current = seconds;
+        }
         if (typeof duration === 'number') durationRef.current = duration;
         
         if (typeof seconds === 'number' && typeof duration === 'number' && duration > 0) {
@@ -251,6 +276,11 @@ const VideoPlayer = ({
       playerInstanceRef.current = player; // Store for later use
       
       player.on('ready', () => {
+        // Initialize furthest watched to saved position
+        if (savedPosition > 0) {
+          setFurthestWatchedTime(savedPosition);
+        }
+        
         // Show resume prompt if there's a saved position
         if (savedPosition > 10) {
           setShowResumePrompt(true);
@@ -448,14 +478,6 @@ const VideoPlayer = ({
             loading="eager"
             title={`Video section ${section.id}`}
           />
-          {/* Overlay to block scrubber at bottom - only when not showing modal */}
-          {!showAutoAdvance && (
-            <div 
-              className="absolute left-0 right-0 bottom-0 h-24 z-10 cursor-not-allowed"
-              style={{ pointerEvents: 'auto' }}
-              title="Scrubbing is disabled during training"
-            />
-          )}
         </div>
 
         <AutoAdvanceModal
