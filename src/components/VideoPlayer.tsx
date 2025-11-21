@@ -44,6 +44,7 @@ const VideoPlayer = ({
   const [watchedPercent, setWatchedPercent] = useState(0);
   const [showResumePrompt, setShowResumePrompt] = useState(false);
   const [furthestWatchedTime, setFurthestWatchedTime] = useState(0);
+  const [isVideoCompleted, setIsVideoCompleted] = useState(false);
   
   const { savedPosition } = useVideoResume(courseType || '', section.id);
   
@@ -55,7 +56,36 @@ const VideoPlayer = ({
   const saveIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const currentTimeRef = useRef<number>(0);
   const durationRef = useRef<number>(0);
-  const lastSeekTimeRef = useRef<number>(0);
+
+  // Check if video section is already completed on mount
+  useEffect(() => {
+    if (!courseType || !isActive) return;
+    
+    const checkCompletion = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data } = await supabase
+          .from('course_progress')
+          .select('video_completed')
+          .eq('user_id', user.id)
+          .eq('course_type', courseType)
+          .eq('section_id', section.id)
+          .maybeSingle();
+
+        if (data?.video_completed) {
+          setIsVideoCompleted(true);
+          setFurthestWatchedTime(Infinity); // Allow free scrubbing
+          console.log('[VideoPlayer] Section already completed - free scrubbing enabled');
+        }
+      } catch (err) {
+        console.error('[VideoPlayer] Error checking completion:', err);
+      }
+    };
+
+    checkCompletion();
+  }, [courseType, section.id, isActive]);
 
   // Extract Bunny.net identifiers from either iframe or HLS URL
   const extractIdsFromUrl = (url: string) => {
@@ -214,22 +244,25 @@ const VideoPlayer = ({
           currentTimeRef.current = seconds;
           
           // Update furthest watched (state + ref) when user truly progresses
-          if (seconds > prevFurthest) {
+          if (seconds > prevFurthest && prevFurthest !== Infinity) {
             setFurthestWatchedTime(seconds);
           }
           
-          const jumpedForward = prevTime > 0 && seconds > prevTime + 2;
-          const attemptedBeyondFurthest = seconds > prevFurthest + 1;
-          
-          if (jumpedForward && attemptedBeyondFurthest && player) {
-            console.log('[VideoPlayer] Prevented forward seek beyond watched:', { 
-              attempted: seconds, 
-              furthest: prevFurthest 
-            });
-            try {
-              player.setCurrentTime(prevFurthest);
-            } catch (err) {
-              console.error('[VideoPlayer] Error preventing forward seek:', err);
+          // Only enforce scrubbing restrictions if video isn't completed
+          if (!isVideoCompleted && prevFurthest !== Infinity) {
+            const jumpedForward = prevTime > 0 && seconds > prevTime + 2;
+            const attemptedBeyondFurthest = seconds > prevFurthest + 1;
+            
+            if (jumpedForward && attemptedBeyondFurthest && player) {
+              console.log('[VideoPlayer] Prevented forward seek beyond watched:', { 
+                attempted: seconds, 
+                furthest: prevFurthest 
+              });
+              try {
+                player.setCurrentTime(prevFurthest);
+              } catch (err) {
+                console.error('[VideoPlayer] Error preventing forward seek:', err);
+              }
             }
           }
         }
@@ -278,13 +311,17 @@ const VideoPlayer = ({
       playerInstanceRef.current = player; // Store for later use
       
       player.on('ready', () => {
-        // Initialize furthest watched to saved position
-        if (savedPosition > 0) {
+        // If video already completed, allow free scrubbing
+        if (isVideoCompleted) {
+          console.log('[VideoPlayer] Video completed - enabling free scrubbing');
+          setFurthestWatchedTime(Infinity);
+        } else if (savedPosition > 0) {
+          // Initialize furthest watched to saved position for incomplete videos
           setFurthestWatchedTime(savedPosition);
         }
         
-        // Show resume prompt if there's a saved position
-        if (savedPosition > 10) {
+        // Show resume prompt if there's a saved position (and not completed)
+        if (savedPosition > 10 && !isVideoCompleted) {
           setShowResumePrompt(true);
           toast('Resume from where you left off?', {
             description: `Jump to ${Math.floor(savedPosition / 60)}:${String(Math.floor(savedPosition % 60)).padStart(2, '0')}`,
