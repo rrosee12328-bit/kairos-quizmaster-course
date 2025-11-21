@@ -648,9 +648,10 @@ const Level2Course = () => {
   const currentSectionId = courseSections[currentSlide]?.id;
   const nextSectionId = courseSections[nextIndex]?.id;
   const isCurrentSectionComplete = currentSectionId ? completedSections.includes(currentSectionId) : false;
+  const isNextSectionComplete = nextSectionId ? completedSections.includes(nextSectionId) : false;
   
-  // canProceed: server truth + grace + bypass
-  const canProceed = bypassGate || (serverCompleted && graceTimerDone);
+  // canProceed: Allow if bypassed, current section just completed, OR next section already completed (going back)
+  const canProceed = bypassGate || (serverCompleted && graceTimerDone) || isNextSectionComplete;
   
   // Log IDs once on mount
   useEffect(() => {
