@@ -806,7 +806,7 @@ const Level2Course = () => {
                   pointerEvents: 'auto'
                 }}
               >
-                {currentSlide === totalSections - 1 ? 'Go to Final Exam' : 'Next'}
+                {currentSlide === totalSections - 1 ? 'Next' : 'Next'}
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
@@ -826,17 +826,6 @@ const Level2Course = () => {
             )}
 
             <div className="text-center mt-4 space-y-4">
-              <Button
-                onClick={() => {
-                  setShowQuiz(true);
-                }}
-                disabled={!examUnlocked}
-                size="sm"
-                title={!examUnlocked ? `Watch 90% of course videos to unlock (${completionPercentage.toFixed(1)}% complete)` : ""}
-              >
-                Go to Final Exam
-              </Button>
-              
               {/* Dev Panel (page-level gating state) */}
               {!import.meta.env.PROD && (
                 <Card className="border-orange-500 bg-orange-50 dark:bg-orange-950/20 text-xs">

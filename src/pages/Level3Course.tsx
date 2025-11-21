@@ -476,22 +476,9 @@ const Course = () => {
                 <ChevronRight className="h-4 w-4 ml-2" />
               </Button>
             </div>
-
-            <div className="text-center mt-4">
-              <Button
-                onClick={() => {
-                  setShowQuiz(true);
-                }}
-                disabled={!examUnlocked}
-                size="sm"
-                title={!examUnlocked ? `Watch 90% of course videos to unlock (${completionPercentage.toFixed(1)}% complete)` : ""}
-              >
-                Go to Part 1 Final Exam
-              </Button>
-            </div>
           </div>
 
-        {/* Progress Tracker */}
+          {/* Progress Tracker */}
         <div className="mb-6">
           <ProgressTracker 
             completedSections={completedSections} 
