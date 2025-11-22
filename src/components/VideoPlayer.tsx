@@ -251,6 +251,14 @@ const VideoPlayer = ({
             setFurthestWatchedTime(seconds);
           }
           
+          // Debug logging for double-click investigation
+          console.log('[VideoPlayer] Time update:', {
+            seconds,
+            prevTime,
+            furthest: prevFurthest,
+            isCompleted: isVideoCompleted
+          });
+
           // Only enforce scrubbing restrictions if video isn't completed
           if (!isVideoCompleted && prevFurthest !== Infinity) {
             // Allow backward scrubbing and small forward jumps (normal clicking)
@@ -259,16 +267,26 @@ const VideoPlayer = ({
             const isBeyondWatched = seconds > prevFurthest + 2;
             
             if (isLargeForwardJump && isBeyondWatched && player) {
-              console.log('[VideoPlayer] Prevented forward seek beyond watched:', { 
+              console.log('[VideoPlayer] ⛔ BLOCKED forward seek beyond watched:', { 
                 attempted: seconds, 
-                furthest: prevFurthest 
+                furthest: prevFurthest,
+                prevTime,
+                jumpSize: seconds - prevTime
               });
               try {
                 player.setCurrentTime(prevFurthest);
               } catch (err) {
                 console.error('[VideoPlayer] Error preventing forward seek:', err);
               }
+            } else {
+              console.log('[VideoPlayer] ✅ ALLOWED seek:', {
+                isLargeJump: isLargeForwardJump,
+                isBeyond: isBeyondWatched,
+                reason: !isLargeForwardJump ? 'small jump' : !isBeyondWatched ? 'within watched' : 'allowed'
+              });
             }
+          } else {
+            console.log('[VideoPlayer] ✅ Free scrubbing enabled (completed or infinity)');
           }
         }
         if (typeof duration === 'number') durationRef.current = duration;
