@@ -79,10 +79,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
       video_started_at: new Date().toISOString(),
     };
 
-    // If no quiz, also mark as section_completed
+    // If no quiz, mark section as fully completed
     if (!has_quiz) {
       payload.completed = true;
-      payload.section_completed = true;
+      // Don't set section_completed directly - let it be computed by trigger/database
     }
 
     // Use native upsert to handle race conditions atomically
