@@ -42,41 +42,43 @@ const CourseHeader = ({ isAdmin = false, showAuthButtons = false }: CourseHeader
             </div>
           </Link>
           <div className="flex items-center gap-4 text-sm">
-            {showAuthButtons && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="bg-primary-foreground/10 text-primary-foreground border-primary-foreground/30 hover:bg-primary-foreground/20 hover:border-primary-foreground/50 font-semibold">
-                    <Menu className="h-4 w-4 mr-2" />
-                    Menu
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48 bg-background">
-                  <DropdownMenuItem asChild>
-                    <Link to="/" className="flex items-center cursor-pointer">
-                      <Home className="h-4 w-4 mr-2" />
-                      Home
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/courses" className="flex items-center cursor-pointer">
-                      <BookOpen className="h-4 w-4 mr-2" />
-                      Courses
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/profile" className="flex items-center cursor-pointer">
-                      <Users className="h-4 w-4 mr-2" />
-                      Profile
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="bg-primary-foreground/10 text-primary-foreground border-primary-foreground/30 hover:bg-primary-foreground/20 hover:border-primary-foreground/50 font-semibold">
+                  <Menu className="h-4 w-4 mr-2" />
+                  Menu
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 bg-background">
+                <DropdownMenuItem asChild>
+                  <Link to="/" className="flex items-center cursor-pointer">
+                    <Home className="h-4 w-4 mr-2" />
+                    Home
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/courses" className="flex items-center cursor-pointer">
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    Courses
+                  </Link>
+                </DropdownMenuItem>
+                {showAuthButtons && (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile" className="flex items-center cursor-pointer">
+                        <Users className="h-4 w-4 mr-2" />
+                        Profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
