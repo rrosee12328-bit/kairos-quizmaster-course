@@ -67,20 +67,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
       has_quiz 
     });
 
-    // Upsert video completion
-    const { data: existing } = await supabase
-      .from('course_progress')
-      .select('id, video_completed, quiz_passed')
-      .eq('user_id', user.id)
-      .eq('course_type', course_id)
-      .eq('section_id', section_id)
-      .maybeSingle();
-
+    // Prepare payload for upsert
     const payload: any = {
+      user_id: user.id,
+      course_type: course_id,
+      section_id: section_id,
       video_watch_time_seconds: Math.max(0, Math.floor(seconds_watched)),
       video_completed: total_duration > 0 ? (seconds_watched / total_duration) >= 0.999 : true,
       has_quiz,
       completed_at: new Date().toISOString(),
+      video_started_at: new Date().toISOString(),
     };
 
     // If no quiz, also mark as completed
@@ -88,34 +84,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
       payload.completed = true;
     }
 
-    let upsertError = null;
-
-    if (existing?.id) {
-      const { error } = await supabase
-        .from('course_progress')
-        .update(payload)
-        .eq('id', existing.id);
-      upsertError = error;
-      
-      console.log('[progress-video-complete] Updated existing:', { 
-        id: existing.id,
-        video_completed: true,
-        section_completed: !has_quiz || existing.quiz_passed
+    // Use native upsert to handle race conditions atomically
+    const { error: upsertError } = await supabase
+      .from('course_progress')
+      .upsert(payload, {
+        onConflict: 'user_id,course_type,section_id',
+        ignoreDuplicates: false
       });
-    } else {
-      const { error } = await supabase
-        .from('course_progress')
-        .insert({
-          user_id: user.id,
-          course_type: course_id,
-          section_id: section_id,
-          video_started_at: new Date().toISOString(),
-          ...payload,
-        });
-      upsertError = error;
-      
-      console.log('[progress-video-complete] Created new record');
-    }
 
     if (upsertError) {
       console.error('[progress-video-complete] Error:', upsertError);
@@ -124,6 +99,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+    
+    console.log('[progress-video-complete] Upserted record:', { 
+      userId: user.id,
+      course_id,
+      section_id,
+      video_completed: payload.video_completed
+    });
 
     // Return updated status
     const { data: updated } = await supabase
