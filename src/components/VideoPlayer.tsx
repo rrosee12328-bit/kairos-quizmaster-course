@@ -243,14 +243,6 @@ const VideoPlayer = ({
           const prevTime = currentTimeRef.current;
           const prevFurthest = furthestWatchedRef.current;
           
-          currentTimeRef.current = seconds;
-          
-          // Update furthest watched (state + ref) when user truly progresses
-          if (seconds > prevFurthest && prevFurthest !== Infinity) {
-            furthestWatchedRef.current = seconds;
-            setFurthestWatchedTime(seconds);
-          }
-          
           // Debug logging for double-click investigation
           console.log('[VideoPlayer] Time update:', {
             seconds,
@@ -278,6 +270,8 @@ const VideoPlayer = ({
               } catch (err) {
                 console.error('[VideoPlayer] Error preventing forward seek:', err);
               }
+              // Don't update currentTimeRef for blocked seeks
+              return;
             } else {
               console.log('[VideoPlayer] ✅ ALLOWED seek:', {
                 isLargeJump: isLargeForwardJump,
@@ -287,6 +281,15 @@ const VideoPlayer = ({
             }
           } else {
             console.log('[VideoPlayer] ✅ Free scrubbing enabled (completed or infinity)');
+          }
+          
+          // Only update currentTimeRef AFTER validation passes
+          currentTimeRef.current = seconds;
+          
+          // Update furthest watched (state + ref) when user truly progresses
+          if (seconds > prevFurthest && prevFurthest !== Infinity) {
+            furthestWatchedRef.current = seconds;
+            setFurthestWatchedTime(seconds);
           }
         }
         if (typeof duration === 'number') durationRef.current = duration;
