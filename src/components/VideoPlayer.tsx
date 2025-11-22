@@ -250,10 +250,12 @@ const VideoPlayer = ({
           
           // Only enforce scrubbing restrictions if video isn't completed
           if (!isVideoCompleted && prevFurthest !== Infinity) {
-            const jumpedForward = prevTime > 0 && seconds > prevTime + 2;
-            const attemptedBeyondFurthest = seconds > prevFurthest + 1;
+            // Allow backward scrubbing and small forward jumps (normal clicking)
+            // Only prevent large forward jumps beyond what's been watched
+            const isLargeForwardJump = prevTime > 0 && seconds > prevTime + 5;
+            const isBeyondWatched = seconds > prevFurthest + 2;
             
-            if (jumpedForward && attemptedBeyondFurthest && player) {
+            if (isLargeForwardJump && isBeyondWatched && player) {
               console.log('[VideoPlayer] Prevented forward seek beyond watched:', { 
                 attempted: seconds, 
                 furthest: prevFurthest 
