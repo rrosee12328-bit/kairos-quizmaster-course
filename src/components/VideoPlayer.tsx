@@ -56,6 +56,7 @@ const VideoPlayer = ({
   const saveIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const currentTimeRef = useRef<number>(0);
   const durationRef = useRef<number>(0);
+  const furthestWatchedRef = useRef<number>(0);
 
   // Check if video section is already completed on mount
   useEffect(() => {
@@ -77,6 +78,7 @@ const VideoPlayer = ({
         if (data?.video_completed) {
           setIsVideoCompleted(true);
           setFurthestWatchedTime(Infinity); // Allow free scrubbing
+          furthestWatchedRef.current = Infinity;
           console.log('[VideoPlayer] Section already completed - free scrubbing enabled');
         }
       } catch (err) {
@@ -239,12 +241,13 @@ const VideoPlayer = ({
         // Store current time and duration in refs and enforce no fast-forward beyond furthest watched
         if (typeof seconds === 'number') {
           const prevTime = currentTimeRef.current;
-          const prevFurthest = furthestWatchedTime;
+          const prevFurthest = furthestWatchedRef.current;
           
           currentTimeRef.current = seconds;
           
           // Update furthest watched (state + ref) when user truly progresses
           if (seconds > prevFurthest && prevFurthest !== Infinity) {
+            furthestWatchedRef.current = seconds;
             setFurthestWatchedTime(seconds);
           }
           
@@ -316,9 +319,11 @@ const VideoPlayer = ({
         // If video already completed, allow free scrubbing
         if (isVideoCompleted) {
           console.log('[VideoPlayer] Video completed - enabling free scrubbing');
+          furthestWatchedRef.current = Infinity;
           setFurthestWatchedTime(Infinity);
         } else if (savedPosition > 0) {
           // Initialize furthest watched to saved position for incomplete videos
+          furthestWatchedRef.current = savedPosition;
           setFurthestWatchedTime(savedPosition);
         }
         
