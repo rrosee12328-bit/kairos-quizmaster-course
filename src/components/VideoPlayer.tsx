@@ -313,9 +313,14 @@ const VideoPlayer = ({
           
           if (percent >= 99.9 && !hasCompletedRef.current) {
             hasCompletedRef.current = true;
-            saveWatchProgress(seconds, duration, true);
-            onSectionCompleted?.(section.id);
-            setShowAutoAdvance(true);
+            // Wrap in async function to allow await
+            (async () => {
+              await saveWatchProgress(seconds, duration, true);
+              // Small delay to ensure database trigger has processed
+              await new Promise(resolve => setTimeout(resolve, 500));
+              onSectionCompleted?.(section.id);
+              setShowAutoAdvance(true);
+            })();
           }
         }
       } catch {}
@@ -395,17 +400,25 @@ const VideoPlayer = ({
           setWatchedPercent(100);
           if (!hasCompletedRef.current) {
             hasCompletedRef.current = true;
-            onSectionCompleted?.(section.id);
-            
-            // Pause the video when showing the modal
-            try {
-              player.pause();
-              console.log('[VideoPlayer] Paused video on completion');
-            } catch (err) {
-              console.error('[VideoPlayer] Error pausing:', err);
-            }
-            
-            setShowAutoAdvance(true);
+            // Wrap in async function to allow await
+            (async () => {
+              const currentTime = player.getCurrentTime?.() || currentTimeRef.current || 0;
+              const duration = player.getDuration?.() || durationRef.current || 0;
+              await saveWatchProgress(currentTime, duration, true);
+              // Small delay to ensure database trigger has processed
+              await new Promise(resolve => setTimeout(resolve, 500));
+              onSectionCompleted?.(section.id);
+              
+              // Pause the video when showing the modal
+              try {
+                player.pause();
+                console.log('[VideoPlayer] Paused video on completion');
+              } catch (err) {
+                console.error('[VideoPlayer] Error pausing:', err);
+              }
+              
+              setShowAutoAdvance(true);
+            })();
           }
         });
       });
@@ -425,17 +438,25 @@ const VideoPlayer = ({
           setWatchedPercent(100);
           if (!hasCompletedRef.current) {
             hasCompletedRef.current = true;
-            onSectionCompleted?.(section.id);
-            
-            // Try to pause via postMessage (fallback method)
-            try {
-              iframe?.contentWindow?.postMessage({ method: 'pause' }, '*');
-              console.log('[VideoPlayer] Sent pause message on completion (fallback)');
-            } catch (err) {
-              console.error('[VideoPlayer] Error sending pause message:', err);
-            }
-            
-            setShowAutoAdvance(true);
+            // Wrap in async function to allow await
+            (async () => {
+              const currentTime = currentTimeRef.current || 0;
+              const duration = durationRef.current || 0;
+              await saveWatchProgress(currentTime, duration, true);
+              // Small delay to ensure database trigger has processed
+              await new Promise(resolve => setTimeout(resolve, 500));
+              onSectionCompleted?.(section.id);
+              
+              // Try to pause via postMessage (fallback method)
+              try {
+                iframe?.contentWindow?.postMessage({ method: 'pause' }, '*');
+                console.log('[VideoPlayer] Sent pause message on completion (fallback)');
+              } catch (err) {
+                console.error('[VideoPlayer] Error sending pause message:', err);
+              }
+              
+              setShowAutoAdvance(true);
+            })();
           }
         }
         if (d?.event === 'play' || d?.type === 'play') setIsPlaying(true);
@@ -482,10 +503,14 @@ const VideoPlayer = ({
     // No need to unpause - user can manually play if they want
   };
 
-  const handleCompleteSection = () => {
+  const handleCompleteSection = async () => {
     if (!hasCompletedRef.current) {
-      console.log('[VideoPlayer] User completed section, showing countdown');
+      console.log('[VideoPlayer] User manually completed section');
       hasCompletedRef.current = true;
+      
+      // Small delay to ensure any pending database operations complete
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       onSectionCompleted?.(section.id);
       setShowAutoAdvance(true);
     }
