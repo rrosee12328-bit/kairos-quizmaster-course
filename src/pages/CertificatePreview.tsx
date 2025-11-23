@@ -319,13 +319,43 @@ const CertificatePreview = () => {
 
     setIsSending(true);
     try {
+      // Generate PDF for attachment
+      const exportEl = document.getElementById('certificate-export');
+      if (!exportEl) {
+        throw new Error('Certificate element not found');
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const canvas = await html2canvas(exportEl as HTMLElement, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const imgWidth = 297;
+      const imgHeight = 210;
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      
+      // Convert PDF to base64
+      const pdfBase64 = pdf.output('datauristring').split(',')[1];
+      
       const { error } = await supabase.functions.invoke('send-certificate', {
         body: {
           name: userName,
           email: email,
           date: completionDate,
           registrationNumber: registrationNumber,
-          appOrigin: window.location.origin,
+          pdfAttachment: pdfBase64,
         },
       });
 
