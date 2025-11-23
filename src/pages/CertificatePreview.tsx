@@ -318,13 +318,18 @@ const CertificatePreview = () => {
     }
 
     setIsSending(true);
+    console.log('Starting certificate email send...');
+    
     try {
       // Generate PDF for attachment
+      console.log('Finding certificate element...');
       const exportEl = document.getElementById('certificate-export');
       if (!exportEl) {
+        console.error('Certificate element not found');
         throw new Error('Certificate element not found');
       }
 
+      console.log('Generating PDF from certificate...');
       await new Promise(resolve => setTimeout(resolve, 100));
       
       const canvas = await html2canvas(exportEl as HTMLElement, {
@@ -335,6 +340,7 @@ const CertificatePreview = () => {
         backgroundColor: '#ffffff'
       });
 
+      console.log('Canvas generated, creating PDF...');
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
         orientation: 'landscape',
@@ -346,10 +352,12 @@ const CertificatePreview = () => {
       const imgHeight = 210;
       pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
       
-      // Convert PDF to base64
+      console.log('Converting PDF to base64...');
       const pdfBase64 = pdf.output('datauristring').split(',')[1];
+      console.log('PDF generated, size:', pdfBase64.length, 'chars');
       
-      const { error } = await supabase.functions.invoke('send-certificate', {
+      console.log('Calling send-certificate function...');
+      const { data, error } = await supabase.functions.invoke('send-certificate', {
         body: {
           name: userName,
           email: email,
@@ -359,21 +367,26 @@ const CertificatePreview = () => {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Function error:', error);
+        throw error;
+      }
 
+      console.log('Email sent successfully:', data);
       toast({
         title: "Success",
         description: `Certificate sent to ${email}`,
       });
       setEmail("");
-    } catch (error) {
-      console.error('Email error:', error);
+    } catch (error: any) {
+      console.error('Email send error:', error);
       toast({
         title: "Error",
-        description: "Failed to send certificate email",
+        description: error?.message || "Failed to send certificate email",
         variant: "destructive",
       });
     } finally {
+      console.log('Email send process completed, resetting state');
       setIsSending(false);
     }
   };
