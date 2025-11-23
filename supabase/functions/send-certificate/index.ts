@@ -108,7 +108,7 @@ async function generateCertificatePDF(
 
     // === Text placement ===
     // Student Name – centered in middle section
-    const nameY = pctY(58);
+    const nameY = pctY(62);
     page.drawText(name || "Student Name", {
       x: pctX(32),
       y: nameY,
@@ -129,12 +129,12 @@ async function generateCertificatePDF(
       });
     }
 
-    // Date of Completion – in the table, above "Kairos Security"
+    // Date of Completion – on the Date of Completion line
     const formattedDate = formatDate(date);
-    const dateY = pctY(28);
+    const dateY = pctY(46);
 
     page.drawText(formattedDate, {
-      x: pctX(12),
+      x: pctX(62),
       y: dateY,
       size: Math.max(pageHeight * 0.03, 16),
       font: fontNormal,
