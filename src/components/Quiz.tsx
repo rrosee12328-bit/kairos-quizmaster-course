@@ -122,7 +122,9 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
     const endTime = new Date().toISOString();
     const durationSeconds = Math.floor((new Date(endTime).getTime() - new Date(startTime).getTime()) / 1000);
     
-    const { data: completionData, error: completionError } = await supabase
+    let completionData: any = null;
+
+    const { data: newCompletion, error: completionError } = await supabase
       .from('course_completions')
       .insert({
         user_id: user.id,
@@ -140,18 +142,47 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
       .single();
 
     if (completionError) {
-      console.error('Error saving completion:', completionError);
-      toast({
-        title: "Error",
-        description: "Failed to save your results. Please contact support.",
-        variant: "destructive",
-      });
-      return false;
-    }
+      // Handle case where a passing completion already exists due to DB constraint
+      if (completionError.code === '23505' &&
+          (completionError as any).message?.includes('unique_passing_completion')) {
+        console.warn('Duplicate passing completion detected, reusing latest passing record');
 
-    let registrationNumber = null;
-    let approvalCode = null;
-    let approvalExpiresAt = null;
+        const { data: existingCompletion, error: existingError } = await supabase
+          .from('course_completions')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('course_type', courseType)
+          .eq('passed', true)
+          .order('completed_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (existingError || !existingCompletion) {
+          console.error('Error fetching existing completion after duplicate constraint:', existingError);
+          toast({
+            title: "Error",
+            description: "Failed to save your results. Please contact support.",
+            variant: "destructive",
+          });
+          return false;
+        }
+
+        completionData = existingCompletion;
+      } else {
+        console.error('Error saving completion:', completionError);
+        toast({
+          title: "Error",
+          description: "Failed to save your results. Please contact support.",
+          variant: "destructive",
+        });
+        return false;
+      }
+    } else {
+      completionData = newCompletion;
+    }
+    let registrationNumber: string | null = null;
+    let approvalCode: string | null = null;
+    let approvalExpiresAt: string | null = null;
 
     if (passed && completionData && enrollment) {
       if (courseType === 'level2') {
