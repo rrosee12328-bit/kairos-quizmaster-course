@@ -12,7 +12,7 @@ const certificateEmailSchema = z.object({
   email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters"),
   date: z.string().trim().min(1, "Date is required").max(50, "Date must be less than 50 characters"),
   registrationNumber: z.string().trim().min(1, "Registration number is required").max(50, "Registration number must be less than 50 characters").regex(/^[A-Z0-9-]+$/, "Invalid registration number format"),
-  appOrigin: z.string().trim().optional(),
+  pdfAttachment: z.string().optional(),
 });
 
 Deno.serve(async (req: Request): Promise<Response> => {
@@ -38,11 +38,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    const { name, email, date, registrationNumber, appOrigin } = validation.data;
+    const { name, email, date, registrationNumber, pdfAttachment } = validation.data;
 
     const resend = new Resend(RESEND_API_KEY);
 
-    const { data, error } = await resend.emails.send({
+    const emailPayload: any = {
       from: "Kairos Security Academy <info@kairossecurityacademy.com>",
       to: [email],
       subject: "Your Level 2 Security Officer Certificate",
@@ -118,13 +118,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
               
               <p>This certificate verifies that you have met the standards and requirements set forth in Texas Occupations Code, Section 1702, Title 10 and Administrative Rules.</p>
               
-              <p>Your certificate has been issued and is now available for download from your student portal.</p>
-              
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="https://cpjamwmwzrgqhfnirikz.supabase.co/functions/v1/download-certificate?registration=${registrationNumber}${appOrigin ? `&o=${encodeURIComponent(appOrigin)}` : ''}" class="button" style="color: white;">
-                  📄 Download Your Certificate
-                </a>
-              </div>
+              <p>Your certificate has been issued and is attached to this email as a PDF document.</p>
               
               <p style="font-size: 14px; color: #666;">You can also access your certificate anytime by logging into your account and visiting your profile page.</p>
               
@@ -137,7 +131,17 @@ Deno.serve(async (req: Request): Promise<Response> => {
           </body>
         </html>
       `,
-    });
+    };
+
+    // Add attachment if provided
+    if (pdfAttachment) {
+      emailPayload.attachments = [{
+        filename: `Certificate-${registrationNumber}.pdf`,
+        content: pdfAttachment,
+      }];
+    }
+
+    const { data, error } = await resend.emails.send(emailPayload);
 
     if (error) {
       console.error("Resend API error:", error);
