@@ -91,12 +91,12 @@ const AutoAdvanceModal = ({
               >
                 {isFinalSection ? "Course Complete!" : "Section Complete!"}
               </DialogTitle>
-              <p 
+              <DialogDescription
                 className="text-sm text-muted-foreground mt-1"
                 data-testid="complete-section-title"
               >
                 {sectionTitle}
-              </p>
+              </DialogDescription>
             </div>
           </div>
         </DialogHeader>

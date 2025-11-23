@@ -185,7 +185,7 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
         if (!certError && certData) {
           registrationNumber = certData.registration_number;
           
-          // Send certificate email
+          // Send certificate email with PDF attachment (generated server-side)
           try {
             await supabase.functions.invoke('send-certificate', {
               body: {
@@ -193,11 +193,21 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
                 email: user.email,
                 date: certData.completion_date,
                 registrationNumber: certData.registration_number,
+                lastSixDigits: enrollment.last_six_digits,
               }
             });
-            console.log('Certificate email sent successfully');
+            console.log('Certificate email with PDF sent successfully');
+            toast({
+              title: "Certificate Sent!",
+              description: "Your certificate has been emailed to you as a PDF attachment.",
+            });
           } catch (emailError) {
             console.error('Error sending certificate email:', emailError);
+            toast({
+              title: "Email Error",
+              description: "Certificate created but email failed. You can download it from your profile.",
+              variant: "destructive",
+            });
           }
         }
       } else {
