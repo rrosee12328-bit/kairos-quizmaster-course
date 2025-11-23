@@ -85,7 +85,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
 
     // Get most recent enrollment data for this course
-    const { data: enrollment, error: enrollmentError } = await supabase
+    const { data: enrollment } = await supabase
       .from('enrollments')
       .select('first_name, last_name, last_six_digits, identification_type')
       .eq('user_id', userId)
@@ -94,14 +94,37 @@ Deno.serve(async (req: Request): Promise<Response> => {
       .limit(1)
       .maybeSingle();
 
-    if (enrollmentError || !enrollment) {
-      return new Response(
-        JSON.stringify({ error: 'Enrollment record not found' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    // If no enrollment exists, fall back to profile data
+    let fullName: string;
+    let lastSixDigits: string | undefined;
+    let identificationType: string;
 
-    const fullName = `${enrollment.first_name} ${enrollment.last_name}`.trim()
+    if (enrollment) {
+      fullName = `${enrollment.first_name} ${enrollment.last_name}`.trim();
+      lastSixDigits = enrollment.last_six_digits;
+      identificationType = enrollment.identification_type;
+    } else {
+      // Fallback to profile data
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (!profile?.full_name) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'No enrollment or profile data found. Please complete enrollment first.' 
+          }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      fullName = profile.full_name;
+      lastSixDigits = undefined;
+      identificationType = 'Unknown';
+      console.warn('Using profile fallback for certificate, no enrollment found');
+    }
 
     // Generate registration number via RPC
     const { data: regNum, error: regErr } = await supabase.rpc('generate_registration_number')
@@ -124,8 +147,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
         course_type: completion.course_type,
         student_name: fullName,
         completion_date: new Date(completion.completed_at).toISOString().split('T')[0],
-        last_six_digits: enrollment.last_six_digits,
-        identification_type: enrollment.identification_type,
+        last_six_digits: lastSixDigits || '',
+        identification_type: identificationType,
         registration_number: regNum as string,
       })
       .select()
