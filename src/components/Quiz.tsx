@@ -217,7 +217,9 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
           
           // Send certificate email with PDF attachment (generated server-side)
           try {
+            const { data: { session } } = await supabase.auth.getSession();
             await supabase.functions.invoke('send-certificate', {
+              headers: session ? { Authorization: `Bearer ${session.access_token}` } : undefined,
               body: {
                 name: fullName,
                 email: user.email,
