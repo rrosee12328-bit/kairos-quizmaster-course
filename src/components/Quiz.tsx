@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,12 +41,14 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
   const [showResults, setShowResults] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState<string>("");
   const [startTime] = useState(new Date().toISOString());
+  const [isSavingCompletion, setIsSavingCompletion] = useState(false);
+  const completionSavedRef = useRef(false);
 
   const handleAnswerSelect = (value: string) => {
     setSelectedAnswer(value);
   };
 
-  const handleNextQuestion = () => {
+  const handleNextQuestion = async () => {
     if (selectedAnswer) {
       setSelectedAnswers(prev => ({
         ...prev,
@@ -57,6 +59,10 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
         setCurrentQuestion(prev => prev + 1);
         setSelectedAnswer("");
       } else {
+        // Save completion immediately when quiz is finished
+        setIsSavingCompletion(true);
+        await saveCompletion();
+        setIsSavingCompletion(false);
         setShowResults(true);
       }
     }
@@ -80,8 +86,21 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
   };
 
   const saveCompletion = async () => {
+    // Prevent duplicate saves for this specific quiz attempt
+    if (completionSavedRef.current) {
+      console.log('Completion already saved for this attempt');
+      return false;
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return false;
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to save your results.",
+        variant: "destructive",
+      });
+      return false;
+    }
 
     const score = calculateScore();
     const percentage = Math.round((score / questions.length) * 100);
@@ -294,6 +313,8 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
       // Don't show error to user - admin notifications are internal
     }
 
+    // Mark this attempt as saved
+    completionSavedRef.current = true;
     return true;
   };
 
@@ -304,13 +325,6 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
 
   if (showResults) {
     const passed = percentage >= passingPercentage;
-    
-    // Save completion when results are shown (only once)
-    const hasCompleted = sessionStorage.getItem(`quiz-completed-${courseType}`);
-    if (!hasCompleted) {
-      saveCompletion();
-      sessionStorage.setItem(`quiz-completed-${courseType}`, 'true');
-    }
     
     return (
       <div className="max-w-4xl mx-auto space-y-6">
@@ -436,7 +450,7 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
                   setCurrentQuestion(0);
                   setSelectedAnswers({});
                   setSelectedAnswer("");
-                  sessionStorage.removeItem(`quiz-completed-${courseType}`);
+                  completionSavedRef.current = false; // Reset for next attempt
                 }}
               >
                 Retake Exam
@@ -495,9 +509,13 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
             </Button>
             <Button
               onClick={handleNextQuestion}
-              disabled={!selectedAnswer}
+              disabled={!selectedAnswer || isSavingCompletion}
             >
-              {currentQuestion === questions.length - 1 ? 'Finish' : 'Next'}
+              {isSavingCompletion 
+                ? "Saving Results..." 
+                : currentQuestion === questions.length - 1 
+                  ? "Finish" 
+                  : "Next"}
             </Button>
           </div>
         </CardContent>
