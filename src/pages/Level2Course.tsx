@@ -544,7 +544,10 @@ const Level2Course = () => {
         } else {
           console.log('[Level2Course] Course complete - final section', { device });
           toast.success("You've completed all sections!");
-          setShowExamPrompt(true);
+          setShowQuiz(true);
+          setTimeout(() => {
+            quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 100);
         }
       }
     }
