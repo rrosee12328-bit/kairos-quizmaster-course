@@ -157,7 +157,7 @@ const Level2Course = () => {
       title: "9. Emergencies and Safety Hazards",
       description: "Emergency response procedures and hazard identification",
       duration: "6 minutes 40 seconds",
-      videoUrl: "",
+      videoUrl: "a1c6e8da-cc44-4a4f-b895-ad7ba0a8519f",
       has_quiz: false,
       content: [
         "Emergency response protocols",
@@ -291,6 +291,36 @@ const Level2Course = () => {
         };
 
         const updatedSectionsPromises = courseSections.map(async (section) => {
+          // Skip auto-matching if section already has a videoUrl (explicit video ID set)
+          if (section.videoUrl) {
+            console.log(`[Level2Course] Section ${section.id} "${section.title}" has explicit video ID: ${section.videoUrl}`);
+            
+            // Generate signed URL for the explicitly set video
+            try {
+              const { data: signedData, error: signedError } = await supabase.functions.invoke('bunny-video', {
+                body: {
+                  action: 'getSignedUrl',
+                  libraryId: '510506',
+                  videoId: section.videoUrl,
+                  expiresInHours: 24
+                }
+              });
+
+              if (signedError || (!signedData?.signedUrl && !signedData?.iframeUrl)) {
+                console.error(`[Level2Course] Failed to generate signed URL for ${section.videoUrl}:`, signedError || signedData);
+                return section;
+              }
+
+              return {
+                ...section,
+                videoUrl: signedData.iframeUrl || signedData.signedUrl,
+              };
+            } catch (err) {
+              console.error(`[Level2Course] Error generating signed URL:`, err);
+              return section;
+            }
+          }
+
           const matchingVideo = getMatchForSection(section);
 
           if (matchingVideo?.guid) {
