@@ -271,7 +271,9 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
 
     // Send completion email (for both pass and fail)
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const { error: emailError } = await supabase.functions.invoke('send-course-completion', {
+        headers: session ? { Authorization: `Bearer ${session.access_token}` } : undefined,
         body: {
           email: user.email,
           studentName: fullName,
@@ -305,7 +307,9 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
 
     // Send admin notification
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       await supabase.functions.invoke('send-admin-notification', {
+        headers: session ? { Authorization: `Bearer ${session.access_token}` } : undefined,
         body: {
           studentName: fullName,
           studentEmail: user.email,
