@@ -44,6 +44,7 @@ const Level2Course = () => {
   const [bypassGate, setBypassGate] = useState(false); // dev only
   const [showAutoAdvanceModal, setShowAutoAdvanceModal] = useState(false);
   const [completedSectionTitle, setCompletedSectionTitle] = useState("");
+  const [completedSectionWasFinal, setCompletedSectionWasFinal] = useState(false);
   const [highestCompletedIndex, setHighestCompletedIndex] = useState(0);
   const [showExamPrompt, setShowExamPrompt] = useState(false);
   
@@ -533,21 +534,27 @@ const Level2Course = () => {
 
       if (progressData?.section_completed) {
         setServerCompleted(true);
-        const nextSection = courseSections[currentSlide + 1];
+        const isFinal = sectionId === totalSections;
+        const sectionTitle = courseSections.find(s => s.id === sectionId)?.title || '';
         
-        if (nextSection) {
-          console.log('[Level2Course] countdown_shown', {
-            nextSection: nextSection.title,
-            device
-          });
-          setShowAutoAdvanceModal(true);
-        } else {
+        setCompletedSectionTitle(sectionTitle);
+        setCompletedSectionWasFinal(isFinal);
+        
+        if (isFinal) {
           console.log('[Level2Course] Course complete - final section', { device });
           toast.success("You've completed all sections!");
           setShowQuiz(true);
           setTimeout(() => {
             quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }, 100);
+        } else {
+          const nextSection = courseSections[currentSlide + 1];
+          console.log('[Level2Course] countdown_shown', {
+            currentSection: sectionTitle,
+            nextSection: nextSection?.title,
+            device
+          });
+          setShowAutoAdvanceModal(true);
         }
       }
     }
@@ -1043,7 +1050,7 @@ const Level2Course = () => {
         onAdvance={handleAutoAdvance}
         onCancel={handleCancelAutoAdvance}
         countdownSeconds={10}
-        isFinalSection={currentSlide >= courseSections.length - 1}
+        isFinalSection={completedSectionWasFinal}
       />
 
       {/* Exam ready prompt */}
