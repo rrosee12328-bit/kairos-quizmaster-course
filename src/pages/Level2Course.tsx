@@ -544,6 +544,7 @@ const Level2Course = () => {
         } else {
           console.log('[Level2Course] Course complete - final section', { device });
           toast.success("You've completed all sections!");
+          setShowExamPrompt(true);
         }
       }
     }
