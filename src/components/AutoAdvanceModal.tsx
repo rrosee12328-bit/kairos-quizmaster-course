@@ -146,7 +146,7 @@ const AutoAdvanceModal = ({
               className="w-full bg-green-600 hover:bg-green-700"
               data-testid="btn-continue-now"
             >
-              View Certificate / Dashboard
+              Continue to Exam
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </DialogFooter>
