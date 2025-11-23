@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Shield, ChevronLeft, ChevronRight, FileText, Download } from "lucide-react";
+import { Shield, ChevronLeft, ChevronRight, FileText, Download, GraduationCap } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
 import { Footer } from "@/components/Footer";
 import ProgressTracker from "@/components/ProgressTracker";
@@ -11,6 +11,7 @@ import CourseHeader from "@/components/CourseHeader";
 import VideoPlayer from "@/components/VideoPlayer";
 import EnrollmentForm from "@/components/EnrollmentForm";
 import AutoAdvanceModal from "@/components/AutoAdvanceModal";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCourseProgress } from "@/hooks/useCourseProgress";
@@ -44,6 +45,8 @@ const Level2Course = () => {
   const [showAutoAdvanceModal, setShowAutoAdvanceModal] = useState(false);
   const [completedSectionTitle, setCompletedSectionTitle] = useState("");
   const [highestCompletedIndex, setHighestCompletedIndex] = useState(0);
+  const [showExamPrompt, setShowExamPrompt] = useState(false);
+  const [hasShownExamPrompt, setHasShownExamPrompt] = useState(false);
   
   const totalSections = 9;
   const { completedSections, examUnlocked, completionPercentage, examLockReason } = useCourseProgress('level2', totalSections);
@@ -212,6 +215,14 @@ const Level2Course = () => {
       quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [showQuiz]);
+
+  // Show exam prompt when course is complete
+  useEffect(() => {
+    if (examUnlocked && !hasShownExamPrompt && !showQuiz) {
+      setShowExamPrompt(true);
+      setHasShownExamPrompt(true);
+    }
+  }, [examUnlocked, hasShownExamPrompt, showQuiz]);
 
   // Fetch videos from Bunny.net (only when page is visible)
   useEffect(() => {
@@ -1020,6 +1031,41 @@ const Level2Course = () => {
         countdownSeconds={10}
         isFinalSection={currentSlide >= courseSections.length - 1}
       />
+
+      {/* Exam ready prompt */}
+      <Dialog open={showExamPrompt} onOpenChange={setShowExamPrompt}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <GraduationCap className="h-8 w-8 text-primary" />
+              <DialogTitle className="text-2xl">Course Complete!</DialogTitle>
+            </div>
+            <DialogDescription className="text-base pt-2">
+              Congratulations! You've completed all {totalSections} sections of the Level 2 Security Officer course. 
+              You're now ready to take the final exam to earn your certification.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+            <p className="text-sm font-medium">✓ All {totalSections} sections completed</p>
+            <p className="text-sm text-muted-foreground">• 32 exam questions</p>
+            <p className="text-sm text-muted-foreground">• 80% passing score required</p>
+          </div>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setShowExamPrompt(false)} className="w-full sm:w-auto">
+              Review Course
+            </Button>
+            <Button 
+              onClick={() => {
+                setShowExamPrompt(false);
+                setShowQuiz(true);
+              }} 
+              className="w-full sm:w-auto"
+            >
+              Start Final Exam
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Footer />
     </div>
