@@ -319,6 +319,11 @@ const CertificatePreview = () => {
 
     setIsSending(true);
     console.log('Starting certificate email send...');
+
+    toast({
+      title: "Preparing certificate",
+      description: "Generating your PDF and sending the email. This may take a few seconds...",
+    });
     
     try {
       // Generate PDF for attachment
@@ -330,10 +335,10 @@ const CertificatePreview = () => {
       }
 
       console.log('Generating PDF from certificate...');
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 50));
       
       const canvas = await html2canvas(exportEl as HTMLElement, {
-        scale: 2,
+        scale: 1.5,
         useCORS: true,
         allowTaint: true,
         logging: false,
