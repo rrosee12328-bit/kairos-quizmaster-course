@@ -46,56 +46,46 @@ async function generateCertificatePDF(
   console.log("Generating certificate PDF", { name, date, lastSixDigits });
 
   try {
-    // Create a new PDF document
-    const pdfDoc = await PDFDocument.create();
-
-    // Fetch the certificate template image from Supabase Storage
+    // Fetch the certificate template PDF from Supabase Storage
     const templateUrl =
-      "https://cpjamwmwzrgqhfnirikz.supabase.co/storage/v1/object/public/certificates/certificate-template.png";
+      "https://cpjamwmwzrgqhfnirikz.supabase.co/storage/v1/object/public/certificates/certificate-template.pdf";
 
-    let page;
+    let pdfDoc: any;
+    let page: any;
     let pageWidth: number;
     let pageHeight: number;
 
     try {
+      console.log("Fetching PDF template from:", templateUrl);
       const templateResponse = await fetch(templateUrl);
+      
       if (!templateResponse.ok) {
-        console.error("Failed to fetch template, using fallback background", {
-          status: templateResponse.status,
-          statusText: templateResponse.statusText,
-        });
-
-        // Fallback: create a standard landscape page
-        page = pdfDoc.addPage([842, 595]); // A4 landscape approx
-        pageWidth = page.getWidth();
-        pageHeight = page.getHeight();
-
-        page.drawRectangle({
-          x: 0,
-          y: 0,
-          width: pageWidth,
-          height: pageHeight,
-          color: rgb(0.95, 0.95, 0.95),
-        });
-      } else {
-        const templateImageBytes = await templateResponse.arrayBuffer();
-        const templateImage = await pdfDoc.embedPng(templateImageBytes);
-
-        // Use the actual template image dimensions for the page
-        pageWidth = templateImage.width;
-        pageHeight = templateImage.height;
-        page = pdfDoc.addPage([pageWidth, pageHeight]);
-
-        page.drawImage(templateImage, {
-          x: 0,
-          y: 0,
-          width: pageWidth,
-          height: pageHeight,
-        });
+        throw new Error(`Template fetch failed: ${templateResponse.status} ${templateResponse.statusText}`);
       }
-    } catch (imgError) {
-      console.error("Error loading template image, using fallback:", imgError);
-      page = pdfDoc.addPage([842, 595]);
+
+      const templatePdfBytes = await templateResponse.arrayBuffer();
+      console.log("Template PDF loaded, size:", templatePdfBytes.byteLength);
+      
+      // Load the template PDF
+      const templatePdf = await PDFDocument.load(templatePdfBytes);
+      
+      // Create a new PDF document
+      pdfDoc = await PDFDocument.create();
+      
+      // Copy the first page from the template
+      const [templatePage] = await pdfDoc.copyPages(templatePdf, [0]);
+      page = pdfDoc.addPage(templatePage);
+      
+      pageWidth = page.getWidth();
+      pageHeight = page.getHeight();
+      
+      console.log("Template page copied", { pageWidth, pageHeight });
+    } catch (templateError) {
+      console.error("Error loading template PDF, using fallback:", templateError);
+      
+      // Fallback: create a blank page
+      pdfDoc = await PDFDocument.create();
+      page = pdfDoc.addPage([842, 595]); // A4 landscape
       pageWidth = page.getWidth();
       pageHeight = page.getHeight();
 
@@ -117,10 +107,6 @@ async function generateCertificatePDF(
     const pctY = (percentFromBottom: number) => (pageHeight * percentFromBottom) / 100;
 
     // === Text placement ===
-    // These percentages are chosen to roughly match the visual layout of the
-    // on-site certificate. If the template is updated, we can tweak these
-    // values without changing the code structure.
-
     // Student Name – around upper-middle area
     const nameY = pctY(60);
     page.drawText(name || "Student Name", {
