@@ -48,99 +48,124 @@ async function generateCertificatePDF(
   try {
     // Create a new PDF document
     const pdfDoc = await PDFDocument.create();
-    
-    // Add a page with certificate dimensions (1920x1080 pixels at 72 DPI = 26.67" x 15")
-    const page = pdfDoc.addPage([1920, 1080]);
-    
+
     // Fetch the certificate template image from Supabase Storage
-    const templateUrl = `https://cpjamwmwzrgqhfnirikz.supabase.co/storage/v1/object/public/certificates/certificate-template.png`;
-    
-    let templateImageBytes: ArrayBuffer;
+    const templateUrl =
+      "https://cpjamwmwzrgqhfnirikz.supabase.co/storage/v1/object/public/certificates/certificate-template.png";
+
+    let page;
+    let pageWidth: number;
+    let pageHeight: number;
+
     try {
       const templateResponse = await fetch(templateUrl);
       if (!templateResponse.ok) {
-        console.error("Failed to fetch template, using fallback");
-        // Create a simple background if template fetch fails
+        console.error("Failed to fetch template, using fallback background", {
+          status: templateResponse.status,
+          statusText: templateResponse.statusText,
+        });
+
+        // Fallback: create a standard landscape page
+        page = pdfDoc.addPage([842, 595]); // A4 landscape approx
+        pageWidth = page.getWidth();
+        pageHeight = page.getHeight();
+
         page.drawRectangle({
           x: 0,
           y: 0,
-          width: 1920,
-          height: 1080,
+          width: pageWidth,
+          height: pageHeight,
           color: rgb(0.95, 0.95, 0.95),
         });
       } else {
-        templateImageBytes = await templateResponse.arrayBuffer();
+        const templateImageBytes = await templateResponse.arrayBuffer();
         const templateImage = await pdfDoc.embedPng(templateImageBytes);
-        
+
+        // Use the actual template image dimensions for the page
+        pageWidth = templateImage.width;
+        pageHeight = templateImage.height;
+        page = pdfDoc.addPage([pageWidth, pageHeight]);
+
         page.drawImage(templateImage, {
           x: 0,
           y: 0,
-          width: 1920,
-          height: 1080,
+          width: pageWidth,
+          height: pageHeight,
         });
       }
     } catch (imgError) {
-      console.error("Error loading template image:", imgError);
-      // Use fallback background
+      console.error("Error loading template image, using fallback:", imgError);
+      page = pdfDoc.addPage([842, 595]);
+      pageWidth = page.getWidth();
+      pageHeight = page.getHeight();
+
       page.drawRectangle({
         x: 0,
         y: 0,
-        width: 1920,
-        height: 1080,
+        width: pageWidth,
+        height: pageHeight,
         color: rgb(0.95, 0.95, 0.95),
       });
     }
 
-    // Embed font
+    // Embed fonts
     const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
     const fontNormal = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-    // Student Name and ID Number (at top 34% from bottom = 66% from top)
-    // 66% of 1080 = 712.8
-    const nameY = 1080 - (1080 * 0.34) - 52; // ~660
-    
-    // Draw student name (48px font, bold)
+    // Helper to position elements by percentage of the page
+    const pctX = (percent: number) => (pageWidth * percent) / 100;
+    const pctY = (percentFromBottom: number) => (pageHeight * percentFromBottom) / 100;
+
+    // === Text placement ===
+    // These percentages are chosen to roughly match the visual layout of the
+    // on-site certificate. If the template is updated, we can tweak these
+    // values without changing the code structure.
+
+    // Student Name – around upper-middle area
+    const nameY = pctY(60);
     page.drawText(name || "Student Name", {
-      x: 650, // Centered-ish for name
+      x: pctX(34),
       y: nameY,
-      size: 48,
-      font: font,
+      size: Math.max(pageHeight * 0.04, 24),
+      font,
       color: rgb(0.2, 0.2, 0.2),
     });
 
-    // Draw ID number (36px font, normal) - to the right of name
+    // ID Number – to the right of name
     const formattedId = formatIdNumber(lastSixDigits);
     if (formattedId) {
       page.drawText(formattedId, {
-        x: 1150, // To the right
+        x: pctX(70),
         y: nameY,
-        size: 36,
+        size: Math.max(pageHeight * 0.035, 18),
         font: fontNormal,
         color: rgb(0.2, 0.2, 0.2),
       });
     }
 
-    // Date of Completion (at top 50.7% from bottom = 49.3% from top)
-    // 49.3% of 1080 = 532.44
-    const dateY = 1080 - (1080 * 0.507) - 46; // ~501
+    // Date of Completion – lower area near signature/date line
     const formattedDate = formatDate(date);
-    
+    const dateY = pctY(40);
+
     page.drawText(formattedDate, {
-      x: 1025, // 53.4% from left = 1024.9
+      x: pctX(54),
       y: dateY,
-      size: 36,
+      size: Math.max(pageHeight * 0.035, 18),
       font: fontNormal,
       color: rgb(0.2, 0.2, 0.2),
     });
 
-    // Save the PDF
     const pdfBytes = await pdfDoc.save();
-    console.log("PDF generated successfully, size:", pdfBytes.length);
-    
+    console.log("PDF generated successfully", {
+      size: pdfBytes.length,
+      pageWidth,
+      pageHeight,
+    });
+
     return pdfBytes;
   } catch (error) {
     console.error("Error generating PDF:", error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     throw new Error(`PDF generation failed: ${errorMessage}`);
   }
 }
