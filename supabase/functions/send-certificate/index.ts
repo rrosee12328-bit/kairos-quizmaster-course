@@ -107,21 +107,21 @@ async function generateCertificatePDF(
     const pctY = (percentFromBottom: number) => (pageHeight * percentFromBottom) / 100;
 
     // === Text placement ===
-    // Student Name – around upper-middle area
-    const nameY = pctY(60);
+    // Student Name – centered in middle section
+    const nameY = pctY(58);
     page.drawText(name || "Student Name", {
-      x: pctX(34),
+      x: pctX(32),
       y: nameY,
       size: Math.max(pageHeight * 0.04, 24),
       font,
       color: rgb(0.2, 0.2, 0.2),
     });
 
-    // ID Number – to the right of name
+    // Driver License Number – same line as name, toward the right end
     const formattedId = formatIdNumber(lastSixDigits);
     if (formattedId) {
       page.drawText(formattedId, {
-        x: pctX(70),
+        x: pctX(78),
         y: nameY,
         size: Math.max(pageHeight * 0.035, 18),
         font: fontNormal,
@@ -129,14 +129,14 @@ async function generateCertificatePDF(
       });
     }
 
-    // Date of Completion – lower area near signature/date line
+    // Date of Completion – in the table, above "Kairos Security"
     const formattedDate = formatDate(date);
-    const dateY = pctY(40);
+    const dateY = pctY(28);
 
     page.drawText(formattedDate, {
-      x: pctX(54),
+      x: pctX(12),
       y: dateY,
-      size: Math.max(pageHeight * 0.035, 18),
+      size: Math.max(pageHeight * 0.03, 16),
       font: fontNormal,
       color: rgb(0.2, 0.2, 0.2),
     });
