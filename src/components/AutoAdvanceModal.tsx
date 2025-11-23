@@ -117,25 +117,25 @@ const AutoAdvanceModal = ({
               />
             </div>
 
-            <DialogFooter className="flex-col sm:flex-row gap-2">
-              <Button
-                variant="outline"
-                onClick={handleStay}
-                className="w-full sm:w-auto hover:bg-muted"
-                data-testid="btn-stay-here"
-              >
-                <X className="h-4 w-4 mr-2" />
-                Stay Here
-              </Button>
-              <Button
-                onClick={handleContinue}
-                className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
-                data-testid="btn-continue-now"
-              >
-                Continue Now
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
-            </DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={handleStay}
+              className="w-full sm:w-auto hover:bg-muted"
+              data-testid="btn-stay-here"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Stay Here
+            </Button>
+            <Button
+              onClick={handleContinue}
+              className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
+              data-testid="btn-continue-now"
+            >
+              Continue to Exam
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          </DialogFooter>
           </>
         )}
 

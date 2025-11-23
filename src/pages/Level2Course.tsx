@@ -1056,7 +1056,7 @@ const Level2Course = () => {
               }} 
               className="w-full sm:w-auto"
             >
-              Start Final Exam
+              Continue to Exam
             </Button>
           </DialogFooter>
         </DialogContent>
