@@ -540,22 +540,15 @@ const Level2Course = () => {
         setCompletedSectionTitle(sectionTitle);
         setCompletedSectionWasFinal(isFinal);
         
-        if (isFinal) {
-          console.log('[Level2Course] Course complete - final section', { device });
-          toast.success("You've completed all sections!");
-          setShowQuiz(true);
-          setTimeout(() => {
-            quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }, 100);
-        } else {
-          const nextSection = courseSections[currentSlide + 1];
-          console.log('[Level2Course] countdown_shown', {
-            currentSection: sectionTitle,
-            nextSection: nextSection?.title,
-            device
-          });
-          setShowAutoAdvanceModal(true);
-        }
+        console.log('[Level2Course] Section completed', { 
+          sectionId, 
+          isFinal, 
+          sectionTitle,
+          device 
+        });
+        
+        // Always show the modal, but it will display differently for final section
+        setShowAutoAdvanceModal(true);
       }
     }
   };
@@ -596,9 +589,13 @@ const Level2Course = () => {
   const handleAutoAdvance = () => {
     setShowAutoAdvanceModal(false);
     
-    // If final section, show exam prompt
-    if (currentSlide >= courseSections.length - 1) {
-      setShowExamPrompt(true);
+    // If final section was completed, show the quiz
+    if (completedSectionWasFinal) {
+      toast.success("You've completed all sections!");
+      setShowQuiz(true);
+      setTimeout(() => {
+        quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
       return;
     }
     
