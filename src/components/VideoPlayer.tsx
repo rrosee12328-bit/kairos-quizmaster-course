@@ -144,7 +144,14 @@ const VideoPlayer = ({
 
   // Fetch signed iframe URL from Bunny.net (skip if already signed)
   useEffect(() => {
-    if (!isActive || !videoId) return;
+    if (!isActive) return;
+
+    if (!videoId) {
+      console.error('[VideoPlayer] No video ID found for section:', section.id, section.videoUrl);
+      setError('Video ID not found. Please contact support.');
+      setLoading(false);
+      return;
+    }
 
     // Skip fetching if URL already has token & expires (already signed)
     const urlHasToken = section.videoUrl?.includes('token=') && section.videoUrl?.includes('expires=');
@@ -490,7 +497,7 @@ const VideoPlayer = ({
 
   if (loading) {
     return (
-      <Card>
+      <Card className="border-2 border-primary/20">
         <CardHeader>
           <CardTitle>Section {section.id}: {section.title}</CardTitle>
         </CardHeader>
@@ -499,6 +506,7 @@ const VideoPlayer = ({
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
               <p className="text-muted-foreground">Loading video...</p>
+              <p className="text-xs text-muted-foreground mt-2">If this takes too long, try refreshing the page</p>
             </div>
           </div>
         </CardContent>

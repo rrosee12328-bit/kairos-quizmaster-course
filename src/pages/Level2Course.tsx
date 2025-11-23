@@ -733,6 +733,16 @@ const Level2Course = () => {
     completedSections,
   });
 
+  console.log('[Level2Course] RENDER STATE', {
+    showEnrollment,
+    videosLoaded,
+    isAuthenticated,
+    isAdmin,
+    courseSectionsCount: courseSections.length,
+    currentSlide,
+    carouselApiReady: !!carouselApi,
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <CourseHeader isAdmin={isAdmin} showAuthButtons={isAuthenticated} />
@@ -756,6 +766,16 @@ const Level2Course = () => {
           </div>
         ) : (
           <>
+            {!videosLoaded ? (
+              <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+                <div className="text-center">
+                  <p className="text-lg font-medium">Loading course content...</p>
+                  <p className="text-sm text-muted-foreground mt-2">Preparing your videos</p>
+                </div>
+              </div>
+            ) : (
+              <>
             {/* Course Title */}
             <div className="mb-6 text-center">
               <div className="flex items-center justify-center gap-3 mb-2">
@@ -1010,6 +1030,8 @@ const Level2Course = () => {
             <Quiz courseType="level2" />
           </div>
         )}
+          </>
+            )}
           </>
         )}
       </div>
