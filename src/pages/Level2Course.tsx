@@ -46,7 +46,6 @@ const Level2Course = () => {
   const [completedSectionTitle, setCompletedSectionTitle] = useState("");
   const [highestCompletedIndex, setHighestCompletedIndex] = useState(0);
   const [showExamPrompt, setShowExamPrompt] = useState(false);
-  const [hasShownExamPrompt, setHasShownExamPrompt] = useState(false);
   
   const totalSections = 9;
   const { completedSections, examUnlocked, completionPercentage, examLockReason } = useCourseProgress('level2', totalSections);
@@ -215,14 +214,6 @@ const Level2Course = () => {
       quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [showQuiz]);
-
-  // Show exam prompt when course is complete
-  useEffect(() => {
-    if (examUnlocked && !hasShownExamPrompt && !showQuiz) {
-      setShowExamPrompt(true);
-      setHasShownExamPrompt(true);
-    }
-  }, [examUnlocked, hasShownExamPrompt, showQuiz]);
 
   // Fetch videos from Bunny.net (only when page is visible)
   useEffect(() => {
@@ -594,12 +585,9 @@ const Level2Course = () => {
   const handleAutoAdvance = () => {
     setShowAutoAdvanceModal(false);
     
-    // If final section, go to exam
+    // If final section, show exam prompt
     if (currentSlide >= courseSections.length - 1) {
-      setShowQuiz(true);
-      setTimeout(() => {
-        quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
+      setShowExamPrompt(true);
       return;
     }
     
@@ -1058,6 +1046,9 @@ const Level2Course = () => {
               onClick={() => {
                 setShowExamPrompt(false);
                 setShowQuiz(true);
+                setTimeout(() => {
+                  quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
               }} 
               className="w-full sm:w-auto"
             >
