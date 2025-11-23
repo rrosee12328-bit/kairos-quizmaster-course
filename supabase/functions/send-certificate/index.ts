@@ -52,8 +52,8 @@ async function generateCertificatePDF(
     // Add a page with certificate dimensions (1920x1080 pixels at 72 DPI = 26.67" x 15")
     const page = pdfDoc.addPage([1920, 1080]);
     
-    // Fetch the certificate template image from public folder
-    const templateUrl = `https://cpjamwmwzrgqhfnirikz.supabase.co/storage/v1/object/public/certificate-template.png`;
+    // Fetch the certificate template image from Supabase Storage
+    const templateUrl = `https://cpjamwmwzrgqhfnirikz.supabase.co/storage/v1/object/public/certificates/certificate-template.png`;
     
     let templateImageBytes: ArrayBuffer;
     try {
