@@ -15,8 +15,8 @@ const adminNotificationSchema = z.object({
   totalQuestions: z.number().int().min(1, "Total questions must be at least 1").max(1000, "Total questions exceeds maximum"),
   percentage: z.number().min(0, "Percentage must be at least 0").max(100, "Percentage must not exceed 100"),
   passed: z.boolean(),
-  registrationNumber: z.string().trim().max(50, "Registration number too long").regex(/^[A-Z0-9-]+$/, "Invalid registration number format").optional(),
-  approvalCode: z.string().trim().max(50, "Approval code too long").regex(/^[A-Z0-9-]+$/, "Invalid approval code format").optional(),
+  registrationNumber: z.string().trim().max(50, "Registration number too long").regex(/^[A-Z0-9-]+$/, "Invalid registration number format").nullable().optional(),
+  approvalCode: z.string().trim().max(50, "Approval code too long").regex(/^[A-Z0-9-]+$/, "Invalid approval code format").nullable().optional(),
   completedAt: z.string().trim().min(1, "Completion date is required").max(100, "Completion date too long"),
 });
 

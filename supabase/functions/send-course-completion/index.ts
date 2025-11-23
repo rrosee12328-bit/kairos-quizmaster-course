@@ -15,9 +15,9 @@ const courseCompletionSchema = z.object({
   totalQuestions: z.number().int().min(1, "Total questions must be at least 1").max(1000, "Total questions exceeds maximum"),
   percentage: z.number().min(0, "Percentage must be at least 0").max(100, "Percentage must not exceed 100"),
   passed: z.boolean(),
-  registrationNumber: z.string().trim().max(50, "Registration number too long").regex(/^[A-Z0-9-]+$/, "Invalid registration number format").optional(),
-  approvalCode: z.string().trim().max(50, "Approval code too long").regex(/^[A-Z0-9-]+$/, "Invalid approval code format").optional(),
-  approvalExpiresAt: z.string().trim().max(100, "Expiration date too long").optional(),
+  registrationNumber: z.string().trim().max(50, "Registration number too long").regex(/^[A-Z0-9-]+$/, "Invalid registration number format").nullable().optional(),
+  approvalCode: z.string().trim().max(50, "Approval code too long").regex(/^[A-Z0-9-]+$/, "Invalid approval code format").nullable().optional(),
+  approvalExpiresAt: z.string().trim().max(100, "Expiration date too long").nullable().optional(),
 });
 
 Deno.serve(async (req: Request): Promise<Response> => {
