@@ -106,26 +106,6 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
     const percentage = Math.round((score / questions.length) * 100);
     const passed = percentage >= passingPercentage;
 
-    // Check for existing passing completion to prevent duplicates
-    if (passed) {
-      const { data: existingCompletion } = await supabase
-        .from('course_completions')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('course_type', courseType)
-        .eq('passed', true)
-        .maybeSingle();
-
-      if (existingCompletion) {
-        toast({
-          title: "Already Completed",
-          description: "You have already passed this course. Your certificate has been issued.",
-          variant: "default",
-        });
-        return false;
-      }
-    }
-
     // Get enrollment data for user's name
     const { data: enrollment } = await supabase
       .from('enrollments')
