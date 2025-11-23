@@ -154,7 +154,7 @@ const Level2Course = () => {
     },
     {
       id: 9,
-      title: "Emergencies and Safety Hazards",
+      title: "9. Emergencies and Safety Hazards",
       description: "Emergency response procedures and hazard identification",
       duration: "6 minutes 40 seconds",
       videoUrl: "",
