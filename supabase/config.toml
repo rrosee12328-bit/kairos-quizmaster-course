@@ -32,3 +32,6 @@ verify_jwt = false
 
 [functions.send-admin-notification]
 verify_jwt = false
+
+[functions.upload-certificate-template]
+verify_jwt = false
