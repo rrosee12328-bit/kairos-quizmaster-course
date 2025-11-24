@@ -13,6 +13,7 @@ const certificateEmailSchema = z.object({
   date: z.string().trim().min(1, "Date is required").max(50, "Date must be less than 50 characters"),
   registrationNumber: z.string().trim().min(1, "Registration number is required").max(50, "Registration number must be less than 50 characters"),
   lastSixDigits: z.string().optional(),
+  courseType: z.string().optional().default('level2'),
 });
 
 // Format date to MM/DD/YYYY
@@ -41,14 +42,19 @@ function formatIdNumber(digits?: string): string {
 async function generateCertificatePDF(
   name: string,
   date: string,
+  courseType: string = 'level2',
   lastSixDigits?: string
 ): Promise<Uint8Array> {
-  console.log("Generating certificate PDF", { name, date, lastSixDigits });
+  console.log("Generating certificate PDF", { name, date, courseType, lastSixDigits });
 
   try {
-    // Fetch the certificate template PDF from Supabase Storage
+    // Choose template based on course type
+    const templateFileName = courseType === 'pepper-spray' 
+      ? 'pepper-spray-certificate-template.pdf' 
+      : 'certificate-template.pdf';
+    
     const templateUrl =
-      "https://cpjamwmwzrgqhfnirikz.supabase.co/storage/v1/object/public/certificates/certificate-template.pdf";
+      `https://cpjamwmwzrgqhfnirikz.supabase.co/storage/v1/object/public/certificates/${templateFileName}`;
 
     let pdfDoc: any;
     let page: any;
@@ -107,39 +113,67 @@ async function generateCertificatePDF(
     const pctY = (percentFromBottom: number) => (pageHeight * percentFromBottom) / 100;
 
     // === Text placement ===
-    // Student Name – moved toward middle
-    const nameY = pctY(66);
-    page.drawText(name || "Student Name", {
-      x: pctX(40),
-      y: nameY,
-      size: Math.max(pageHeight * 0.04, 24),
-      font,
-      color: rgb(0.2, 0.2, 0.2),
-    });
-
-    // Driver License Number – same line as name, toward the right end
-    const formattedId = formatIdNumber(lastSixDigits);
-    if (formattedId) {
-      page.drawText(formattedId, {
-        x: pctX(74),
+    const isPepperSpray = courseType === 'pepper-spray';
+    
+    if (isPepperSpray) {
+      // Pepper Spray Certificate Layout
+      // Student Name – centered
+      const nameY = pctY(65);
+      page.drawText(name || "Student Name", {
+        x: pctX(50) - (font.widthOfTextAtSize(name || "Student Name", Math.max(pageHeight * 0.04, 24)) / 2),
         y: nameY,
-        size: Math.max(pageHeight * 0.035, 18),
+        size: Math.max(pageHeight * 0.04, 24),
+        font,
+        color: rgb(0.2, 0.2, 0.2),
+      });
+
+      // Date of Completion – lower left area
+      const formattedDate = formatDate(date);
+      const dateY = pctY(30);
+
+      page.drawText(formattedDate, {
+        x: pctX(32),
+        y: dateY,
+        size: Math.max(pageHeight * 0.03, 16),
+        font: fontNormal,
+        color: rgb(0.2, 0.2, 0.2),
+      });
+    } else {
+      // Level 2 Certificate Layout
+      // Student Name – moved toward middle
+      const nameY = pctY(66);
+      page.drawText(name || "Student Name", {
+        x: pctX(40),
+        y: nameY,
+        size: Math.max(pageHeight * 0.04, 24),
+        font,
+        color: rgb(0.2, 0.2, 0.2),
+      });
+
+      // Driver License Number – same line as name, toward the right end
+      const formattedId = formatIdNumber(lastSixDigits);
+      if (formattedId) {
+        page.drawText(formattedId, {
+          x: pctX(74),
+          y: nameY,
+          size: Math.max(pageHeight * 0.035, 18),
+          font: fontNormal,
+          color: rgb(0.2, 0.2, 0.2),
+        });
+      }
+
+      // Date of Completion – on the Date of Completion line
+      const formattedDate = formatDate(date);
+      const dateY = pctY(51);
+
+      page.drawText(formattedDate, {
+        x: pctX(62),
+        y: dateY,
+        size: Math.max(pageHeight * 0.03, 16),
         font: fontNormal,
         color: rgb(0.2, 0.2, 0.2),
       });
     }
-
-    // Date of Completion – on the Date of Completion line
-    const formattedDate = formatDate(date);
-    const dateY = pctY(51);
-
-    page.drawText(formattedDate, {
-      x: pctX(62),
-      y: dateY,
-      size: Math.max(pageHeight * 0.03, 16),
-      font: fontNormal,
-      color: rgb(0.2, 0.2, 0.2),
-    });
 
     const pdfBytes = await pdfDoc.save();
     console.log("PDF generated successfully", {
@@ -180,10 +214,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    const { name, email, date, registrationNumber, lastSixDigits } = validation.data;
+    const { name, email, date, registrationNumber, lastSixDigits, courseType } = validation.data;
 
     // Generate PDF in background
-    const pdfBytes = await generateCertificatePDF(name, date, lastSixDigits);
+    const pdfBytes = await generateCertificatePDF(name, date, courseType || 'level2', lastSixDigits);
     
     // Convert PDF to base64 for email attachment
     const pdfBase64 = btoa(String.fromCharCode(...pdfBytes));
@@ -246,7 +280,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
             <div class="content">
               <h2>Congratulations, ${name}!</h2>
               
-              <p>You have successfully completed the <strong>Level Two Training Course</strong> for Private Security Program.</p>
+              <p>You have successfully completed the <strong>${courseType === 'pepper-spray' ? 'Pepper Spray Training Course' : 'Level Two Training Course'}</strong> for Private Security Program.</p>
               
               <div class="certificate-box">
                 <p><strong>Student Name:</strong> ${name}</p>
