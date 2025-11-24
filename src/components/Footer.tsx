@@ -40,10 +40,13 @@ export const Footer = () => {
             </p>
             <a 
               href="mailto:info@kairossecurityacademy.com" 
-              className="text-sm text-primary hover:underline"
+              className="text-sm text-primary hover:underline block mb-2"
             >
               info@kairossecurityacademy.com
             </a>
+            <Link to="/beta-feedback" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+              Beta Feedback
+            </Link>
           </div>
         </div>
         <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
