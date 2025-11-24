@@ -107,10 +107,10 @@ async function generateCertificatePDF(
     const pctY = (percentFromBottom: number) => (pageHeight * percentFromBottom) / 100;
 
     // === Text placement ===
-    // Student Name – centered in middle section
+    // Student Name – moved toward middle
     const nameY = pctY(66);
     page.drawText(name || "Student Name", {
-      x: pctX(36),
+      x: pctX(40),
       y: nameY,
       size: Math.max(pageHeight * 0.04, 24),
       font,
