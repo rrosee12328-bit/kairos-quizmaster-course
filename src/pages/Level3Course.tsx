@@ -449,7 +449,7 @@ const Course = () => {
               <CarouselContent>
                 {courseSections.map((section, idx) => (
                   <CarouselItem key={section.id}>
-                    {isAuthenticated && (
+                     {isAuthenticated && (
                       <VideoPlayer
                         section={{
                           id: section.id,
@@ -459,6 +459,7 @@ const Course = () => {
                         }}
                         courseType="level3"
                         isActive={currentSlide === idx}
+                        isFinalSection={idx === totalSections - 1}
                         onComplete={() => {}}
                         onNext={handleNextSlide}
                         onSectionCompleted={(id) =>
@@ -466,6 +467,12 @@ const Course = () => {
                             prev.includes(id) ? prev : [...prev, id]
                           )
                         }
+                        onExamReady={() => {
+                          setShowQuiz(true);
+                          setTimeout(() => {
+                            quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }, 100);
+                        }}
                       />
                     )}
                   </CarouselItem>
@@ -502,10 +509,18 @@ const Course = () => {
                   Continue to Exam
                   <ChevronRight className="h-4 w-4" />
                 </Button>
+              ) : currentSlide === totalSections - 1 ? (
+                <Button
+                  disabled
+                  title="Complete the final section to unlock the exam"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
               ) : (
                 <Button
                   onClick={handleNextSlide}
-                  disabled={currentSlide === totalSections - 1 || !isCurrentSectionComplete}
+                  disabled={!isCurrentSectionComplete}
                   title={!isCurrentSectionComplete ? "Complete current section to unlock next" : ""}
                 >
                   Next

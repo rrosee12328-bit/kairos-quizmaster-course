@@ -18,9 +18,11 @@ interface VideoPlayerProps {
   };
   courseType?: string;
   isActive?: boolean;
+  isFinalSection?: boolean;
   onComplete: () => void;
   onNext: () => void;
   onSectionCompleted?: (sectionId: number) => void;
+  onExamReady?: () => void;
   // Legacy props for backward compatibility (not used in new implementation)
   onLocal90Reached?: (reached: boolean) => void;
   onPostStatus?: (status: number | null) => void;
@@ -31,10 +33,12 @@ interface VideoPlayerProps {
 const VideoPlayer = ({ 
   section, 
   courseType, 
-  isActive = true, 
+  isActive = true,
+  isFinalSection = false,
   onComplete, 
   onNext,
   onSectionCompleted,
+  onExamReady,
 }: VideoPlayerProps) => {
   const [iframeUrl, setIframeUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -492,7 +496,11 @@ const VideoPlayer = ({
   const handleAutoAdvance = () => {
     console.log('[VideoPlayer] User advancing to next section');
     setShowAutoAdvance(false);
-    onNext?.();
+    if (isFinalSection && onExamReady) {
+      onExamReady();
+    } else {
+      onNext?.();
+    }
   };
 
   const handleStayHere = () => {
@@ -586,6 +594,7 @@ const VideoPlayer = ({
           onAdvance={handleAutoAdvance}
           onCancel={handleStayHere}
           countdownSeconds={10}
+          isFinalSection={isFinalSection}
         />
       </CardContent>
     </Card>
