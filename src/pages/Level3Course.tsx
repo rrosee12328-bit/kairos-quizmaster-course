@@ -495,24 +495,18 @@ const Course = () => {
                 Section {currentSlide + 1} of {totalSections}
               </div>
 
-              {currentSlide === totalSections - 1 && isCurrentSectionComplete && (examUnlocked || developerMode) ? (
+              {currentSlide === totalSections - 1 && !isCurrentSectionComplete ? (
                 <Button
-                  onClick={() => {
-                    setShowQuiz(true);
-                    setTimeout(() => {
-                      quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }, 100);
-                  }}
-                  className="gap-2"
-                  size="lg"
+                  disabled
+                  title="Complete the final section to unlock the exam"
                 >
-                  Continue to Exam
-                  <ChevronRight className="h-4 w-4" />
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-2" />
                 </Button>
               ) : currentSlide === totalSections - 1 ? (
                 <Button
                   disabled
-                  title="Complete the final section to unlock the exam"
+                  title="Video will auto-advance to exam when complete"
                 >
                   Next
                   <ChevronRight className="h-4 w-4 ml-2" />
