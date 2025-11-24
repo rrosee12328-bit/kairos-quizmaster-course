@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Footer } from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
 
 const feedbackSchema = z.object({
   // Section A
@@ -78,14 +79,19 @@ export default function BetaFeedback() {
   const onSubmit = async (data: FeedbackForm) => {
     setIsSubmitting(true);
     try {
-      // TODO: Send feedback data to backend
-      console.log("Beta feedback:", data);
+      const { data: functionData, error } = await supabase.functions.invoke("send-beta-feedback", {
+        body: data,
+      });
+
+      if (error) throw error;
+
       toast({
         title: "Thank you for your feedback!",
         description: "Your responses have been submitted successfully.",
       });
       form.reset();
     } catch (error) {
+      console.error("Error submitting feedback:", error);
       toast({
         title: "Error",
         description: "Failed to submit feedback. Please try again.",
