@@ -26,6 +26,7 @@ const CertificatePreview = () => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [courseType, setCourseType] = useState<string>("level2");
 
   useEffect(() => {
     loadCertificateData();
@@ -111,6 +112,7 @@ const CertificatePreview = () => {
       setCompletionDate(cert.completion_date);
       setIdType(cert.identification_type === 'ssn' ? 'SSN' : 'Driver License');
       setLastSixDigits(cert.last_six_digits);
+      setCourseType(cert.course_type || 'level2');
       setLoading(false);
     } catch (error) {
       console.error('Error loading certificate:', error);
@@ -513,6 +515,7 @@ const CertificatePreview = () => {
                 idType={idType}
                 lastSixDigits={lastSixDigits}
                 certificateId="certificate-display"
+                courseType={courseType}
               />
             </div>
             {/* Hidden export-sized certificate for accurate PDF rendering */}
@@ -525,6 +528,7 @@ const CertificatePreview = () => {
                 lastSixDigits={lastSixDigits}
                 certificateId="certificate-export"
                 exportMode
+                courseType={courseType}
               />
             </div>
           </div>

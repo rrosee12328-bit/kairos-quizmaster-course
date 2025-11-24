@@ -185,8 +185,8 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
     let approvalExpiresAt: string | null = null;
 
     if (passed && completionData && enrollment) {
-      if (courseType === 'level2') {
-        // For Level 2: Check if certificate already exists or create new one
+      if (courseType === 'level2' || courseType === 'pepper-spray') {
+        // For Level 2 and Pepper Spray: Check if certificate already exists or create new one
         const { data: existingCert } = await supabase
           .from('certificates')
           .select()
@@ -254,6 +254,7 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
                 date: certData.completion_date,
                 registrationNumber: certData.registration_number,
                 lastSixDigits: enrollment.last_six_digits,
+                courseType: courseType,
               }
             });
             console.log('Certificate email with PDF sent successfully');
@@ -396,13 +397,13 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
                 ? `Congratulations! You passed the ${courseType === 'level2' ? 'Level 2' : courseType === 'level3' ? 'Level 3' : courseType === 'pepper-spray' ? 'Pepper Spray' : 'Level 4'} Certification Exam!` 
                 : `You need ${passingPercentage}% to pass. Keep studying and try again!`}
             </div>
-            {passed && courseType === 'level2' && (
+            {passed && (courseType === 'level2' || courseType === 'pepper-spray') && (
               <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border-2 border-green-500">
                 <p className="text-sm font-semibold text-green-900 dark:text-green-100 mb-2">
                   ✓ Certificate Available
                 </p>
                 <p className="text-sm text-green-800 dark:text-green-200 mb-3">
-                  Your Level 2 Security Officer certificate is now available in your user profile. 
+                  Your {courseType === 'pepper-spray' ? 'Pepper Spray Training' : 'Level 2 Security Officer'} certificate is now available in your user profile. 
                   You can download it at any time by visiting your profile page.
                 </p>
                 <Button 
