@@ -384,7 +384,7 @@ const Course = () => {
   }, [carouselApi, completedSections, courseSections]);
 
   const currentSectionId = courseSections[currentSlide]?.id;
-  const isCurrentSectionComplete = currentSectionId ? localCompletedSections.includes(currentSectionId) : false;
+  const isCurrentSectionComplete = currentSectionId ? (localCompletedSections.includes(currentSectionId) || completedSections.includes(currentSectionId)) : false;
 
   useEffect(() => {
     if (showQuiz) {
