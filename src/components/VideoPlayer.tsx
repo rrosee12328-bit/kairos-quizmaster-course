@@ -402,16 +402,29 @@ const VideoPlayer = ({
         player.on('ended', () => {
           setIsPlaying(false);
           setWatchedPercent(100);
-          if (!hasCompletedRef.current) {
-            hasCompletedRef.current = true;
+          
+          // For final section, always show modal even if already completed
+          // For other sections, only show modal on first completion
+          if (!hasCompletedRef.current || isFinalSection) {
+            const wasAlreadyCompleted = hasCompletedRef.current;
+            
+            // Mark as completed if not already done
+            if (!hasCompletedRef.current) {
+              hasCompletedRef.current = true;
+            }
+            
             // Wrap in async function to allow await
             (async () => {
               const currentTime = player.getCurrentTime?.() || currentTimeRef.current || 0;
               const duration = player.getDuration?.() || durationRef.current || 0;
-              await saveWatchProgress(currentTime, duration, true);
-              // Small delay to ensure database trigger has processed
-              await new Promise(resolve => setTimeout(resolve, 500));
-              onSectionCompleted?.(section.id);
+              
+              // Only save progress and notify if this is the first completion
+              if (!wasAlreadyCompleted) {
+                await saveWatchProgress(currentTime, duration, true);
+                // Small delay to ensure database trigger has processed
+                await new Promise(resolve => setTimeout(resolve, 500));
+                onSectionCompleted?.(section.id);
+              }
               
               // Pause the video when showing the modal
               try {
@@ -421,6 +434,7 @@ const VideoPlayer = ({
                 console.error('[VideoPlayer] Error pausing:', err);
               }
               
+              // Always show modal (for final section, or first completion for others)
               setShowAutoAdvance(true);
             })();
           }
@@ -440,16 +454,29 @@ const VideoPlayer = ({
         if (d?.event === 'ended' || d?.type === 'ended') {
           setIsPlaying(false);
           setWatchedPercent(100);
-          if (!hasCompletedRef.current) {
-            hasCompletedRef.current = true;
+          
+          // For final section, always show modal even if already completed
+          // For other sections, only show modal on first completion
+          if (!hasCompletedRef.current || isFinalSection) {
+            const wasAlreadyCompleted = hasCompletedRef.current;
+            
+            // Mark as completed if not already done
+            if (!hasCompletedRef.current) {
+              hasCompletedRef.current = true;
+            }
+            
             // Wrap in async function to allow await
             (async () => {
               const currentTime = currentTimeRef.current || 0;
               const duration = durationRef.current || 0;
-              await saveWatchProgress(currentTime, duration, true);
-              // Small delay to ensure database trigger has processed
-              await new Promise(resolve => setTimeout(resolve, 500));
-              onSectionCompleted?.(section.id);
+              
+              // Only save progress and notify if this is the first completion
+              if (!wasAlreadyCompleted) {
+                await saveWatchProgress(currentTime, duration, true);
+                // Small delay to ensure database trigger has processed
+                await new Promise(resolve => setTimeout(resolve, 500));
+                onSectionCompleted?.(section.id);
+              }
               
               // Try to pause via postMessage (fallback method)
               try {
@@ -459,6 +486,7 @@ const VideoPlayer = ({
                 console.error('[VideoPlayer] Error sending pause message:', err);
               }
               
+              // Always show modal (for final section, or first completion for others)
               setShowAutoAdvance(true);
             })();
           }
