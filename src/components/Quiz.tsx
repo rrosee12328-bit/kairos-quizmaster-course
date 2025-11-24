@@ -422,15 +422,14 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
                 </p>
                 <p className="text-sm text-blue-800 dark:text-blue-200">
                   You have completed Part 1 (Online). To receive your Armed Security Officer certificate, 
-                  you MUST complete Part 2 in-person training. Check your email for your approval code 
-                  to schedule your in-person session. The approval code expires in 24 hours.
+                  you MUST complete Part 2 in-person training. Click below to schedule your in-person session.
                 </p>
                 <Button 
-                  onClick={() => navigate('/profile')}
+                  onClick={() => window.open('https://calendly.com/rrosee12328/30min', '_blank')}
                   className="w-full"
                   size="lg"
                 >
-                  View Approval Code in Profile
+                  Schedule In-Person Training
                 </Button>
               </div>
             )}

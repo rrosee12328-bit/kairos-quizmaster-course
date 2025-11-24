@@ -107,13 +107,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
                   <p><strong>Certificate Registration Number:</strong> ${registrationNumber}</p>
                   <p>Your certificate has been generated and is available in your user profile. You can download it at any time by logging into your account.</p>
                 `
-                : passed && courseType === 'level3' && approvalCode
+                : passed && courseType === 'level3'
                 ? `
                   <div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    <p style="margin: 0; font-size: 18px; font-weight: bold; color: #1e40af;">Your Approval Code</p>
-                    <p style="margin: 10px 0; font-size: 24px; font-weight: bold; color: #1e40af; letter-spacing: 2px;">${approvalCode}</p>
-                    <p style="margin: 5px 0 0 0; font-size: 12px; color: #1e40af;">Expires: ${approvalExpiresAt}</p>
-                    <p style="margin: 15px 0 0 0; font-size: 14px; color: #1e40af;">⚠️ This approval code is valid for 24 hours only and grants you access to schedule your in-person Level 3 Part 2 training.</p>
+                    <p style="margin: 0; font-size: 18px; font-weight: bold; color: #1e40af;">📅 Schedule Your In-Person Training</p>
+                    <p style="margin: 15px 0 0 0; font-size: 14px; color: #1e40af;">Click the button below to book your Level 3 Part 2 in-person training session:</p>
+                    <div style="text-align: center; margin-top: 20px;">
+                      <a href="https://calendly.com/rrosee12328/30min" style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Book Appointment</a>
+                    </div>
                   </div>
                   <p><strong>Important:</strong> Level 3 does not provide a certificate for the online portion. You must complete the in-person Level 3 Part 2 training to receive your full Armed Security Officer certification.</p>
                 `
@@ -134,7 +135,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
                   <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 20px; border-radius: 8px; margin-top: 20px;">
                     <p style="margin: 0; color: #856404; font-weight: bold; font-size: 16px;">⚠️ NEXT STEPS REQUIRED</p>
                     <p style="margin: 10px 0 0 0; color: #856404;">You have completed Part 1 (Online) of the Level 3 Security Officer Certification. To receive your Armed Security Officer certificate, you MUST complete Part 2 in-person training.</p>
-                    <p style="margin: 10px 0 0 0; color: #856404; font-weight: bold;">Use your approval code above to schedule your in-person training session. This code expires in 24 hours.</p>
+                    <p style="margin: 10px 0 0 0; color: #856404; font-weight: bold;">Use the booking button above to schedule your in-person training session.</p>
                   </div>
                 `
                 : ''
