@@ -108,7 +108,7 @@ async function generateCertificatePDF(
 
     // === Text placement ===
     // Student Name – centered in middle section
-    const nameY = pctY(64);
+    const nameY = pctY(66);
     page.drawText(name || "Student Name", {
       x: pctX(34),
       y: nameY,
@@ -131,7 +131,7 @@ async function generateCertificatePDF(
 
     // Date of Completion – on the Date of Completion line
     const formattedDate = formatDate(date);
-    const dateY = pctY(48);
+    const dateY = pctY(50);
 
     page.drawText(formattedDate, {
       x: pctX(62),
