@@ -488,14 +488,30 @@ const Course = () => {
                 Section {currentSlide + 1} of {totalSections}
               </div>
 
-              <Button
-                onClick={handleNextSlide}
-                disabled={currentSlide === totalSections - 1 || !isCurrentSectionComplete}
-                title={!isCurrentSectionComplete ? "Complete current section to unlock next" : ""}
-              >
-                Next
-                <ChevronRight className="h-4 w-4 ml-2" />
-              </Button>
+              {currentSlide === totalSections - 1 && isCurrentSectionComplete && (examUnlocked || developerMode) ? (
+                <Button
+                  onClick={() => {
+                    setShowQuiz(true);
+                    setTimeout(() => {
+                      quizRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
+                  }}
+                  className="gap-2"
+                  size="lg"
+                >
+                  Continue to Exam
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleNextSlide}
+                  disabled={currentSlide === totalSections - 1 || !isCurrentSectionComplete}
+                  title={!isCurrentSectionComplete ? "Complete current section to unlock next" : ""}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
+              )}
             </div>
           </div>
 
