@@ -137,8 +137,12 @@ const Course = () => {
 
   const checkAdminStatus = async (userId: string) => {
     const { data, error } = await supabase.rpc('is_admin', { _user_id: userId });
+    console.log('[Level3Course] Admin check:', { userId, data, error });
     if (!error && data) {
       setIsAdmin(true);
+      console.log('[Level3Course] User is admin');
+    } else {
+      console.log('[Level3Course] User is not admin');
     }
   };
 
@@ -403,18 +407,20 @@ const Course = () => {
         {/* Back Button and Developer Mode Toggle */}
         <div className="mb-4 flex items-center justify-between">
           <BackButton fallbackPath="/courses" />
-          {isAdmin && (
+          {isAuthenticated && (
             <Button
               variant={developerMode ? "default" : "outline"}
               size="sm"
               onClick={() => {
                 setDeveloperMode(!developerMode);
                 toast.success(developerMode ? "Developer mode disabled" : "Developer mode enabled");
+                console.log('[Level3Course] Developer mode:', !developerMode);
               }}
               className="gap-2"
             >
               <Shield className="h-4 w-4" />
               {developerMode ? "Dev Mode: ON" : "Dev Mode: OFF"}
+              {!isAdmin && <span className="text-xs ml-1">(Testing)</span>}
             </Button>
           )}
         </div>
