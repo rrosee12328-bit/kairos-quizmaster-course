@@ -28,6 +28,7 @@ const Course = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [videosLoaded, setVideosLoaded] = useState(false);
+  const [developerMode, setDeveloperMode] = useState(false);
   const quizRef = useRef<HTMLDivElement>(null);
   
   const totalSections = 10;
@@ -384,7 +385,7 @@ const Course = () => {
   }, [carouselApi, completedSections, courseSections]);
 
   const currentSectionId = courseSections[currentSlide]?.id;
-  const isCurrentSectionComplete = currentSectionId ? (localCompletedSections.includes(currentSectionId) || completedSections.includes(currentSectionId)) : false;
+  const isCurrentSectionComplete = developerMode || (currentSectionId ? (localCompletedSections.includes(currentSectionId) || completedSections.includes(currentSectionId)) : false);
 
   useEffect(() => {
     if (showQuiz) {
@@ -399,9 +400,23 @@ const Course = () => {
       <CourseHeader isAdmin={isAdmin} showAuthButtons={isAuthenticated} />
       
       <div className="container mx-auto px-6 py-8">
-        {/* Back Button */}
-        <div className="mb-4">
+        {/* Back Button and Developer Mode Toggle */}
+        <div className="mb-4 flex items-center justify-between">
           <BackButton fallbackPath="/courses" />
+          {isAdmin && (
+            <Button
+              variant={developerMode ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                setDeveloperMode(!developerMode);
+                toast.success(developerMode ? "Developer mode disabled" : "Developer mode enabled");
+              }}
+              className="gap-2"
+            >
+              <Shield className="h-4 w-4" />
+              {developerMode ? "Dev Mode: ON" : "Dev Mode: OFF"}
+            </Button>
+          )}
         </div>
         
         {/* Course Title */}
@@ -486,7 +501,7 @@ const Course = () => {
             totalSections={totalSections}
             showLocks={false}
           />
-          {!examUnlocked && (
+          {!examUnlocked && !developerMode && (
             <>
               {examLockReason && (
                 <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
@@ -502,6 +517,13 @@ const Course = () => {
                 </p>
               </div>
             </>
+          )}
+          {developerMode && (
+            <div className="mt-2 p-3 bg-primary/10 border border-primary/20 rounded-lg text-center">
+              <p className="text-sm text-primary font-semibold">
+                🔓 Developer Mode Active: All sections and exam unlocked
+              </p>
+            </div>
           )}
         </div>
 
@@ -573,21 +595,27 @@ const Course = () => {
         </div>
 
         {/* Final Quiz */}
-        {examUnlocked && !showQuiz && (
+        {(examUnlocked || developerMode) && !showQuiz && (
           <Card className="border-l-4 border-l-green-500 animate-fade-in">
             <CardHeader>
               <CardTitle className="flex items-center gap-3 text-green-600">
                 <Shield className="h-6 w-6" />
-                Ready for Part 1 Final Exam
+                {developerMode ? "Developer Mode: Exam Unlocked" : "Ready for Part 1 Final Exam"}
               </CardTitle>
               <CardDescription>
-                You've completed 90% of the course! Pass the final exam, then complete Part 2 in-person training for full certification.
+                {developerMode 
+                  ? "Developer mode enabled - exam accessible for testing purposes"
+                  : "You've completed 90% of the course! Pass the final exam, then complete Part 2 in-person training for full certification."
+                }
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="mb-4 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
                 <p className="text-sm text-green-800 dark:text-green-200">
-                  ✓ Course progress: {completionPercentage.toFixed(1)}% complete
+                  {developerMode 
+                    ? "🔓 Developer mode active - all restrictions bypassed"
+                    : `✓ Course progress: ${completionPercentage.toFixed(1)}% complete`
+                  }
                 </p>
               </div>
                <Button onClick={() => {
