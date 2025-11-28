@@ -19,7 +19,7 @@ const PrivacyPolicy = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
-      <CourseHeader showAuthButtons={!!user} />
+      <CourseHeader isLoggedIn={!!user} />
 
       {/* Main Content */}
       <main className="flex-1 container mx-auto max-w-4xl px-6 py-12">

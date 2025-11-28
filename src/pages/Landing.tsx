@@ -37,7 +37,7 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <CourseHeader showAuthButtons={!!user} />
+      <CourseHeader isLoggedIn={!!user} />
 
       <main>
         {/* Hero with Video Section */}

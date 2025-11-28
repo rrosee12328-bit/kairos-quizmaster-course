@@ -207,7 +207,7 @@ const CourseCheckout = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      <CourseHeader showAuthButtons={!!user} />
+      <CourseHeader isLoggedIn={!!user} />
 
       {/* Main Content */}
       <main className="container mx-auto px-6 py-12">

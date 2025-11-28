@@ -70,7 +70,7 @@ const VideoMetadata = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      <CourseHeader showAuthButtons={!!user} />
+      <CourseHeader isLoggedIn={!!user} />
 
       <div className="container mx-auto max-w-4xl p-8">
         <Card>

@@ -184,7 +184,7 @@ const Settings = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <CourseHeader showAuthButtons={true} />
+      <CourseHeader isLoggedIn={true} />
 
       <main className="flex-1 container mx-auto px-6 py-12 max-w-4xl">
         <div className="mb-6">

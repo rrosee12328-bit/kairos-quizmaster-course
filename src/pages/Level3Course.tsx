@@ -401,7 +401,7 @@ const Course = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      <CourseHeader isAdmin={isAdmin} showAuthButtons={isAuthenticated} />
+      <CourseHeader isAdmin={isAdmin} isLoggedIn={isAuthenticated} />
       
       <div className="container mx-auto px-6 py-8">
         {/* Back Button and Developer Mode Toggle */}
