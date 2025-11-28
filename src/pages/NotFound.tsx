@@ -19,7 +19,7 @@ const NotFound = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
-      <CourseHeader showAuthButtons={!!user} />
+      <CourseHeader isLoggedIn={!!user} />
 
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center">

@@ -325,7 +325,7 @@ const Courses = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
-      <CourseHeader isAdmin={isAdmin} showAuthButtons={!!user} />
+      <CourseHeader isAdmin={isAdmin} isLoggedIn={!!user} />
 
       {/* Main Content */}
       <main className="flex-1 container mx-auto px-6 py-12">

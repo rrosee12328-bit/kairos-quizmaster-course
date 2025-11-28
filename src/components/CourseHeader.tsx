@@ -1,4 +1,4 @@
-import { Shield, BookOpen, Users, LogOut, Home, Menu } from "lucide-react";
+import { Shield, BookOpen, Users, LogOut, LogIn, Home, Menu } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,10 +14,10 @@ import kairosLogo from "@/assets/kairos-logo.png";
 
 interface CourseHeaderProps {
   isAdmin?: boolean;
-  showAuthButtons?: boolean;
+  isLoggedIn?: boolean;
 }
 
-const CourseHeader = ({ isAdmin = false, showAuthButtons = false }: CourseHeaderProps) => {
+const CourseHeader = ({ isAdmin = false, isLoggedIn = false }: CourseHeaderProps) => {
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -62,7 +62,8 @@ const CourseHeader = ({ isAdmin = false, showAuthButtons = false }: CourseHeader
                     Courses
                   </Link>
                 </DropdownMenuItem>
-                {showAuthButtons && (
+                <DropdownMenuSeparator />
+                {isLoggedIn ? (
                   <>
                     <DropdownMenuItem asChild>
                       <Link to="/profile" className="flex items-center cursor-pointer">
@@ -70,12 +71,18 @@ const CourseHeader = ({ isAdmin = false, showAuthButtons = false }: CourseHeader
                         Profile
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
                       <LogOut className="h-4 w-4 mr-2" />
                       Sign Out
                     </DropdownMenuItem>
                   </>
+                ) : (
+                  <DropdownMenuItem asChild>
+                    <Link to="/auth" className="flex items-center cursor-pointer">
+                      <LogIn className="h-4 w-4 mr-2" />
+                      Sign In
+                    </Link>
+                  </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>

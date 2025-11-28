@@ -527,7 +527,7 @@ const Admin = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <CourseHeader isAdmin={isAdmin} showAuthButtons={true} />
+      <CourseHeader isAdmin={isAdmin} isLoggedIn={true} />
 
       <main className="container mx-auto px-6 py-8">
         {/* Stats Overview */}
