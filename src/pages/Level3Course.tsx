@@ -20,6 +20,9 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 
+// Allowed emails for developer mode
+const DEV_MODE_ALLOWED_EMAILS = ['rrosee12328@gmail.com', 'swiftskillnow@gmail.com'];
+
 const Course = () => {
   const navigate = useNavigate();
   const [showQuiz, setShowQuiz] = useState(false);
@@ -29,6 +32,7 @@ const Course = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [videosLoaded, setVideosLoaded] = useState(false);
   const [developerMode, setDeveloperMode] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const quizRef = useRef<HTMLDivElement>(null);
   
   const totalSections = 10;
@@ -39,6 +43,7 @@ const Course = () => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
         setIsAuthenticated(true);
+        setUserEmail(user.email || null);
         checkAdminStatus(user.id);
         checkEnrollmentStatus(user.id);
       } else {
@@ -50,10 +55,12 @@ const Course = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
         setIsAuthenticated(true);
+        setUserEmail(session.user.email || null);
         checkAdminStatus(session.user.id);
       } else {
         setIsAuthenticated(false);
         setIsAdmin(false);
+        setUserEmail(null);
         // Redirect to login if logged out (match Level 2 behavior)
         navigate('/auth?redirect=/course/level3');
       }
@@ -407,7 +414,7 @@ const Course = () => {
         {/* Back Button and Developer Mode Toggle */}
         <div className="mb-4 flex items-center justify-between">
           <BackButton fallbackPath="/courses" />
-          {isAuthenticated && (
+          {isAuthenticated && userEmail && DEV_MODE_ALLOWED_EMAILS.includes(userEmail) && (
             <Button
               variant={developerMode ? "default" : "outline"}
               size="sm"
