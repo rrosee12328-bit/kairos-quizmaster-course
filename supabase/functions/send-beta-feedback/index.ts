@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -39,7 +40,44 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const feedback: BetaFeedbackRequest = await req.json();
-    console.log("Received beta feedback submission");
+    console.log("Received beta feedback submission from:", feedback.nameRole);
+
+    // Save feedback to database
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const { error: dbError } = await supabase
+      .from('beta_feedback')
+      .insert({
+        name_role: feedback.nameRole,
+        experience_level: feedback.experienceLevel,
+        device_browser: feedback.deviceBrowser,
+        testing_time: feedback.testingTime,
+        login_clarity: feedback.loginClarity,
+        layout_rating: feedback.layoutRating,
+        materials_location: feedback.materialsLocation,
+        visual_design: feedback.visualDesign,
+        branding: feedback.branding,
+        video_playback: feedback.videoPlayback,
+        ai_assistant: feedback.aiAssistant,
+        materials_usefulness: feedback.materialsUsefulness,
+        content_engagement: feedback.contentEngagement,
+        technical_issues: feedback.technicalIssues,
+        test_location: feedback.testLocation,
+        test_interface: feedback.testInterface,
+        score_comm: feedback.scoreComm,
+        certificate_delivery: feedback.certificateDelivery,
+        certificate_download: feedback.certificateDownload,
+        accessibility_issues: feedback.accessibilityIssues,
+        mobile_adaptation: feedback.mobileAdaptation,
+      });
+
+    if (dbError) {
+      console.error("Error saving feedback to database:", dbError);
+    } else {
+      console.log("Feedback saved to database successfully");
+    }
 
     const emailHtml = `
       <!DOCTYPE html>

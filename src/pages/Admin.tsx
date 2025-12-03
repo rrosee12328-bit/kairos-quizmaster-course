@@ -14,7 +14,7 @@ import CourseHeader from "@/components/CourseHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate, Link } from "react-router-dom";
-import { Award, BookOpen, Users, CheckCircle, XCircle, Download, Filter, Search, ArrowUpDown, Eye, Key, Plus, RefreshCw, Clock, MoreVertical } from "lucide-react";
+import { Award, BookOpen, Users, CheckCircle, XCircle, Download, Filter, Search, ArrowUpDown, Eye, Key, Plus, RefreshCw, Clock, MoreVertical, MessageSquare } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,6 +54,8 @@ const Admin = () => {
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [approvalCodes, setApprovalCodes] = useState<any[]>([]);
   const [filteredApprovalCodes, setFilteredApprovalCodes] = useState<any[]>([]);
+  const [betaFeedback, setBetaFeedback] = useState<any[]>([]);
+  const [selectedFeedback, setSelectedFeedback] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   
@@ -212,6 +214,13 @@ const Admin = () => {
     
     setApprovalCodes(enrichedApprovals);
     setFilteredApprovalCodes(enrichedApprovals);
+
+    // Fetch beta feedback
+    const { data: feedbackData } = await supabase
+      .from('beta_feedback')
+      .select('*')
+      .order('created_at', { ascending: false });
+    setBetaFeedback(feedbackData || []);
 
     setLoading(false);
   };
@@ -600,6 +609,7 @@ const Admin = () => {
             <TabsTrigger value="certificates">Certificates</TabsTrigger>
             <TabsTrigger value="enrollments">Enrollments</TabsTrigger>
             <TabsTrigger value="approvals">Approval Codes</TabsTrigger>
+            <TabsTrigger value="feedback">Beta Feedback</TabsTrigger>
           </TabsList>
 
           <TabsContent value="attempts">
@@ -1064,7 +1074,128 @@ const Admin = () => {
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="feedback">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Beta Feedback</CardTitle>
+                    <CardDescription>View all beta testing feedback submissions</CardDescription>
+                  </div>
+                  <Badge variant="outline">{betaFeedback.length} submissions</Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {betaFeedback.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    No beta feedback submissions yet
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {betaFeedback.map((feedback) => (
+                      <div 
+                        key={feedback.id} 
+                        className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer"
+                        onClick={() => setSelectedFeedback(feedback)}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <p className="font-medium">{feedback.name_role}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {format(new Date(feedback.created_at), 'MMM dd, yyyy h:mm a')}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline">{feedback.device_browser}</Badge>
+                            <Button variant="ghost" size="sm">
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                          {feedback.technical_issues || feedback.login_clarity}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
+
+      {/* Feedback Detail Dialog */}
+      <Dialog open={selectedFeedback !== null} onOpenChange={() => setSelectedFeedback(null)}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Beta Feedback Details</DialogTitle>
+            <DialogDescription>
+              {selectedFeedback?.name_role} - {selectedFeedback && format(new Date(selectedFeedback.created_at), 'MMM dd, yyyy h:mm a')}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedFeedback && (
+            <div className="space-y-6">
+              {/* Section A */}
+              <div>
+                <h3 className="font-semibold text-lg border-b pb-2 mb-3">Section A: User Profile & Context</h3>
+                <div className="grid gap-3 text-sm">
+                  <div><span className="text-muted-foreground">Name/Role:</span> {selectedFeedback.name_role}</div>
+                  <div><span className="text-muted-foreground">Experience Level:</span> {selectedFeedback.experience_level}</div>
+                  <div><span className="text-muted-foreground">Device & Browser:</span> {selectedFeedback.device_browser}</div>
+                  <div><span className="text-muted-foreground">Testing Time:</span> {selectedFeedback.testing_time}</div>
+                </div>
+              </div>
+
+              {/* Section B */}
+              <div>
+                <h3 className="font-semibold text-lg border-b pb-2 mb-3">Section B: First Impression & Navigation</h3>
+                <div className="grid gap-3 text-sm">
+                  <div><span className="text-muted-foreground">Login Clarity:</span> {selectedFeedback.login_clarity}</div>
+                  <div><span className="text-muted-foreground">Layout Rating:</span> {selectedFeedback.layout_rating}</div>
+                  <div><span className="text-muted-foreground">Materials Location:</span> {selectedFeedback.materials_location}</div>
+                  <div><span className="text-muted-foreground">Visual Design:</span> {selectedFeedback.visual_design}</div>
+                  <div><span className="text-muted-foreground">Branding:</span> {selectedFeedback.branding}</div>
+                </div>
+              </div>
+
+              {/* Section C */}
+              <div>
+                <h3 className="font-semibold text-lg border-b pb-2 mb-3">Section C: Course Materials & Learning Experience</h3>
+                <div className="grid gap-3 text-sm">
+                  <div><span className="text-muted-foreground">Video Playback:</span> {selectedFeedback.video_playback}</div>
+                  <div><span className="text-muted-foreground">AI Assistant:</span> {selectedFeedback.ai_assistant}</div>
+                  <div><span className="text-muted-foreground">Materials Usefulness:</span> {selectedFeedback.materials_usefulness}</div>
+                  <div><span className="text-muted-foreground">Content Engagement:</span> {selectedFeedback.content_engagement}</div>
+                  <div><span className="text-muted-foreground">Technical Issues:</span> {selectedFeedback.technical_issues}</div>
+                </div>
+              </div>
+
+              {/* Section D */}
+              <div>
+                <h3 className="font-semibold text-lg border-b pb-2 mb-3">Section D: Test & Certificate Functionality</h3>
+                <div className="grid gap-3 text-sm">
+                  <div><span className="text-muted-foreground">Test Location:</span> {selectedFeedback.test_location}</div>
+                  <div><span className="text-muted-foreground">Test Interface:</span> {selectedFeedback.test_interface}</div>
+                  <div><span className="text-muted-foreground">Score Communication:</span> {selectedFeedback.score_comm}</div>
+                  <div><span className="text-muted-foreground">Certificate Delivery:</span> {selectedFeedback.certificate_delivery}</div>
+                  <div><span className="text-muted-foreground">Certificate Download:</span> {selectedFeedback.certificate_download}</div>
+                </div>
+              </div>
+
+              {/* Section E */}
+              <div>
+                <h3 className="font-semibold text-lg border-b pb-2 mb-3">Section E: Usability & Accessibility</h3>
+                <div className="grid gap-3 text-sm">
+                  <div><span className="text-muted-foreground">Accessibility Issues:</span> {selectedFeedback.accessibility_issues}</div>
+                  <div><span className="text-muted-foreground">Mobile Adaptation:</span> {selectedFeedback.mobile_adaptation}</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
       </main>
 
       {/* User Detail Drawer */}
