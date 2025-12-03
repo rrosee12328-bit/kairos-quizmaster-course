@@ -52,18 +52,22 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
 
   const handleNextQuestion = async () => {
     if (selectedAnswer) {
-      setSelectedAnswers(prev => ({
-        ...prev,
+      // Create updated answers object including current answer
+      const updatedAnswers = {
+        ...selectedAnswers,
         [currentQuestion]: parseInt(selectedAnswer)
-      }));
+      };
+      
+      setSelectedAnswers(updatedAnswers);
       
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
         setSelectedAnswer("");
       } else {
         // Save completion immediately when quiz is finished
+        // Pass the updated answers directly to avoid race condition with state update
         setIsSavingCompletion(true);
-        await saveCompletion();
+        await saveCompletion(updatedAnswers);
         setIsSavingCompletion(false);
         setShowResults(true);
         // Notify parent to refresh progress data
@@ -79,9 +83,9 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
     }
   };
 
-  const calculateScore = () => {
+  const calculateScore = (answers: Record<number, number> = selectedAnswers) => {
     let correct = 0;
-    Object.entries(selectedAnswers).forEach(([questionIndex, answer]) => {
+    Object.entries(answers).forEach(([questionIndex, answer]) => {
       if (questions[parseInt(questionIndex)].correctAnswer === answer) {
         correct++;
       }
@@ -89,7 +93,7 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
     return correct;
   };
 
-  const saveCompletion = async () => {
+  const saveCompletion = async (answers: Record<number, number> = selectedAnswers) => {
     // Prevent duplicate saves for this specific quiz attempt
     if (completionSavedRef.current) {
       console.log('Completion already saved for this attempt');
