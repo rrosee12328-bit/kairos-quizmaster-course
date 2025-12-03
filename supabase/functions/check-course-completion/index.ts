@@ -14,6 +14,8 @@ const COURSE_DURATIONS: Record<string, number> = {
   'pepper_spray': 60 * 20, // 20 minutes
 };
 
+const MAX_FAILED_ATTEMPTS = 3;
+
 Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -103,7 +105,43 @@ Deno.serve(async (req: Request): Promise<Response> => {
       }
     }
 
-    // 3. Calculate total watch time from all sections
+    // 3. Check exam attempt history
+    const { data: completions, error: completionsError } = await supabase
+      .from('course_completions')
+      .select('id, passed, attempt_number')
+      .eq('user_id', user.id)
+      .eq('course_type', course_type)
+      .order('attempt_number', { ascending: false });
+
+    const hasPassedBefore = completions?.some(c => c.passed) || false;
+    const failedAttempts = completions?.filter(c => !c.passed).length || 0;
+    const totalAttempts = completions?.length || 0;
+
+    console.log('[check-course-completion] Attempt history:', {
+      userId: user.id,
+      course_type,
+      totalAttempts,
+      failedAttempts,
+      hasPassedBefore,
+      maxFailedAttempts: MAX_FAILED_ATTEMPTS
+    });
+
+    // If user has 3+ failed attempts without passing, require re-purchase
+    if (failedAttempts >= MAX_FAILED_ATTEMPTS && !hasPassedBefore) {
+      return new Response(JSON.stringify({ 
+        error: 'Maximum attempts reached',
+        exam_unlocked: false,
+        completion_percentage: 100,
+        failed_attempts: failedAttempts,
+        max_attempts: MAX_FAILED_ATTEMPTS,
+        reason: `You have used all ${MAX_FAILED_ATTEMPTS} exam attempts. Please re-purchase the course to try again.`
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // 4. Calculate total watch time from all sections
     const { data: progress, error: progressError } = await supabase
       .from('course_progress')
       .select('video_watch_time_seconds')
@@ -129,7 +167,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
       ? (totalWatchTime / expectedDuration) * 100 
       : 0;
     
-    const isUnlocked = completionPercentage >= 90;
+    // Unlock exam if: 90% watch time completed OR user has already attempted the exam (and has attempts left)
+    const watchTimeUnlocked = completionPercentage >= 90;
+    const hasAttemptsRemaining = failedAttempts < MAX_FAILED_ATTEMPTS;
+    const previouslyAttempted = totalAttempts > 0;
+    
+    // Allow exam access if they've watched enough OR they've already taken it before (still have attempts)
+    const isUnlocked = watchTimeUnlocked || (previouslyAttempted && hasAttemptsRemaining);
 
     console.log('[check-course-completion]', {
       userId: user.id,
@@ -138,8 +182,20 @@ Deno.serve(async (req: Request): Promise<Response> => {
       totalWatchTime,
       expectedDuration,
       completionPercentage: completionPercentage.toFixed(2),
+      watchTimeUnlocked,
+      previouslyAttempted,
+      failedAttempts,
+      hasAttemptsRemaining,
       isUnlocked
     });
+
+    let reason = 'Exam unlocked';
+    if (!isUnlocked) {
+      reason = `Complete ${(90 - completionPercentage).toFixed(1)}% more of the course to unlock the exam.`;
+    } else if (previouslyAttempted && !watchTimeUnlocked) {
+      const attemptsLeft = MAX_FAILED_ATTEMPTS - failedAttempts;
+      reason = `Exam unlocked. You have ${attemptsLeft} attempt${attemptsLeft === 1 ? '' : 's'} remaining.`;
+    }
 
     return new Response(JSON.stringify({
       total_watch_time_seconds: totalWatchTime,
@@ -147,7 +203,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
       completion_percentage: Math.round(completionPercentage * 10) / 10,
       exam_unlocked: isUnlocked,
       has_enrollment: true,
-      reason: isUnlocked ? 'Exam unlocked' : `Complete ${(90 - completionPercentage).toFixed(1)}% more of the course to unlock the exam.`
+      failed_attempts: failedAttempts,
+      max_attempts: MAX_FAILED_ATTEMPTS,
+      attempts_remaining: MAX_FAILED_ATTEMPTS - failedAttempts,
+      reason
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
