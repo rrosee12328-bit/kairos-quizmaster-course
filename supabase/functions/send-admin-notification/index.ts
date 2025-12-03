@@ -114,7 +114,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
               
               <div class="info-row">
                 <span class="info-label">Completed At:</span>
-                <span>${new Date(completedAt).toLocaleString()}</span>
+                <span>${new Date(completedAt).toLocaleString('en-US', { 
+                  timeZone: 'America/Chicago',
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  second: '2-digit',
+                  hour12: true
+                })} CST</span>
               </div>
               
               ${passed && courseType === 'level2' && registrationNumber 
