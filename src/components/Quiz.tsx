@@ -442,6 +442,24 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
                 </Button>
               </div>
             )}
+            {passed && courseType === 'level-4' && (
+              <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border-2 border-blue-500 space-y-3">
+                <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                  ⚠️ IMPORTANT: Level 4 Part 2 In-Person Training Required
+                </p>
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  You have completed Part 1 (Online). To receive your Personal Protection Officer certificate, 
+                  you MUST complete Part 2 in-person training. Click below to schedule your in-person session.
+                </p>
+                <Button 
+                  onClick={() => window.open('https://calendly.com/rrosee12328/30min', '_blank')}
+                  className="w-full"
+                  size="lg"
+                >
+                  Schedule In-Person Training
+                </Button>
+              </div>
+            )}
             {!passed && (
               <div className="p-4 bg-orange-50 dark:bg-orange-950/20 rounded-lg space-y-2">
                 <p className="text-sm text-orange-800 dark:text-orange-200">
