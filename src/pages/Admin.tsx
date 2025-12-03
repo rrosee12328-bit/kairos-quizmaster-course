@@ -142,19 +142,25 @@ const Admin = () => {
     // Fetch enrollments to get actual student names
     const { data: enrollmentsData } = await supabase
       .from('enrollments')
-      .select('user_id, first_name, last_name, email');
+      .select('user_id, first_name, last_name, email, course_type');
 
     // Enrich completions with user info and certificate data
     const enrichedCompletions = (completionsData || []).map(comp => {
       const profile = profilesData?.find(p => p.id === comp.user_id);
       const cert = certsData?.find(c => c.completion_id === comp.id);
       
-      // Try to get name from enrollment first, then profile
-      const enrollment = enrollmentsData?.find(e => e.user_id === comp.user_id);
+      // Try to get name from enrollment matching BOTH user_id AND course_type
+      const enrollment = enrollmentsData?.find(e => 
+        e.user_id === comp.user_id && e.course_type === comp.course_type
+      );
+      // Fallback to any enrollment for this user if no course-specific one found
+      const fallbackEnrollment = enrollmentsData?.find(e => e.user_id === comp.user_id);
+      const matchedEnrollment = enrollment || fallbackEnrollment;
+      
       let displayName = 'Name Not Set';
       
-      if (enrollment?.first_name && enrollment?.last_name) {
-        displayName = `${enrollment.first_name} ${enrollment.last_name}`;
+      if (matchedEnrollment?.first_name && matchedEnrollment?.last_name) {
+        displayName = `${matchedEnrollment.first_name} ${matchedEnrollment.last_name}`;
       } else if (profile?.full_name && !profile.full_name.includes('@')) {
         displayName = profile.full_name;
       }
