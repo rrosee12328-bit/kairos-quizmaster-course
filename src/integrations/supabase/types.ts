@@ -305,7 +305,7 @@ export type Database = {
           last_six_digits: string
           phone_number: string
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           course_type: string
@@ -319,7 +319,7 @@ export type Database = {
           last_six_digits: string
           phone_number: string
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           course_type?: string
@@ -333,7 +333,7 @@ export type Database = {
           last_six_digits?: string
           phone_number?: string
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
