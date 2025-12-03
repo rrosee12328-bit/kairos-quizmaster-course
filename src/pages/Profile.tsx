@@ -455,74 +455,6 @@ const Profile = () => {
           </CardContent>
         </Card>
 
-        {/* Course History - Audit Log */}
-        <Card className="mb-8 border-l-4 border-l-blue-500">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-blue-500" />
-              My Course History
-            </CardTitle>
-            <CardDescription>Complete audit log of all your course attempts for regulatory review</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {completions.length > 0 ? (
-              <div className="space-y-3">
-                {completions.map((completion, idx) => (
-                  <div key={completion.id} className="p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1">
-                        <h4 className="font-semibold">{getCourseTitle(completion.course_type)}</h4>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Attempt #{completion.attempt_number || idx + 1}
-                        </p>
-                      </div>
-                      <Badge variant={completion.passed ? "default" : "secondary"} className={completion.passed ? "bg-green-600" : ""}>
-                        {completion.passed ? (
-                          <>
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            Passed
-                          </>
-                        ) : (
-                          <>
-                            <XCircle className="h-3 w-3 mr-1" />
-                            Failed
-                          </>
-                        )}
-                      </Badge>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                      <div>
-                        <p className="text-muted-foreground text-xs">Score</p>
-                        <p className="font-semibold">{completion.score}/{completion.total_questions} ({completion.percentage}%)</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground text-xs">Completed</p>
-                        <p className="font-medium">{format(new Date(completion.completed_at), 'MMM dd, yyyy')}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground text-xs">Time</p>
-                        <p className="font-medium">{format(new Date(completion.completed_at), 'h:mm a')}</p>
-                      </div>
-                      {completion.duration_seconds && (
-                        <div>
-                          <p className="text-muted-foreground text-xs">Duration</p>
-                          <p className="font-medium">{Math.floor(completion.duration_seconds / 60)} min</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No course attempts yet. Start a course to begin your learning journey!</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
         {/* Browse More Courses */}
         <Card className="mb-8 bg-primary/5 border-primary/20">
           <CardHeader>
@@ -542,14 +474,14 @@ const Profile = () => {
           </CardContent>
         </Card>
 
-        {/* Enrollments */}
+        {/* Combined My Courses Section */}
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BookOpen className="h-5 w-5 text-primary" />
               My Courses
             </CardTitle>
-            <CardDescription>Track your enrolled and completed courses</CardDescription>
+            <CardDescription>Track your enrolled courses and exam attempts</CardDescription>
           </CardHeader>
           <CardContent>
             {enrollments.length === 0 && completions.length === 0 ? (
@@ -569,83 +501,100 @@ const Profile = () => {
                 </Button>
               </div>
             ) : (
-              <div className="space-y-4">
-                {/* Show all enrollments */}
-                {enrollments.map((enrollment) => {
-                  const completion = completions.find(c => c.course_type === enrollment.course_type);
-                  const canAccess = (enrollment.enrollment_status === 'enrolled' || enrollment.enrollment_status === 'pending') && !completion;
+              <div className="space-y-6">
+                {/* Get unique course types from enrollments and completions */}
+                {(() => {
+                  const courseTypes = new Set<string>();
+                  enrollments.forEach(e => courseTypes.add(e.course_type));
+                  completions.forEach(c => courseTypes.add(c.course_type));
                   
-                  return (
-                    <div 
-                      key={enrollment.id} 
-                      className={`border rounded-lg p-4 ${canAccess ? 'cursor-pointer hover:border-primary hover:shadow-md' : ''} transition-all`}
-                      onClick={() => canAccess && navigate(`/course/${enrollment.course_type}`)}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h4 className="font-semibold mb-1">{getCourseTitle(enrollment.course_type)}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            Enrolled: {format(new Date(enrollment.created_at), 'MMMM d, yyyy')}
-                          </p>
-                        </div>
-                        {getStatusBadge(completion ? 'completed' : enrollment.enrollment_status)}
-                      </div>
-                      
-                      {completion && (
-                        <div className="mt-3 pt-3 border-t">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium">Final Exam Score</span>
-                            <span className={`text-sm font-semibold ${completion.passed ? 'text-green-600' : 'text-red-600'}`}>
-                              {completion.percentage}% ({completion.score}/{completion.total_questions})
-                            </span>
+                  return Array.from(courseTypes).map(courseType => {
+                    const enrollment = enrollments.find(e => e.course_type === courseType);
+                    const courseCompletions = completions.filter(c => c.course_type === courseType);
+                    const latestCompletion = courseCompletions.length > 0 ? courseCompletions[0] : null;
+                    const canAccess = enrollment && (enrollment.enrollment_status === 'enrolled' || enrollment.enrollment_status === 'pending') && !latestCompletion?.passed;
+                    
+                    return (
+                      <div 
+                        key={courseType} 
+                        className="border rounded-lg overflow-hidden"
+                      >
+                        {/* Course Header */}
+                        <div 
+                          className={`p-4 ${canAccess ? 'cursor-pointer hover:bg-muted/50' : 'bg-muted/20'} transition-all`}
+                          onClick={() => canAccess && navigate(`/course/${courseType}`)}
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <h4 className="font-semibold mb-1">{getCourseTitle(courseType)}</h4>
+                              {enrollment && (
+                                <p className="text-sm text-muted-foreground">
+                                  Enrolled: {format(new Date(enrollment.created_at), 'MMMM d, yyyy')}
+                                </p>
+                              )}
+                            </div>
+                            {getStatusBadge(latestCompletion?.passed ? 'completed' : (enrollment?.enrollment_status || 'completed'))}
                           </div>
-                          <Progress value={completion.percentage} className="h-2" />
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Completed: {format(new Date(completion.completed_at), 'MMMM d, yyyy')}
-                          </p>
+                          
+                          {latestCompletion && (
+                            <div className="mt-3 pt-3 border-t">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm font-medium">Latest Exam Score</span>
+                                <span className={`text-sm font-semibold ${latestCompletion.passed ? 'text-green-600' : 'text-red-600'}`}>
+                                  {latestCompletion.percentage}% ({latestCompletion.score}/{latestCompletion.total_questions})
+                                </span>
+                              </div>
+                              <Progress value={latestCompletion.percentage} className="h-2" />
+                            </div>
+                          )}
+                          
+                          {canAccess && (
+                            <div className="mt-3 flex items-center justify-center text-sm text-primary font-medium">
+                              Continue Course
+                              <ArrowRight className="h-4 w-4 ml-2" />
+                            </div>
+                          )}
                         </div>
-                      )}
-                      
-                      {canAccess && (
-                        <div className="mt-3 flex items-center justify-center text-sm text-primary font-medium">
-                          Continue Course
-                          <ArrowRight className="h-4 w-4 ml-2" />
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-                
-                {/* Show completions without enrollments */}
-                {completions
-                  .filter(completion => !enrollments.find(e => e.course_type === completion.course_type))
-                  .map((completion) => (
-                    <div 
-                      key={completion.id} 
-                      className="border rounded-lg p-4 transition-all"
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h4 className="font-semibold mb-1">{getCourseTitle(completion.course_type)}</h4>
-                          <p className="text-sm text-muted-foreground">
-                            Completed: {format(new Date(completion.completed_at), 'MMMM d, yyyy')}
-                          </p>
-                        </div>
-                        {getStatusBadge('completed')}
+                        
+                        {/* Attempt History (if any) */}
+                        {courseCompletions.length > 0 && (
+                          <div className="border-t bg-muted/10 p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                              <Clock className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm font-medium text-muted-foreground">
+                                Attempt History ({courseCompletions.length} {courseCompletions.length === 1 ? 'attempt' : 'attempts'})
+                              </span>
+                            </div>
+                            <div className="space-y-2">
+                              {courseCompletions.map((completion, idx) => (
+                                <div key={completion.id} className="flex items-center justify-between p-3 bg-background rounded-md border text-sm">
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-muted-foreground">#{completion.attempt_number || idx + 1}</span>
+                                    <Badge variant={completion.passed ? "default" : "secondary"} className={`text-xs ${completion.passed ? "bg-green-600" : ""}`}>
+                                      {completion.passed ? (
+                                        <><CheckCircle className="h-3 w-3 mr-1" /> Pass</>
+                                      ) : (
+                                        <><XCircle className="h-3 w-3 mr-1" /> Fail</>
+                                      )}
+                                    </Badge>
+                                    <span className="font-medium">{completion.percentage}%</span>
+                                  </div>
+                                  <div className="flex items-center gap-4 text-muted-foreground">
+                                    <span>{format(new Date(completion.completed_at), 'MMM d, yyyy')}</span>
+                                    <span>{format(new Date(completion.completed_at), 'h:mm a')}</span>
+                                    {completion.duration_seconds && (
+                                      <span>{Math.floor(completion.duration_seconds / 60)} min</span>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      
-                      <div className="mt-3 pt-3 border-t">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium">Final Exam Score</span>
-                          <span className={`text-sm font-semibold ${completion.passed ? 'text-green-600' : 'text-red-600'}`}>
-                            {completion.percentage}% ({completion.score}/{completion.total_questions})
-                          </span>
-                        </div>
-                        <Progress value={completion.percentage} className="h-2" />
-                      </div>
-                    </div>
-                  ))
-                }
+                    );
+                  });
+                })()}
               </div>
             )}
           </CardContent>
