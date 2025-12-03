@@ -52,6 +52,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const seconds_watched = Number(body?.seconds_watched || 0);
     const total_duration = Number(body?.total_duration || 0);
     const has_quiz = Boolean(body?.has_quiz);
+    // Allow explicit marking as complete from frontend
+    const mark_complete = Boolean(body?.mark_complete);
 
     if (!course_id || !Number.isFinite(section_id)) {
       return new Response(JSON.stringify({ error: 'Invalid payload' }), {
@@ -64,7 +66,39 @@ Deno.serve(async (req: Request): Promise<Response> => {
       userId: user.id, 
       course_id, 
       section_id, 
-      has_quiz 
+      seconds_watched,
+      total_duration,
+      has_quiz,
+      mark_complete
+    });
+
+    // Check existing record to prevent regression
+    const { data: existing } = await supabase
+      .from('course_progress')
+      .select('video_completed, video_watch_time_seconds, section_completed')
+      .eq('user_id', user.id)
+      .eq('course_type', course_id)
+      .eq('section_id', section_id)
+      .single();
+
+    // Calculate if video should be marked complete
+    // Mark complete if: explicitly requested, or reached 95%+ of video, or already was complete
+    const watchPercentage = total_duration > 0 ? (seconds_watched / total_duration) : 0;
+    const shouldBeComplete = mark_complete || 
+                             watchPercentage >= 0.95 || 
+                             (existing?.video_completed === true);
+
+    // Use the higher of existing or current watch time
+    const finalWatchTime = Math.max(
+      existing?.video_watch_time_seconds || 0, 
+      Math.floor(seconds_watched)
+    );
+
+    console.log('[progress-video-complete] Calculated:', {
+      watchPercentage: (watchPercentage * 100).toFixed(1) + '%',
+      existingComplete: existing?.video_completed,
+      shouldBeComplete,
+      finalWatchTime
     });
 
     // Prepare payload for upsert
@@ -72,17 +106,19 @@ Deno.serve(async (req: Request): Promise<Response> => {
       user_id: user.id,
       course_type: course_id,
       section_id: section_id,
-      video_watch_time_seconds: Math.max(0, Math.floor(seconds_watched)),
-      video_completed: total_duration > 0 ? (seconds_watched / total_duration) >= 0.999 : true,
+      video_watch_time_seconds: finalWatchTime,
+      video_completed: shouldBeComplete,
       has_quiz,
       completed_at: new Date().toISOString(),
-      video_started_at: new Date().toISOString(),
+      video_started_at: existing ? undefined : new Date().toISOString(),
     };
 
-    // If no quiz, mark section as fully completed
-    if (!has_quiz) {
+    // Remove undefined values
+    Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
+
+    // If no quiz, mark section as fully completed when video is complete
+    if (!has_quiz && shouldBeComplete) {
       payload.completed = true;
-      // Don't set section_completed directly - let it be computed by trigger/database
     }
 
     // Use native upsert to handle race conditions atomically
@@ -105,7 +141,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       userId: user.id,
       course_id,
       section_id,
-      video_completed: payload.video_completed
+      video_completed: shouldBeComplete,
+      watch_time: finalWatchTime
     });
 
     // Return updated status
