@@ -49,7 +49,7 @@ const Level2Course = () => {
   const [showExamPrompt, setShowExamPrompt] = useState(false);
   
   const totalSections = 9;
-  const { completedSections, examUnlocked, completionPercentage, examLockReason } = useCourseProgress('level2', totalSections);
+  const { completedSections, examUnlocked, completionPercentage, examLockReason, failedAttempts, attemptsRemaining, refetchProgress } = useCourseProgress('level2', totalSections);
   
   const [courseSections, setCourseSections] = useState([
     {
@@ -1005,33 +1005,54 @@ const Level2Course = () => {
 
         {/* Final Quiz */}
         {allSectionsComplete && !showQuiz && (
-          <Card className="border-l-4 border-l-green-500 animate-fade-in">
+          <Card className={`border-l-4 animate-fade-in ${attemptsRemaining > 0 ? 'border-l-green-500' : 'border-l-red-500'}`}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-green-600">
+              <CardTitle className={`flex items-center gap-3 ${attemptsRemaining > 0 ? 'text-green-600' : 'text-red-600'}`}>
                 <Shield className="h-6 w-6" />
-                Ready for Final Exam
+                {attemptsRemaining > 0 ? 'Ready for Final Exam' : 'Maximum Attempts Reached'}
               </CardTitle>
               <CardDescription>
-                Congratulations! You've completed all {totalSections} course sections. Take the final exam to earn your certification.
+                {attemptsRemaining > 0 
+                  ? (failedAttempts > 0 
+                    ? `You have ${attemptsRemaining} attempt${attemptsRemaining === 1 ? '' : 's'} remaining. Pass with 70% or higher to earn your certification.`
+                    : `Take the final exam to earn your certification.`)
+                  : `You have used all 3 exam attempts. Please re-purchase the course to try again.`}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="mb-4 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
-                <p className="text-sm text-green-800 dark:text-green-200">
-                  ✓ All sections completed ({completedSections.length}/{totalSections})
-                </p>
-              </div>
-              <Button onClick={() => {
-                setShowQuiz(true);
-              }} size="lg" className="w-full">
-                Start Final Exam (32 Questions)
-              </Button>
+              {failedAttempts > 0 && attemptsRemaining > 0 && (
+                <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                  <p className="text-sm text-amber-800 dark:text-amber-200">
+                    ⚠️ Failed attempts: {failedAttempts}/3 — {attemptsRemaining} attempt{attemptsRemaining === 1 ? '' : 's'} remaining
+                  </p>
+                </div>
+              )}
+              {attemptsRemaining > 0 ? (
+                <Button onClick={() => {
+                  setShowQuiz(true);
+                }} size="lg" className="w-full">
+                  {failedAttempts > 0 ? 'Retake Final Exam' : 'Start Final Exam'} (32 Questions)
+                </Button>
+              ) : (
+                <Button 
+                  onClick={() => navigate('/courses')} 
+                  size="lg" 
+                  variant="destructive"
+                  className="w-full"
+                >
+                  Re-purchase Course to Try Again
+                </Button>
+              )}
             </CardContent>
           </Card>
         )}
         {showQuiz && (
           <div ref={quizRef}>
-            <Quiz courseType="level2" />
+            <Quiz 
+              courseType="level2" 
+              attemptsRemaining={attemptsRemaining}
+              onQuizComplete={refetchProgress}
+            />
           </div>
         )}
           </>

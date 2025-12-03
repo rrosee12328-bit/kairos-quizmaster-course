@@ -8,6 +8,8 @@ export const useCourseProgress = (courseType: string, totalSections: number) => 
   const [examUnlocked, setExamUnlocked] = useState(false);
   const [completionPercentage, setCompletionPercentage] = useState(0);
   const [examLockReason, setExamLockReason] = useState<string>('');
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [attemptsRemaining, setAttemptsRemaining] = useState(3);
 
   useEffect(() => {
     fetchProgress();
@@ -45,6 +47,8 @@ export const useCourseProgress = (courseType: string, totalSections: number) => 
         setCompletionPercentage(completionData.completion_percentage || 0);
         setExamUnlocked(completionData.exam_unlocked || false);
         setExamLockReason(completionData.reason || '');
+        setFailedAttempts(completionData.failed_attempts || 0);
+        setAttemptsRemaining(completionData.attempts_remaining ?? 3);
         
         if (!completionData.exam_unlocked && completionData.error) {
           console.log('[useCourseProgress] Exam locked:', completionData.reason);
@@ -167,6 +171,9 @@ export const useCourseProgress = (courseType: string, totalSections: number) => 
     allSectionsComplete,
     examUnlocked,
     completionPercentage,
-    examLockReason
+    examLockReason,
+    failedAttempts,
+    attemptsRemaining,
+    refetchProgress: fetchProgress
   };
 };

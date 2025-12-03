@@ -24,9 +24,11 @@ interface QuizProps {
   courseType?: 'level2' | 'level3' | 'pepper-spray' | 'level-4';
   questions?: QuizQuestion[];
   passingPercentage?: number;
+  attemptsRemaining?: number;
+  onQuizComplete?: () => void;
 }
 
-const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercentage = 70 }: QuizProps) => {
+const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercentage = 70, attemptsRemaining = 3, onQuizComplete }: QuizProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [questions] = useState(
@@ -64,6 +66,8 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
         await saveCompletion();
         setIsSavingCompletion(false);
         setShowResults(true);
+        // Notify parent to refresh progress data
+        onQuizComplete?.();
       }
     }
   };
@@ -435,10 +439,20 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
               </div>
             )}
             {!passed && (
-              <div className="p-4 bg-orange-50 dark:bg-orange-950/20 rounded-lg">
+              <div className="p-4 bg-orange-50 dark:bg-orange-950/20 rounded-lg space-y-2">
                 <p className="text-sm text-orange-800 dark:text-orange-200">
                   Review the course materials and retake the exam when you're ready. You'll need a score of {passingPercentage}% or higher to pass.
                 </p>
+                {attemptsRemaining !== undefined && attemptsRemaining > 0 && attemptsRemaining < 3 && (
+                  <p className="text-sm font-semibold text-orange-900 dark:text-orange-100">
+                    ⚠️ You have {attemptsRemaining} attempt{attemptsRemaining === 1 ? '' : 's'} remaining. After 3 failed attempts, you'll need to re-purchase the course.
+                  </p>
+                )}
+                {attemptsRemaining !== undefined && attemptsRemaining === 0 && (
+                  <p className="text-sm font-semibold text-red-900 dark:text-red-100">
+                    ❌ You have used all 3 exam attempts. Please re-purchase the course to try again.
+                  </p>
+                )}
               </div>
             )}
             
