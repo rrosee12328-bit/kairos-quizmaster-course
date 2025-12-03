@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { BackButton } from "@/components/BackButton";
 import { Footer } from "@/components/Footer";
 import CourseHeader from "@/components/CourseHeader";
-import { Shield, Award, BookOpen, Download, Settings, CheckCircle, Clock, XCircle, ArrowRight } from "lucide-react";
+import { Shield, Award, BookOpen, Download, Settings, CheckCircle, Clock, XCircle, ArrowRight, Copy, Sparkles } from "lucide-react";
 import { format } from "date-fns";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import kairosLogo from "@/assets/kairos-logo.png";
@@ -189,18 +189,19 @@ const Profile = () => {
 
   const getStatusBadge = (status: string) => {
     const variants: any = {
-      'pending': { variant: 'secondary', icon: Clock, label: 'Pending' },
-      'approved': { variant: 'default', icon: CheckCircle, label: 'Enrolled' },
-      'completed': { variant: 'default', icon: Award, label: 'Completed' },
-      'rejected': { variant: 'destructive', icon: XCircle, label: 'Rejected' }
+      'pending': { variant: 'secondary', icon: Clock, label: 'Pending', className: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 border-amber-200 dark:border-amber-800' },
+      'approved': { variant: 'default', icon: CheckCircle, label: 'Enrolled', className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800' },
+      'enrolled': { variant: 'default', icon: CheckCircle, label: 'Enrolled', className: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-800' },
+      'completed': { variant: 'default', icon: Award, label: 'Completed', className: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-800' },
+      'rejected': { variant: 'destructive', icon: XCircle, label: 'Rejected', className: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 border-red-200 dark:border-red-800' }
     };
     
     const config = variants[status] || variants['pending'];
     const Icon = config.icon;
     
     return (
-      <Badge variant={config.variant as any} className="gap-1">
-        <Icon className="h-3 w-3" />
+      <Badge variant="outline" className={`gap-1.5 px-3 py-1 font-medium border ${config.className}`}>
+        <Icon className="h-3.5 w-3.5" />
         {config.label}
       </Badge>
     );
@@ -244,23 +245,34 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Shield className="h-12 w-12 animate-pulse text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading your profile...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
+        <div className="text-center animate-fade-in">
+          <div className="relative">
+            <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
+              <Shield className="h-10 w-10 text-primary animate-pulse" />
+            </div>
+            <div className="absolute inset-0 h-20 w-20 rounded-full border-2 border-primary/20 border-t-primary animate-spin mx-auto" />
+          </div>
+          <p className="text-muted-foreground font-medium">Loading your profile...</p>
         </div>
       </div>
     );
   }
 
+  const userName = enrollments.length > 0 && enrollments[0].first_name
+    ? enrollments[0].first_name
+    : profile?.full_name && profile.full_name !== user?.email 
+      ? profile.full_name 
+      : 'Student';
+
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex flex-col">
       <CourseHeader isAdmin={isAdmin} isLoggedIn={true} />
 
-      <main className="flex-1 container mx-auto px-6 py-12">
+      <main className="flex-1 container mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {/* Admin Viewing Banner */}
         {viewingAsAdmin && (
-          <Alert className="mb-6 border-blue-500 bg-blue-50 dark:bg-blue-950">
+          <Alert className="mb-6 border-blue-500/50 bg-blue-50/50 dark:bg-blue-950/20 backdrop-blur-sm animate-fade-in">
             <Shield className="h-4 w-4 text-blue-600" />
             <AlertTitle className="text-blue-900 dark:text-blue-100">Admin View</AlertTitle>
             <AlertDescription className="text-blue-800 dark:text-blue-200">
@@ -270,30 +282,31 @@ const Profile = () => {
         )}
 
         {/* Profile Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="h-20 w-20 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center shadow-lg">
-              <Shield className="h-10 w-10 text-white" />
+        <div className="mb-10 animate-fade-in">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-6">
+            <div className="relative group">
+              <div className="h-24 w-24 bg-gradient-to-br from-primary via-primary/80 to-primary/60 rounded-2xl flex items-center justify-center shadow-xl shadow-primary/20 transition-transform duration-300 group-hover:scale-105">
+                <Shield className="h-12 w-12 text-primary-foreground" />
+              </div>
+              <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-green-500 rounded-full border-4 border-background flex items-center justify-center">
+                <CheckCircle className="h-3 w-3 text-white" />
+              </div>
             </div>
             <div className="flex-1">
-              <h1 className="text-4xl font-bold mb-1">
-                Welcome {enrollments.length > 0 && enrollments[0].first_name
-                  ? enrollments[0].first_name
-                  : profile?.full_name && profile.full_name !== user?.email 
-                    ? profile.full_name 
-                    : 'Student'}
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
+                Welcome back, <span className="text-primary">{userName}</span>
               </h1>
-              <p className="text-sm text-muted-foreground">{user?.email}</p>
+              <p className="text-muted-foreground">{user?.email}</p>
             </div>
           </div>
-          <div className="flex gap-3">
-            <Button variant="default" asChild>
+          <div className="flex flex-wrap gap-3">
+            <Button asChild className="shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300">
               <Link to="/courses">
                 <BookOpen className="h-4 w-4 mr-2" />
                 Back to Courses
               </Link>
             </Button>
-            <Button variant="outline" asChild>
+            <Button variant="outline" asChild className="hover:bg-muted/50 transition-colors">
               <Link to="/settings">
                 <Settings className="h-4 w-4 mr-2" />
                 Edit Profile
@@ -303,13 +316,13 @@ const Profile = () => {
         </div>
 
         {user && !user.email_confirmed_at && (
-          <Alert className="mb-6">
-            <AlertTitle>Email not confirmed</AlertTitle>
-            <AlertDescription className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-              <span>
+          <Alert className="mb-8 border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/20 backdrop-blur-sm animate-fade-in">
+            <AlertTitle className="text-amber-800 dark:text-amber-200">Email not confirmed</AlertTitle>
+            <AlertDescription className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-amber-700 dark:text-amber-300">
                 Please confirm your email to secure your account. You can still access your courses now.
               </span>
-              <Button variant="outline" size="sm" onClick={handleResend}>
+              <Button variant="outline" size="sm" onClick={handleResend} className="border-amber-500/50 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/50 shrink-0">
                 Resend confirmation email
               </Button>
             </AlertDescription>
@@ -317,71 +330,57 @@ const Profile = () => {
         )}
 
         {/* Stats Overview */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">My Courses</CardTitle>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {/* Count unique courses from both enrollments and completions */}
-                {new Set([
-                  ...enrollments.map(e => e.course_type),
-                  ...completions.map(c => c.course_type)
-                ]).size}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Completed Courses</CardTitle>
-              <CheckCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{completions.filter(c => c.passed).length}</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Certificates Earned</CardTitle>
-              <Award className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{certificates.length}</div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-10">
+          {[
+            { title: 'My Courses', value: new Set([...enrollments.map(e => e.course_type), ...completions.map(c => c.course_type)]).size, icon: BookOpen, color: 'blue' },
+            { title: 'Completed', value: completions.filter(c => c.passed).length, icon: CheckCircle, color: 'green' },
+            { title: 'Certificates', value: certificates.length, icon: Award, color: 'amber' },
+          ].map((stat, i) => (
+            <Card key={stat.title} className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 animate-fade-in" style={{ animationDelay: `${i * 100}ms` }}>
+              <div className={`absolute inset-0 bg-gradient-to-br from-${stat.color}-500/10 to-transparent`} />
+              <CardHeader className="flex flex-row items-center justify-between pb-2 relative">
+                <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
+                <div className={`h-10 w-10 rounded-xl bg-${stat.color}-100 dark:bg-${stat.color}-900/30 flex items-center justify-center`}>
+                  <stat.icon className={`h-5 w-5 text-${stat.color}-600 dark:text-${stat.color}-400`} />
+                </div>
+              </CardHeader>
+              <CardContent className="relative">
+                <div className="text-4xl font-bold">{stat.value}</div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
         {/* Level 3 Approval Code */}
         {profile?.level3_approval_code && (
-          <Card className="mb-8 border-blue-500">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-blue-600">
+          <Card className="mb-10 border-0 shadow-xl bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/50 dark:to-blue-900/20 overflow-hidden animate-fade-in">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            <CardHeader className="relative">
+              <CardTitle className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
                 <Shield className="h-5 w-5" />
                 Level 3 Part 1 Approval Code
               </CardTitle>
-              <CardDescription>Use this code to schedule your in-person Part 2 training (expires in 24 hours)</CardDescription>
+              <CardDescription className="text-blue-600/80 dark:text-blue-400/80">Use this code to schedule your in-person Part 2 training (expires in 24 hours)</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="p-6 bg-blue-50 dark:bg-blue-950/20 rounded-lg border-2 border-blue-500">
+            <CardContent className="relative">
+              <div className="p-6 bg-white/60 dark:bg-white/5 rounded-2xl border border-blue-200 dark:border-blue-800/50 backdrop-blur-sm">
                 <div className="text-center space-y-4">
-                  <div className="text-3xl font-bold font-mono text-blue-900 dark:text-blue-100 tracking-wider">
+                  <div className="text-3xl sm:text-4xl font-bold font-mono text-blue-900 dark:text-blue-100 tracking-[0.2em]">
                     {profile.level3_approval_code}
                   </div>
-                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
                     Save this code and bring it to your in-person training session. This code verifies you've completed Part 1.
                   </p>
                   <Button 
                     variant="outline"
                     size="sm"
+                    className="border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50"
                     onClick={() => {
                       navigator.clipboard.writeText(profile.level3_approval_code);
                       toast.success("Approval code copied to clipboard!");
                     }}
                   >
+                    <Copy className="h-4 w-4 mr-2" />
                     Copy Code
                   </Button>
                 </div>
@@ -390,11 +389,14 @@ const Profile = () => {
           </Card>
         )}
 
-        {/* Certificates Section - Always visible */}
-        <Card className="mb-8 border-l-4 border-l-primary">
+        {/* Certificates Section */}
+        <Card className="mb-10 border-0 shadow-xl overflow-hidden animate-fade-in">
+          <div className="h-1 bg-gradient-to-r from-primary via-primary/80 to-primary/60" />
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Award className="h-5 w-5 text-primary" />
+            <CardTitle className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Award className="h-5 w-5 text-primary" />
+              </div>
               My Certificates
             </CardTitle>
             <CardDescription>Download and view your earned certificates anytime</CardDescription>
@@ -402,14 +404,17 @@ const Profile = () => {
           <CardContent>
             {/* Check for missing certificates */}
             {completions.filter(c => c.passed && !certificates.find(cert => cert.completion_id === c.id)).length > 0 && (
-              <Alert className="mb-4 border-amber-500 bg-amber-50 dark:bg-amber-950/20">
+              <Alert className="mb-6 border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/20">
+                <Sparkles className="h-4 w-4 text-amber-600" />
                 <AlertTitle className="text-amber-800 dark:text-amber-200">Missing Certificates Detected</AlertTitle>
-                <AlertDescription className="text-amber-700 dark:text-amber-300">
-                  You have {completions.filter(c => c.passed && !certificates.find(cert => cert.completion_id === c.id)).length} completed course(s) without certificates.
+                <AlertDescription className="text-amber-700 dark:text-amber-300 flex flex-col sm:flex-row sm:items-center gap-3">
+                  <span>
+                    You have {completions.filter(c => c.passed && !certificates.find(cert => cert.completion_id === c.id)).length} completed course(s) without certificates.
+                  </span>
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="ml-4 border-amber-500 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900"
+                    className="border-amber-500/50 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/50 shrink-0"
                     asChild
                   >
                     <Link to="/generate-certificate">
@@ -422,16 +427,20 @@ const Profile = () => {
             
             {certificates.length > 0 ? (
               <div className="space-y-4">
-                {certificates.map((cert) => (
-                  <div key={cert.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                    <div className="flex-1">
-                      <h4 className="font-semibold">{getCourseTitle(cert.course_type)}</h4>
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
+                {certificates.map((cert, i) => (
+                  <div 
+                    key={cert.id} 
+                    className="group flex flex-col sm:flex-row sm:items-center justify-between p-5 bg-muted/30 hover:bg-muted/50 rounded-xl border border-transparent hover:border-primary/20 transition-all duration-300 animate-fade-in"
+                    style={{ animationDelay: `${i * 50}ms` }}
+                  >
+                    <div className="flex-1 mb-4 sm:mb-0">
+                      <h4 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors">{getCourseTitle(cert.course_type)}</h4>
+                      <div className="flex flex-wrap gap-x-6 gap-y-1">
                         <p className="text-sm text-muted-foreground">
-                          <span className="font-medium">Registration:</span> {cert.registration_number}
+                          <span className="font-medium text-foreground/80">Registration:</span> {cert.registration_number}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          <span className="font-medium">Issued:</span> {format(new Date(cert.completion_date), 'MMMM d, yyyy')}
+                          <span className="font-medium text-foreground/80">Issued:</span> {format(new Date(cert.completion_date), 'MMMM d, yyyy')}
                         </p>
                       </div>
                     </div>
@@ -439,6 +448,7 @@ const Profile = () => {
                       variant="outline" 
                       size="sm"
                       onClick={() => downloadCertificate(cert)}
+                      className="hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300"
                     >
                       <Download className="h-4 w-4 mr-2" />
                       Download PDF
@@ -447,25 +457,30 @@ const Profile = () => {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <Award className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No certificates earned yet. Complete a course to earn your first certificate!</p>
+              <div className="text-center py-12">
+                <div className="h-20 w-20 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
+                  <Award className="h-10 w-10 text-muted-foreground/50" />
+                </div>
+                <p className="text-muted-foreground">No certificates earned yet. Complete a course to earn your first certificate!</p>
               </div>
             )}
           </CardContent>
         </Card>
 
         {/* Browse More Courses */}
-        <Card className="mb-8 bg-primary/5 border-primary/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-primary" />
+        <Card className="mb-10 border-0 shadow-xl bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 overflow-hidden animate-fade-in">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2" />
+          <CardHeader className="relative">
+            <CardTitle className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                <Sparkles className="h-5 w-5 text-primary" />
+              </div>
               Want to Expand Your Skills?
             </CardTitle>
             <CardDescription>Explore more security certification courses</CardDescription>
           </CardHeader>
-          <CardContent>
-            <Button asChild size="lg" className="w-full">
+          <CardContent className="relative">
+            <Button asChild size="lg" className="w-full shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300">
               <Link to="/courses">
                 Browse All Courses
                 <ArrowRight className="h-4 w-4 ml-2" />
@@ -475,28 +490,31 @@ const Profile = () => {
         </Card>
 
         {/* Combined My Courses Section */}
-        <Card className="mb-8">
+        <Card className="mb-10 border-0 shadow-xl overflow-hidden animate-fade-in">
+          <div className="h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-primary" />
+            <CardTitle className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <BookOpen className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
               My Courses
             </CardTitle>
             <CardDescription>Track your enrolled courses and exam attempts</CardDescription>
           </CardHeader>
           <CardContent>
             {enrollments.length === 0 && completions.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="bg-primary/5 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+              <div className="text-center py-16">
+                <div className="h-24 w-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mx-auto mb-6">
                   <BookOpen className="h-12 w-12 text-primary" />
                 </div>
                 <h3 className="text-xl font-semibold mb-3">No Courses Yet</h3>
-                <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
+                <p className="text-muted-foreground mb-8 max-w-sm mx-auto">
                   Start your security training journey today and earn professional certifications!
                 </p>
-                <Button asChild size="lg" className="gap-2">
+                <Button asChild size="lg" className="shadow-lg shadow-primary/20">
                   <Link to="/courses">
                     Browse Available Courses
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight className="h-4 w-4 ml-2" />
                   </Link>
                 </Button>
               </div>
@@ -508,7 +526,7 @@ const Profile = () => {
                   enrollments.forEach(e => courseTypes.add(e.course_type));
                   completions.forEach(c => courseTypes.add(c.course_type));
                   
-                  return Array.from(courseTypes).map(courseType => {
+                  return Array.from(courseTypes).map((courseType, courseIndex) => {
                     const enrollment = enrollments.find(e => e.course_type === courseType);
                     const courseCompletions = completions.filter(c => c.course_type === courseType);
                     const latestCompletion = courseCompletions.length > 0 ? courseCompletions[0] : null;
@@ -517,16 +535,17 @@ const Profile = () => {
                     return (
                       <div 
                         key={courseType} 
-                        className="border rounded-lg overflow-hidden"
+                        className="rounded-2xl border bg-card overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 animate-fade-in"
+                        style={{ animationDelay: `${courseIndex * 100}ms` }}
                       >
                         {/* Course Header */}
                         <div 
-                          className={`p-4 ${canAccess ? 'cursor-pointer hover:bg-muted/50' : 'bg-muted/20'} transition-all`}
+                          className={`p-6 ${canAccess ? 'cursor-pointer hover:bg-muted/30' : ''} transition-all duration-300`}
                           onClick={() => canAccess && navigate(`/course/${courseType}`)}
                         >
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <h4 className="font-semibold mb-1">{getCourseTitle(courseType)}</h4>
+                          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-lg mb-2">{getCourseTitle(courseType)}</h4>
                               {enrollment && (
                                 <p className="text-sm text-muted-foreground">
                                   Enrolled: {format(new Date(enrollment.created_at), 'MMMM d, yyyy')}
@@ -537,53 +556,73 @@ const Profile = () => {
                           </div>
                           
                           {latestCompletion && (
-                            <div className="mt-3 pt-3 border-t">
-                              <div className="flex items-center justify-between mb-2">
+                            <div className="mt-4 pt-4 border-t border-dashed">
+                              <div className="flex items-center justify-between mb-3">
                                 <span className="text-sm font-medium">Latest Exam Score</span>
-                                <span className={`text-sm font-semibold ${latestCompletion.passed ? 'text-green-600' : 'text-red-600'}`}>
+                                <span className={`text-sm font-bold ${latestCompletion.passed ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                                   {latestCompletion.percentage}% ({latestCompletion.score}/{latestCompletion.total_questions})
                                 </span>
                               </div>
-                              <Progress value={latestCompletion.percentage} className="h-2" />
+                              <div className="relative">
+                                <Progress value={latestCompletion.percentage} className="h-3 bg-muted" />
+                                <div 
+                                  className={`absolute inset-y-0 left-0 rounded-full transition-all duration-500 ${latestCompletion.passed ? 'bg-gradient-to-r from-green-500 to-green-400' : 'bg-gradient-to-r from-red-500 to-red-400'}`}
+                                  style={{ width: `${latestCompletion.percentage}%` }}
+                                />
+                              </div>
                             </div>
                           )}
                           
                           {canAccess && (
-                            <div className="mt-3 flex items-center justify-center text-sm text-primary font-medium">
+                            <div className="mt-4 flex items-center justify-center py-3 rounded-xl bg-primary/5 text-sm text-primary font-semibold group">
                               Continue Course
-                              <ArrowRight className="h-4 w-4 ml-2" />
+                              <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                             </div>
                           )}
                         </div>
                         
                         {/* Attempt History (if any) */}
                         {courseCompletions.length > 0 && (
-                          <div className="border-t bg-muted/10 p-4">
-                            <div className="flex items-center gap-2 mb-3">
+                          <div className="border-t bg-muted/20 p-6">
+                            <div className="flex items-center gap-2 mb-4">
                               <Clock className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm font-medium text-muted-foreground">
+                              <span className="text-sm font-semibold text-muted-foreground">
                                 Attempt History ({courseCompletions.length} {courseCompletions.length === 1 ? 'attempt' : 'attempts'})
                               </span>
                             </div>
-                            <div className="space-y-2">
+                            <div className="space-y-3">
                               {courseCompletions.map((completion, idx) => (
-                                <div key={completion.id} className="flex items-center justify-between p-3 bg-background rounded-md border text-sm">
-                                  <div className="flex items-center gap-3">
-                                    <span className="text-muted-foreground">#{completion.attempt_number || idx + 1}</span>
-                                    <Badge variant={completion.passed ? "default" : "secondary"} className={`text-xs ${completion.passed ? "bg-green-600" : ""}`}>
+                                <div 
+                                  key={completion.id} 
+                                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-background rounded-xl border text-sm gap-3 animate-fade-in"
+                                  style={{ animationDelay: `${idx * 50}ms` }}
+                                >
+                                  <div className="flex items-center gap-3 flex-wrap">
+                                    <span className="font-mono text-muted-foreground bg-muted px-2 py-1 rounded">#{completion.attempt_number || idx + 1}</span>
+                                    <Badge 
+                                      variant="outline" 
+                                      className={`text-xs font-semibold ${completion.passed 
+                                        ? "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800" 
+                                        : "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800"}`}
+                                    >
                                       {completion.passed ? (
                                         <><CheckCircle className="h-3 w-3 mr-1" /> Pass</>
                                       ) : (
                                         <><XCircle className="h-3 w-3 mr-1" /> Fail</>
                                       )}
                                     </Badge>
-                                    <span className="font-medium">{completion.percentage}%</span>
+                                    <span className="font-bold">{completion.percentage}%</span>
                                   </div>
-                                  <div className="flex items-center gap-4 text-muted-foreground">
-                                    <span>{format(new Date(completion.completed_at), 'MMM d, yyyy')}</span>
+                                  <div className="flex items-center gap-4 text-muted-foreground flex-wrap">
+                                    <span className="flex items-center gap-1">
+                                      <Clock className="h-3 w-3" />
+                                      {format(new Date(completion.completed_at), 'MMM d, yyyy')}
+                                    </span>
                                     <span>{format(new Date(completion.completed_at), 'h:mm a')}</span>
                                     {completion.duration_seconds && (
-                                      <span>{Math.floor(completion.duration_seconds / 60)} min</span>
+                                      <span className="bg-muted px-2 py-1 rounded text-xs font-medium">
+                                        {Math.floor(completion.duration_seconds / 60)} min
+                                      </span>
                                     )}
                                   </div>
                                 </div>
