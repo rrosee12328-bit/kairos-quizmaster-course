@@ -61,7 +61,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     const courseTitle = courseType === 'level2' 
       ? 'Level 2 Security Officer Certification' 
-      : 'Level 3 Security Officer Certification (Part 1 - Online)';
+      : courseType === 'level3'
+      ? 'Level 3 Security Officer Certification (Part 1 - Online)'
+      : courseType === 'level4'
+      ? 'Level 4 Personal Protection Officer (Part 1 - Online)'
+      : 'Pepper Spray Training Certification';
 
     const subject = passed 
       ? `🎉 Congratulations! You passed ${courseTitle}!`
@@ -118,6 +122,17 @@ Deno.serve(async (req: Request): Promise<Response> => {
                   </div>
                   <p><strong>Important:</strong> Level 3 does not provide a certificate for the online portion. You must complete the in-person Level 3 Part 2 training to receive your full Armed Security Officer certification.</p>
                 `
+                : passed && courseType === 'level4'
+                ? `
+                  <div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <p style="margin: 0; font-size: 18px; font-weight: bold; color: #1e40af;">📅 Schedule Your In-Person Training</p>
+                    <p style="margin: 15px 0 0 0; font-size: 14px; color: #1e40af;">Click the button below to book your Level 4 Part 2 in-person training session:</p>
+                    <div style="text-align: center; margin-top: 20px;">
+                      <a href="https://calendly.com/rrosee12328/30min" style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Book Appointment</a>
+                    </div>
+                  </div>
+                  <p><strong>Important:</strong> Level 4 does not provide a certificate for the online portion. You must complete the in-person Level 4 Part 2 training to receive your full Personal Protection Officer certification.</p>
+                `
                 : !passed
                 ? `
                   <p>Unfortunately, you did not meet the passing requirements for this course. <strong>A score of 70% or higher is required to pass.</strong></p>
@@ -139,6 +154,16 @@ Deno.serve(async (req: Request): Promise<Response> => {
                   <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 20px; border-radius: 8px; margin-top: 20px;">
                     <p style="margin: 0; color: #856404; font-weight: bold; font-size: 16px;">⚠️ NEXT STEPS REQUIRED</p>
                     <p style="margin: 10px 0 0 0; color: #856404;">You have completed Part 1 (Online) of the Level 3 Security Officer Certification. To receive your Armed Security Officer certificate, you MUST complete Part 2 in-person training.</p>
+                    <p style="margin: 10px 0 0 0; color: #856404; font-weight: bold;">Use the booking button above to schedule your in-person training session.</p>
+                  </div>
+                `
+                : ''
+              }
+              ${courseType === 'level4' && passed 
+                ? `
+                  <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                    <p style="margin: 0; color: #856404; font-weight: bold; font-size: 16px;">⚠️ NEXT STEPS REQUIRED</p>
+                    <p style="margin: 10px 0 0 0; color: #856404;">You have completed Part 1 (Online) of the Level 4 Personal Protection Officer Certification. To receive your Personal Protection Officer certificate, you MUST complete Part 2 in-person training.</p>
                     <p style="margin: 10px 0 0 0; color: #856404; font-weight: bold;">Use the booking button above to schedule your in-person training session.</p>
                   </div>
                 `
