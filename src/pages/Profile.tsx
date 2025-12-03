@@ -286,12 +286,20 @@ const Profile = () => {
               <p className="text-sm text-muted-foreground">{user?.email}</p>
             </div>
           </div>
-          <Button variant="outline" asChild>
-            <Link to="/settings">
-              <Settings className="h-4 w-4 mr-2" />
-              Edit Profile
-            </Link>
-          </Button>
+          <div className="flex gap-3">
+            <Button variant="default" asChild>
+              <Link to="/courses">
+                <BookOpen className="h-4 w-4 mr-2" />
+                Back to Courses
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link to="/settings">
+                <Settings className="h-4 w-4 mr-2" />
+                Edit Profile
+              </Link>
+            </Button>
+          </div>
         </div>
 
         {user && !user.email_confirmed_at && (
