@@ -120,8 +120,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 `
                 : !passed
                 ? `
-                  <p>Unfortunately, you did not meet the passing requirements for this course. <strong>A score of 75% or higher is required to pass.</strong></p>
+                  <p>Unfortunately, you did not meet the passing requirements for this course. <strong>A score of 70% or higher is required to pass.</strong></p>
                   <p>Don't worry! You can retake the exam to improve your score. We encourage you to review the course materials and try again.</p>
+                  <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <p style="margin: 0; color: #856404; font-weight: bold;">⚠️ Important: Exam Attempt Policy</p>
+                    <p style="margin: 10px 0 0 0; color: #856404; font-size: 14px;">You have <strong>3 total attempts</strong> to pass the exam. If you fail all 3 attempts, you will need to re-purchase the course to continue. Please review the course materials thoroughly before your next attempt.</p>
+                  </div>
                 `
                 : ''
               }

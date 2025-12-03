@@ -270,6 +270,13 @@ const Landing = () => {
                       Yes. The certifications offered in our courses are issued by the Texas Department of Public Safety and are valid for any security role in the State of Texas at any company.
                     </AccordionContent>
                   </AccordionItem>
+                  
+                  <AccordionItem value="item-5">
+                    <AccordionTrigger>How many times can I take the final exam?</AccordionTrigger>
+                    <AccordionContent>
+                      You have <strong>3 attempts</strong> to pass the final exam for each course. If you fail the exam 3 times, you will need to re-purchase the course to continue. We recommend thoroughly reviewing the course materials before each attempt to maximize your chances of passing. A score of 70% or higher is required to pass.
+                    </AccordionContent>
+                  </AccordionItem>
                 </Accordion>
               </TabsContent>
               

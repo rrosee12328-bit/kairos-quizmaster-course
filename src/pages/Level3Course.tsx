@@ -36,7 +36,7 @@ const Course = () => {
   const quizRef = useRef<HTMLDivElement>(null);
   
   const totalSections = 10;
-  const { completedSections, allSectionsComplete, examUnlocked, completionPercentage, examLockReason } = useCourseProgress('level3', totalSections);
+  const { completedSections, allSectionsComplete, examUnlocked, completionPercentage, examLockReason, failedAttempts, attemptsRemaining, refetchProgress } = useCourseProgress('level3', totalSections);
   const [localCompletedSections, setLocalCompletedSections] = useState<number[]>([]);
 
   useEffect(() => {
@@ -634,20 +634,35 @@ const Course = () => {
 
         {/* Final Quiz */}
         {(examUnlocked || developerMode) && !showQuiz && (
-          <Card className="border-l-4 border-l-green-500 animate-fade-in">
+          <Card className={`border-l-4 animate-fade-in ${attemptsRemaining > 0 ? 'border-l-green-500' : 'border-l-red-500'}`}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-3 text-green-600">
+              <CardTitle className={`flex items-center gap-3 ${attemptsRemaining > 0 ? 'text-green-600' : 'text-red-600'}`}>
                 <Shield className="h-6 w-6" />
-                {developerMode ? "Developer Mode: Exam Unlocked" : "Ready for Part 1 Final Exam"}
+                {developerMode 
+                  ? "Developer Mode: Exam Unlocked" 
+                  : attemptsRemaining > 0 
+                    ? "Ready for Part 1 Final Exam" 
+                    : "Maximum Attempts Reached"}
               </CardTitle>
               <CardDescription>
                 {developerMode 
                   ? "Developer mode enabled - exam accessible for testing purposes"
-                  : "You've completed 90% of the course! Pass the final exam, then complete Part 2 in-person training for full certification."
+                  : attemptsRemaining > 0 
+                    ? (failedAttempts > 0 
+                      ? `You have ${attemptsRemaining} attempt${attemptsRemaining === 1 ? '' : 's'} remaining. Pass with 70% or higher.`
+                      : "You've completed 90% of the course! Pass the final exam, then complete Part 2 in-person training for full certification.")
+                    : `You have used all 3 exam attempts. Please re-purchase the course to try again.`
                 }
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {failedAttempts > 0 && attemptsRemaining > 0 && !developerMode && (
+                <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                  <p className="text-sm text-amber-800 dark:text-amber-200">
+                    ⚠️ Failed attempts: {failedAttempts}/3 — {attemptsRemaining} attempt{attemptsRemaining === 1 ? '' : 's'} remaining
+                  </p>
+                </div>
+              )}
               <div className="mb-4 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg">
                 <p className="text-sm text-green-800 dark:text-green-200">
                   {developerMode 
@@ -656,15 +671,26 @@ const Course = () => {
                   }
                 </p>
               </div>
-               <Button onClick={() => {
-                 setShowQuiz(true);
-               }} size="lg" className="w-full">
-                Start Part 1 Final Exam (100 Questions)
-              </Button>
+              {attemptsRemaining > 0 ? (
+                <Button onClick={() => {
+                  setShowQuiz(true);
+                }} size="lg" className="w-full">
+                  {failedAttempts > 0 ? 'Retake Part 1 Final Exam' : 'Start Part 1 Final Exam'} (100 Questions)
+                </Button>
+              ) : (
+                <Button 
+                  onClick={() => navigate('/courses')} 
+                  size="lg" 
+                  variant="destructive"
+                  className="w-full"
+                >
+                  Re-purchase Course to Try Again
+                </Button>
+              )}
             </CardContent>
           </Card>
         )}
-        <div ref={quizRef}>{showQuiz && <Quiz courseType="level3" />}</div>
+        <div ref={quizRef}>{showQuiz && <Quiz courseType="level3" attemptsRemaining={attemptsRemaining} onQuizComplete={refetchProgress} />}</div>
       </div>
 
       <Footer />
