@@ -14,6 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
+      beta_feedback: {
+        Row: {
+          accessibility_issues: string
+          ai_assistant: string
+          branding: string
+          certificate_delivery: string
+          certificate_download: string
+          content_engagement: string
+          created_at: string
+          device_browser: string
+          experience_level: string
+          id: string
+          layout_rating: string
+          login_clarity: string
+          materials_location: string
+          materials_usefulness: string
+          mobile_adaptation: string
+          name_role: string
+          score_comm: string
+          technical_issues: string
+          test_interface: string
+          test_location: string
+          testing_time: string
+          video_playback: string
+          visual_design: string
+        }
+        Insert: {
+          accessibility_issues: string
+          ai_assistant: string
+          branding: string
+          certificate_delivery: string
+          certificate_download: string
+          content_engagement: string
+          created_at?: string
+          device_browser: string
+          experience_level: string
+          id?: string
+          layout_rating: string
+          login_clarity: string
+          materials_location: string
+          materials_usefulness: string
+          mobile_adaptation: string
+          name_role: string
+          score_comm: string
+          technical_issues: string
+          test_interface: string
+          test_location: string
+          testing_time: string
+          video_playback: string
+          visual_design: string
+        }
+        Update: {
+          accessibility_issues?: string
+          ai_assistant?: string
+          branding?: string
+          certificate_delivery?: string
+          certificate_download?: string
+          content_engagement?: string
+          created_at?: string
+          device_browser?: string
+          experience_level?: string
+          id?: string
+          layout_rating?: string
+          login_clarity?: string
+          materials_location?: string
+          materials_usefulness?: string
+          mobile_adaptation?: string
+          name_role?: string
+          score_comm?: string
+          technical_issues?: string
+          test_interface?: string
+          test_location?: string
+          testing_time?: string
+          video_playback?: string
+          visual_design?: string
+        }
+        Relationships: []
+      }
       certificates: {
         Row: {
           completion_date: string
