@@ -469,11 +469,13 @@ const Course = () => {
                         isFinalSection={idx === totalSections - 1}
                         onComplete={() => {}}
                         onNext={handleNextSlide}
-                        onSectionCompleted={(id) =>
+                        onSectionCompleted={(id) => {
                           setLocalCompletedSections((prev) =>
                             prev.includes(id) ? prev : [...prev, id]
-                          )
-                        }
+                          );
+                          // Refetch progress from database to update completion percentage
+                          setTimeout(() => refetchProgress(), 1000);
+                        }}
                         onExamReady={() => {
                           setShowQuiz(true);
                           setTimeout(() => {
@@ -534,7 +536,7 @@ const Course = () => {
           {/* Progress Tracker */}
         <div className="mb-6">
           <ProgressTracker 
-            completedSections={completedSections} 
+            completedSections={[...new Set([...completedSections, ...localCompletedSections])]} 
             currentSection={currentSlide + 1}
             totalSections={totalSections}
             showLocks={false}

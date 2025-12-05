@@ -425,42 +425,74 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
               </div>
             )}
             {passed && courseType === 'level3' && (
-              <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border-2 border-blue-500 space-y-3">
-                <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                  ⚠️ IMPORTANT: Level 3 Part 2 In-Person Training Required
+              <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border-2 border-green-500 space-y-3">
+                <p className="text-lg font-bold text-green-900 dark:text-green-100 mb-2">
+                  ✓ You Passed the Level 3 Online Portion!
                 </p>
-                <p className="text-sm text-blue-800 dark:text-blue-200">
-                  You have completed Part 1 (Online). To receive your Armed Security Officer certificate, 
-                  you MUST complete Part 2 in-person training. Click below to schedule your in-person session.
+                <p className="text-sm text-green-800 dark:text-green-200 mb-4">
+                  Congratulations! You have successfully completed Part 1 (Online) of your Level 3 Security Officer training.
                 </p>
-                <Button 
-                  onClick={() => window.open('https://calendly.com/rrosee12328/30min', '_blank')}
-                  className="w-full"
-                  size="lg"
-                >
-                  Schedule In-Person Training
-                </Button>
+                <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-300 dark:border-blue-700">
+                  <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                    📋 Next Step: Schedule In-Person Training (Part 2)
+                  </p>
+                  <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">
+                    To complete your armed certification, you must attend Part 2 in-person training. 
+                    Click below to schedule your session, or a member of our team will contact you.
+                  </p>
+                  <Button 
+                    onClick={() => window.open('https://calendly.com/rrosee12328/30min', '_blank')}
+                    className="w-full"
+                    size="lg"
+                  >
+                    Schedule In-Person Training Now
+                  </Button>
+                </div>
+              </div>
+            )}
+            {!passed && (courseType === 'level3' || courseType === 'level-4') && (
+              <div className="p-4 bg-orange-50 dark:bg-orange-950/20 rounded-lg border-2 border-orange-500 space-y-3">
+                <p className="text-lg font-bold text-orange-900 dark:text-orange-100 mb-2">
+                  ✗ You Did Not Pass This Attempt
+                </p>
+                <p className="text-sm text-orange-800 dark:text-orange-200">
+                  You need {passingPercentage}% to pass. Your score was {percentage}%. 
+                  Please review the course materials and try again when you're ready.
+                </p>
+                {attemptsRemaining > 0 && (
+                  <p className="text-sm font-semibold text-orange-900 dark:text-orange-100">
+                    You have {attemptsRemaining} attempt{attemptsRemaining === 1 ? '' : 's'} remaining.
+                  </p>
+                )}
               </div>
             )}
             {passed && courseType === 'level-4' && (
-              <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border-2 border-blue-500 space-y-3">
-                <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                  ⚠️ IMPORTANT: Level 4 Part 2 In-Person Training Required
+              <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border-2 border-green-500 space-y-3">
+                <p className="text-lg font-bold text-green-900 dark:text-green-100 mb-2">
+                  ✓ You Passed the Level 4 Online Portion!
                 </p>
-                <p className="text-sm text-blue-800 dark:text-blue-200">
-                  You have completed Part 1 (Online). To receive your Personal Protection Officer certificate, 
-                  you MUST complete Part 2 in-person training. Click below to schedule your in-person session.
+                <p className="text-sm text-green-800 dark:text-green-200 mb-4">
+                  Congratulations! You have successfully completed Part 1 (Online) of your Personal Protection Officer training.
                 </p>
-                <Button 
-                  onClick={() => window.open('https://calendly.com/rrosee12328/30min', '_blank')}
-                  className="w-full"
-                  size="lg"
-                >
-                  Schedule In-Person Training
-                </Button>
+                <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-300 dark:border-blue-700">
+                  <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                    📋 Next Step: Schedule In-Person Training (Part 2)
+                  </p>
+                  <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">
+                    To complete your certification, you must attend Part 2 in-person training. 
+                    Click below to schedule your session, or a member of our team will contact you.
+                  </p>
+                  <Button 
+                    onClick={() => window.open('https://calendly.com/rrosee12328/30min', '_blank')}
+                    className="w-full"
+                    size="lg"
+                  >
+                    Schedule In-Person Training Now
+                  </Button>
+                </div>
               </div>
             )}
-            {!passed && (
+            {!passed && courseType !== 'level3' && courseType !== 'level-4' && (
               <div className="p-4 bg-orange-50 dark:bg-orange-950/20 rounded-lg space-y-2">
                 <p className="text-sm text-orange-800 dark:text-orange-200">
                   Review the course materials and retake the exam when you're ready. You'll need a score of {passingPercentage}% or higher to pass.
