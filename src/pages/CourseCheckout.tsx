@@ -117,8 +117,8 @@ const CourseCheckout = () => {
         "Unarmed Defensive Tactics",
         "Use of Force & Deadly Force"
       ],
-      priceId: "price_1SNDgM2Lv7r2i0JXN0Uw4yMH",
-      price: "$1.00",
+      priceId: "price_1SIuhk2Lv7r2i0JXmknziXJn",
+      price: "$200.00",
       isLevel4: true
     },
     "pepper-spray": {
