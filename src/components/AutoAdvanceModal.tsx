@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, ArrowRight, X } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 interface AutoAdvanceModalProps {
   isOpen: boolean;
@@ -20,13 +21,35 @@ const AutoAdvanceModal = ({
   countdownSeconds = 10,
   isFinalSection = false,
 }: AutoAdvanceModalProps) => {
+  const [secondsLeft, setSecondsLeft] = useState(countdownSeconds);
   const device = /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
 
   useEffect(() => {
-    if (!isOpen) return;
-    // Log modal shown - no auto-advance, user must click
+    if (!isOpen) {
+      setSecondsLeft(countdownSeconds);
+      return;
+    }
+
     console.log('MODAL_SHOWN', { sectionTitle, isFinalSection, device, ua: navigator.userAgent });
-  }, [isOpen, isFinalSection, sectionTitle, device]);
+
+    // Don't run countdown for final section
+    if (isFinalSection) return;
+
+    // Visual countdown only - no auto-advance
+    const interval = setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isOpen, countdownSeconds, isFinalSection, sectionTitle, device]);
+
+  const progress = ((countdownSeconds - secondsLeft) / countdownSeconds) * 100;
 
   const handleContinue = () => {
     const device = /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
@@ -76,11 +99,16 @@ const AutoAdvanceModal = ({
           <>
             <div className="space-y-2">
               <p 
-                className="text-sm text-center text-muted-foreground"
+                className="text-sm font-semibold text-center"
                 data-testid="complete-countdown-label"
               >
-                Take a moment to process what you've learned
+                {secondsLeft > 0 ? `${secondsLeft} seconds to review...` : "Ready to continue?"}
               </p>
+              <Progress 
+                value={progress} 
+                className="h-2" 
+                data-testid="complete-progress"
+              />
             </div>
 
           <DialogFooter className="flex-col sm:flex-row gap-2">
