@@ -608,11 +608,13 @@ const VideoPlayer = ({
             ref={iframeRef}
             src={iframeUrl}
             className="w-full h-full"
-            allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture; fullscreen"
+            allow="accelerometer; gyroscope; autoplay; encrypted-media; fullscreen"
             allowFullScreen
             sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-presentation"
             loading="eager"
             title={`Video section ${section.id}`}
+            // @ts-ignore - disablePictureInPicture is a valid attribute
+            disablePictureInPicture
           />
         </div>
 

@@ -1,8 +1,7 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, ArrowRight, X } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
 
 interface AutoAdvanceModalProps {
   isOpen: boolean;
@@ -21,41 +20,13 @@ const AutoAdvanceModal = ({
   countdownSeconds = 10,
   isFinalSection = false,
 }: AutoAdvanceModalProps) => {
-  const [secondsLeft, setSecondsLeft] = useState(countdownSeconds);
   const device = /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
 
   useEffect(() => {
-    if (!isOpen) {
-      setSecondsLeft(countdownSeconds);
-      return;
-    }
-
-    // Log modal shown
+    if (!isOpen) return;
+    // Log modal shown - no auto-advance, user must click
     console.log('MODAL_SHOWN', { sectionTitle, isFinalSection, device, ua: navigator.userAgent });
-
-    // Don't auto-advance if final section
-    if (isFinalSection) return;
-
-    const interval = setInterval(() => {
-      setSecondsLeft((prev) => {
-        const newValue = prev - 1;
-        console.log('COUNTDOWN_TICK:', { newValue, device });
-        
-        if (newValue <= 0) {
-          clearInterval(interval);
-          console.log('AUTO_ADVANCE_NAV', { from: sectionTitle, device });
-          console.log('[AutoAdvanceModal] auto_advance_fired', { device });
-          onAdvance();
-          return 0;
-        }
-        return newValue;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [isOpen, countdownSeconds, onAdvance, isFinalSection, sectionTitle]);
-
-  const progress = ((countdownSeconds - secondsLeft) / countdownSeconds) * 100;
+  }, [isOpen, isFinalSection, sectionTitle, device]);
 
   const handleContinue = () => {
     const device = /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
@@ -105,16 +76,11 @@ const AutoAdvanceModal = ({
           <>
             <div className="space-y-2">
               <p 
-                className="text-sm font-semibold text-center"
+                className="text-sm text-center text-muted-foreground"
                 data-testid="complete-countdown-label"
               >
-                Continuing in {secondsLeft}...
+                Take a moment to process what you've learned
               </p>
-              <Progress 
-                value={progress} 
-                className="h-2" 
-                data-testid="complete-progress"
-              />
             </div>
 
           <DialogFooter className="flex-col sm:flex-row gap-2">
@@ -125,14 +91,14 @@ const AutoAdvanceModal = ({
               data-testid="btn-stay-here"
             >
               <X className="h-4 w-4 mr-2" />
-              Stay Here
+              Review Section
             </Button>
             <Button
               onClick={handleContinue}
               className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
               data-testid="btn-continue-now"
             >
-              Next Section
+              Continue to Next Section
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </DialogFooter>
