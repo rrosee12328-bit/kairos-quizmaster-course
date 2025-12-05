@@ -249,7 +249,7 @@ const Courses = () => {
         "Legal framework for unarmed officers"
       ],
       route: "/course/level2",
-      priceId: "price_1SIuwK2Lv7r2i0JX3XIe7Oi0",
+      priceId: "price_1Sb2S62Lv7r2i0JXFsLnHBYT",
       price: "$1.00"
     },
     {

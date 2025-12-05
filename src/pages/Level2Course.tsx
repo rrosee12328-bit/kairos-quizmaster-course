@@ -761,7 +761,7 @@ const Level2Course = () => {
           /* Enrollment Form */
           <div className="max-w-2xl mx-auto">
             <EnrollmentForm 
-              priceId="price_1SIuwK2Lv7r2i0JX3XIe7Oi0"
+              priceId="price_1Sb2S62Lv7r2i0JXFsLnHBYT"
               defaultCourseType="level2"
               onSuccess={() => {
                 navigate('/course/level2');
