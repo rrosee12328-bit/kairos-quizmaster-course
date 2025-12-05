@@ -18,7 +18,7 @@ const AutoAdvanceModal = ({
   sectionTitle,
   onAdvance,
   onCancel,
-  countdownSeconds = 10,
+  countdownSeconds = 15,
   isFinalSection = false,
 }: AutoAdvanceModalProps) => {
   const [secondsLeft, setSecondsLeft] = useState(countdownSeconds);
@@ -32,22 +32,24 @@ const AutoAdvanceModal = ({
 
     console.log('MODAL_SHOWN', { sectionTitle, isFinalSection, device, ua: navigator.userAgent });
 
-    // Don't run countdown for final section
+    // Don't auto-advance for final section
     if (isFinalSection) return;
 
-    // Visual countdown only - no auto-advance
     const interval = setInterval(() => {
       setSecondsLeft((prev) => {
-        if (prev <= 1) {
+        const newValue = prev - 1;
+        if (newValue <= 0) {
           clearInterval(interval);
+          console.log('AUTO_ADVANCE_NAV', { from: sectionTitle, device });
+          onAdvance();
           return 0;
         }
-        return prev - 1;
+        return newValue;
       });
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isOpen, countdownSeconds, isFinalSection, sectionTitle, device]);
+  }, [isOpen, countdownSeconds, onAdvance, isFinalSection, sectionTitle, device]);
 
   const progress = ((countdownSeconds - secondsLeft) / countdownSeconds) * 100;
 
@@ -102,7 +104,7 @@ const AutoAdvanceModal = ({
                 className="text-sm font-semibold text-center"
                 data-testid="complete-countdown-label"
               >
-                {secondsLeft > 0 ? `${secondsLeft} seconds to review...` : "Ready to continue?"}
+                Continuing in {secondsLeft}...
               </p>
               <Progress 
                 value={progress} 
