@@ -677,7 +677,7 @@ const Course = () => {
                 <Button onClick={() => {
                   setShowQuiz(true);
                 }} size="lg" className="w-full">
-                  {failedAttempts > 0 ? 'Retake Part 1 Final Exam' : 'Start Part 1 Final Exam'} (100 Questions)
+                  {failedAttempts > 0 ? 'Retake Part 1 Final Exam' : 'Start Part 1 Final Exam'} (67 Questions)
                 </Button>
               ) : (
                 <Button 
