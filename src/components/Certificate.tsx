@@ -62,7 +62,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           {/* Level 2 Certificate - Name and ID Number on same line */}
           <div className="absolute top-[34%] left-0 right-0 flex items-baseline justify-center gap-12" style={{ letterSpacing: '0.03em' }}>
             <p className={`${exportMode ? 'text-[48px]' : 'text-[1.75rem]'} font-semibold text-foreground leading-none`} style={{ transform: exportMode ? 'translateY(-52px)' : 'translateY(-16px)', textShadow: exportMode ? '0 0 1px rgba(0,0,0,0.1)' : 'none' }}>{userName || "Student Name"}</p>
-            <p className={`${exportMode ? 'text-[36px]' : 'text-[1.125rem]'} font-normal text-foreground leading-none`} style={{ transform: exportMode ? 'translateY(-52px)' : 'translateY(-16px)', textShadow: exportMode ? '0 0 1px rgba(0,0,0,0.1)' : 'none' }}>{formatIdNumber()}</p>
+            <p className={`${exportMode ? 'text-[36px]' : 'text-[1.125rem]'} font-normal text-foreground leading-none`} style={{ transform: exportMode ? 'translateY(-68px)' : 'translateY(-20px)', textShadow: exportMode ? '0 0 1px rgba(0,0,0,0.1)' : 'none' }}>{formatIdNumber()}</p>
           </div>
           
           {/* Date of Completion */}
