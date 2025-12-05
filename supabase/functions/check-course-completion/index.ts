@@ -6,10 +6,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Course total durations in seconds
+// Course total durations in seconds (based on actual video content lengths)
 const COURSE_DURATIONS: Record<string, number> = {
   'level2': 60 * 60 * 6, // 6 hours
-  'level3': 60 * 60 * 6, // 6 hours  
+  'level3': 60 * 60 * 3, // 3 hours (actual video content length)
   'level4': 60 * 60 * 15, // 15 hours
   'pepper_spray': 60 * 20, // 20 minutes
 };
