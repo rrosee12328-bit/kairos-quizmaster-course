@@ -61,118 +61,84 @@ const Profile = () => {
   const [viewingAsAdmin, setViewingAsAdmin] = useState(false);
 
   useEffect(() => {
-    checkUser();
-  }, []);
-
-  const checkUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    let alive = true;
     
-    if (!user) {
-      toast.error("Please sign in to view your profile");
-      navigate("/auth");
-      return;
-    }
-
-    setUser(user);
-
-    // Check if user is admin
-    const { data: adminCheck } = await supabase.rpc('is_admin', { _user_id: user.id });
-    setIsAdmin(adminCheck || false);
-
-    // Check for userId query parameter (admin viewing student profile)
-    const params = new URLSearchParams(window.location.search);
-    const targetUserId = params.get('userId');
-    
-    if (targetUserId && adminCheck) {
-      // Admin is viewing another user's profile
-      setViewingAsAdmin(true);
-      const { data: targetProfile } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('id', targetUserId)
-        .single();
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
       
-      await fetchUserData(targetUserId, targetProfile?.email || '');
-    } else {
-      // Viewing own profile
-      await fetchUserData(user.id, user.email || '');
-    }
-  };
-
-  const fetchUserData = async (userId: string, userEmail: string) => {
-    try {
-      // Fetch profile
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
+      if (!alive) return;
       
-      setProfile(profileData);
-
-      // Fetch enrollments by user_id OR email
-      const { data: enrollmentData } = await supabase
-        .from('enrollments')
-        .select('*')
-        .or(`user_id.eq.${userId},email.eq.${userEmail}`)
-        .order('created_at', { ascending: false });
-      
-      // Check if there are enrollments to sync
-      if (enrollmentData) {
-        const enrollmentsToUpdate = enrollmentData.filter(e => 
-          e.email === userEmail && (!e.user_id || e.enrollment_status === 'pending')
-        );
-        if (enrollmentsToUpdate.length > 0) {
-          console.log('Syncing enrollments with user account:', enrollmentsToUpdate.length);
-          
-          // Get current session to pass auth token
-          const { data: { session } } = await supabase.auth.getSession();
-          
-          if (session) {
-            // Call server-side sync function for secure enrollment sync
-            const { error: syncError } = await supabase.functions.invoke('sync-enrollment', {
-              headers: {
-                Authorization: `Bearer ${session.access_token}`
-              }
-            });
-            
-            if (syncError) {
-              console.error('Error syncing enrollments:', syncError);
-            } else {
-              // Refresh enrollments after sync
-              const { data: updatedData } = await supabase
-                .from('enrollments')
-                .select('*')
-                .or(`user_id.eq.${userId},email.eq.${userEmail}`)
-                .order('created_at', { ascending: false });
-              
-              setEnrollments(updatedData || []);
-              return;
-            }
-          }
-        }
+      if (!user) {
+        toast.error("Please sign in to view your profile");
+        navigate("/auth");
+        return;
       }
-      
-      setEnrollments(enrollmentData || []);
 
-      // Fetch completions
-      const { data: completionData } = await supabase
-        .from('course_completions')
-        .select('*')
-        .eq('user_id', userId)
-        .order('completed_at', { ascending: false });
-      
-      setCompletions(completionData || []);
+      setUser(user);
 
-      // Fetch certificates
-      const { data: certificateData } = await supabase
-        .from('certificates')
-        .select('*')
-        .eq('user_id', userId)
-        .order('issued_at', { ascending: false });
-      
-      setCertificates(certificateData || []);
+      // Check if user is admin
+      const { data: adminCheck } = await supabase.rpc('is_admin', { _user_id: user.id });
+      if (!alive) return;
+      setIsAdmin(adminCheck || false);
 
+      // Check for userId query parameter (admin viewing student profile)
+      const params = new URLSearchParams(window.location.search);
+      const targetUserId = params.get('userId');
+      
+      if (targetUserId && adminCheck) {
+        // Admin is viewing another user's profile
+        setViewingAsAdmin(true);
+        const { data: targetProfile } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('id', targetUserId)
+          .maybeSingle();
+        
+        if (!alive) return;
+        await fetchUserData(targetUserId, targetProfile?.email || '', alive);
+      } else {
+        // Viewing own profile
+        await fetchUserData(user.id, user.email || '', alive);
+      }
+    };
+    
+    checkUser();
+    
+    return () => { alive = false; };
+  }, [navigate]);
+
+  const fetchUserData = async (userId: string, userEmail: string, alive = true) => {
+    try {
+      // First, attach any legacy enrollments with matching email but no user_id
+      await supabase
+        .from('enrollments')
+        .update({ user_id: userId })
+        .eq('email', userEmail)
+        .is('user_id', null);
+
+      // Fetch profile, enrollments, completions, certificates in parallel
+      const [profileResult, enrollmentResult, completionResult, certificateResult] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
+        supabase.from('enrollments')
+          .select('id, course_type, enrollment_status, created_at, first_name, last_name')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false }),
+        supabase.from('course_completions')
+          .select('id, course_type, score, total_questions, percentage, passed, completed_at, attempt_number, started_at, ended_at, duration_seconds')
+          .eq('user_id', userId)
+          .order('completed_at', { ascending: false }),
+        supabase.from('certificates')
+          .select('id, course_type, registration_number, completion_date, student_name, completion_id')
+          .eq('user_id', userId)
+          .order('issued_at', { ascending: false }),
+      ]);
+
+      if (!alive) return;
+      
+      setProfile(profileResult.data);
+      setEnrollments(enrollmentResult.data || []);
+      setCompletions(completionResult.data || []);
+      setCertificates(certificateResult.data || []);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching user data:', error);
