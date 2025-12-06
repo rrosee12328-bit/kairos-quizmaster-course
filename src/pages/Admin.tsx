@@ -45,6 +45,37 @@ interface EnhancedCompletion {
   certificate_url?: string;
 }
 
+interface UserProfile {
+  display_name?: string;
+  email?: string;
+  phone_number?: string;
+}
+
+interface UserCertificate {
+  id: string;
+  course_type: string;
+  registration_number: string;
+  student_name: string;
+  identification_type: string;
+  last_six_digits: string;
+  completion_date: string;
+}
+
+interface UserProgress {
+  id: string;
+  course_type: string;
+  section_id: number;
+  video_watch_time_seconds?: number;
+  video_started_at?: string;
+}
+
+interface UserDetails {
+  profile: UserProfile | null;
+  certificates: UserCertificate[];
+  completions: EnhancedCompletion[];
+  progress: UserProgress[];
+}
+
 const Admin = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -57,7 +88,7 @@ const Admin = () => {
   const [betaFeedback, setBetaFeedback] = useState<any[]>([]);
   const [selectedFeedback, setSelectedFeedback] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
@@ -73,15 +104,52 @@ const Admin = () => {
   
   // Detail drawer state
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
-  const [userDetails, setUserDetails] = useState<any>(null);
+  const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   
   // Generate code dialog state
   const [showGenerateDialog, setShowGenerateDialog] = useState(false);
-  const [selectedCompletion, setSelectedCompletion] = useState<any>(null);
+  const [selectedCompletion, setSelectedCompletion] = useState<EnhancedCompletion | null>(null);
 
   useEffect(() => {
+    let alive = true;
+    
+    const checkAdminAndFetchData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!alive) return;
+      
+      if (!user) {
+        toast({
+          title: "Unauthorized",
+          description: "Please sign in to access admin panel",
+          variant: "destructive",
+        });
+        navigate("/auth");
+        return;
+      }
+
+      const { data: adminCheck } = await supabase.rpc('is_admin', { _user_id: user.id });
+      
+      if (!alive) return;
+      
+      if (!adminCheck) {
+        toast({
+          title: "Access Denied",
+          description: "You don't have admin privileges",
+          variant: "destructive",
+        });
+        navigate("/");
+        return;
+      }
+
+      setIsAdmin(true);
+      await fetchAllData();
+    };
+    
     checkAdminAndFetchData();
-  }, []);
+    
+    return () => { alive = false; };
+  }, [navigate, toast]);
 
   useEffect(() => {
     applyFilters();
@@ -90,35 +158,6 @@ const Admin = () => {
   useEffect(() => {
     applyApprovalFilters();
   }, [approvalCodes, codeSearchQuery, codeStatusFilter]);
-
-  const checkAdminAndFetchData = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      toast({
-        title: "Unauthorized",
-        description: "Please sign in to access admin panel",
-        variant: "destructive",
-      });
-      navigate("/auth");
-      return;
-    }
-
-    const { data: adminCheck } = await supabase.rpc('is_admin', { _user_id: user.id });
-    
-    if (!adminCheck) {
-      toast({
-        title: "Access Denied",
-        description: "You don't have admin privileges",
-        variant: "destructive",
-      });
-      navigate("/");
-      return;
-    }
-
-    setIsAdmin(true);
-    await fetchAllData();
-  };
 
   const fetchAllData = async () => {
     setLoading(true);
