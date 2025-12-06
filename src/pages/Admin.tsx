@@ -566,6 +566,9 @@ const Admin = () => {
     }
   };
 
+  // Render nothing until admin check resolves
+  if (isAdmin === null) return null;
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">

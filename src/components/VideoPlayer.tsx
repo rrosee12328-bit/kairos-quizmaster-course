@@ -57,7 +57,7 @@ const VideoPlayer = ({
   const messageListenerRef = useRef<((event: MessageEvent) => void) | null>(null);
   const playerInstanceRef = useRef<any>(null);
   const lastSavedPositionRef = useRef<number>(0);
-  const saveIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const saveIntervalRef = useRef<number | null>(null);
   const currentTimeRef = useRef<number>(0);
   const durationRef = useRef<number>(0);
   const furthestWatchedRef = useRef<number>(0);
@@ -197,15 +197,15 @@ const VideoPlayer = ({
     fetchIframeUrl();
   }, [isActive, videoId, libraryId, section.videoUrl]);
 
-  // Auto-save position every 10 seconds
+  // Auto-save position every 15 seconds (single interval)
   useEffect(() => {
     if (!isActive || !isPlaying) return;
 
-    saveIntervalRef.current = setInterval(() => {
+    saveIntervalRef.current = window.setInterval(() => {
       if (currentTimeRef.current > 0) {
-        saveVideoPosition(currentTimeRef.current);
+        void saveVideoPosition(currentTimeRef.current);
       }
-    }, 10000); // Every 10 seconds
+    }, 15000); // Every 15 seconds
 
     return () => {
       if (saveIntervalRef.current) {
@@ -215,20 +215,19 @@ const VideoPlayer = ({
     };
   }, [isActive, isPlaying, courseType, section.id]);
 
-  // Save position on window blur (user switching tabs/windows)
+  // Save position on window blur only when playing
   useEffect(() => {
     if (!isActive) return;
 
     const handleBlur = () => {
-      if (currentTimeRef.current > 0) {
-        console.log('[VideoPlayer] Window blur - saving position');
-        saveVideoPosition(currentTimeRef.current);
+      if (isPlaying && currentTimeRef.current > 0) {
+        void saveVideoPosition(currentTimeRef.current);
       }
     };
 
     window.addEventListener('blur', handleBlur);
     return () => window.removeEventListener('blur', handleBlur);
-  }, [isActive, courseType, section.id]);
+  }, [isActive, isPlaying, courseType, section.id]);
 
   // Wire Player.js to the Bunny iframe for reliable events
   useEffect(() => {

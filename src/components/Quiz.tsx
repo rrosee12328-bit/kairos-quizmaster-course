@@ -96,7 +96,7 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
   const saveCompletion = async (answers: Record<number, number> = selectedAnswers) => {
     // Prevent duplicate saves for this specific quiz attempt
     if (completionSavedRef.current) {
-      console.log('Completion already saved for this attempt');
+      console.warn('Completion already saved for this attempt');
       return false;
     }
 
@@ -110,9 +110,26 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
       return false;
     }
 
-    const score = calculateScore();
+    const score = calculateScore(answers);
     const percentage = Math.round((score / questions.length) * 100);
     const passed = percentage >= passingPercentage;
+
+    // Check for existing passing completion before inserting
+    const { data: existingPassing } = await supabase
+      .from('course_completions')
+      .select('id, passed')
+      .eq('user_id', user.id)
+      .eq('course_type', courseType)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    // If there's already a passing completion, reuse it and don't insert again
+    if (existingPassing?.passed) {
+      console.warn('Reusing existing passing completion:', existingPassing.id);
+      completionSavedRef.current = true;
+      return true;
+    }
 
     // Get enrollment data for user's name
     const { data: enrollment } = await supabase
@@ -120,7 +137,7 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
       .select('first_name, last_name, last_six_digits, identification_type')
       .eq('user_id', user.id)
       .eq('course_type', courseType)
-      .single();
+      .maybeSingle();
 
     const fullName = enrollment 
       ? `${enrollment.first_name} ${enrollment.last_name}` 
@@ -130,7 +147,7 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
     const endTime = new Date().toISOString();
     const durationSeconds = Math.floor((new Date(endTime).getTime() - new Date(startTime).getTime()) / 1000);
     
-    let completionData: any = null;
+    let completionData: { id: string; completed_at: string } | null = null;
 
     const { data: newCompletion, error: completionError } = await supabase
       .from('course_completions')

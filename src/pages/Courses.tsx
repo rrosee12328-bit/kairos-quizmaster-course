@@ -100,10 +100,19 @@ const Courses = () => {
         return;
       }
 
+      // First, attach any legacy enrollments with matching email but no user_id
+      await supabase
+        .from('enrollments')
+        .update({ user_id: userId })
+        .eq('email', currentUser.email)
+        .is('user_id', null);
+
+      // Now fetch only by user_id (legacy rows are now attached)
       const { data, error } = await supabase
         .from('enrollments')
         .select('id, user_id, email, course_type, enrollment_status')
-        .or(`user_id.eq.${userId},email.eq.${currentUser.email}`);
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
       
       if (error) {
         console.error('Error fetching enrollments:', error);
@@ -113,40 +122,8 @@ const Courses = () => {
 
       if (!alive) return;
 
-      if (data) {
-        const enrollmentsToUpdate = data.filter(e => !e.user_id && e.email === currentUser.email);
-        
-        if (enrollmentsToUpdate.length > 0) {
-          if (showToast) toast.info(`Syncing ${enrollmentsToUpdate.length} course(s) with your account...`);
-          
-          const { data: { session } } = await supabase.auth.getSession();
-          const { data: syncResult, error: syncError } = await supabase.functions.invoke('sync-enrollment', {
-            headers: session ? { Authorization: `Bearer ${session.access_token}` } : undefined
-          });
-          
-          if (syncError) {
-            console.error('Error syncing enrollments:', syncError);
-            if (showToast) toast.error('Failed to sync enrollments');
-          } else {
-            const { data: updatedData } = await supabase
-              .from('enrollments')
-              .select('id, user_id, email, course_type, enrollment_status')
-              .or(`user_id.eq.${userId},email.eq.${currentUser.email}`);
-            
-            if (!alive) return;
-            
-            if (updatedData) {
-              setEnrollments(updatedData);
-              if (showToast) toast.success(`Successfully synced ${syncResult?.synced || enrollmentsToUpdate.length} course(s)!`);
-            }
-          }
-        } else {
-          setEnrollments(data);
-          if (showToast) toast.success('Courses refreshed successfully');
-        }
-      } else {
-        if (showToast) toast.info('No enrollments found');
-      }
+      setEnrollments(data || []);
+      if (showToast) toast.success('Courses refreshed successfully');
     } catch (error) {
       console.error('Error in fetchEnrollments:', error);
       if (showToast) toast.error('An error occurred while fetching enrollments');
