@@ -1,75 +1,71 @@
 // Conversion tracking utilities for Meta Pixel and Google Ads
 
-// Meta Pixel ID - Replace with your actual Pixel ID
-const META_PIXEL_ID = 'YOUR_META_PIXEL_ID';
+type CourseType = 'level2' | 'level3' | 'level4' | 'pepper-spray';
+type PriceMap = Record<CourseType, number>;
 
-// Google Ads IDs - Replace with your actual IDs
-const GOOGLE_ADS_ID = 'AW-XXXXXXXXXX';
+// Use env vars with fallback to empty string
+const META_PIXEL_ID = import.meta.env.VITE_META_PIXEL_ID ?? '';
+const GOOGLE_ADS_ID = import.meta.env.VITE_GOOGLE_ADS_ID ?? '';
 const GOOGLE_ADS_LABELS = {
-  payment_completed: 'YOUR_PAYMENT_LABEL',
-  enrollment_started: 'YOUR_ENROLLMENT_LABEL',
-  course_started: 'YOUR_COURSE_STARTED_LABEL',
-};
+  payment_completed: import.meta.env.VITE_GOOGLE_ADS_PAYMENT_LABEL ?? '',
+  enrollment_started: import.meta.env.VITE_GOOGLE_ADS_ENROLLMENT_LABEL ?? '',
+  course_started: import.meta.env.VITE_GOOGLE_ADS_COURSE_STARTED_LABEL ?? '',
+} as const;
 
-// Declare fbq for TypeScript
+// Declare fbq and gtag for TypeScript
 declare global {
   interface Window {
-    fbq: any;
-    gtag: any;
-    dataLayer: any;
+    fbq?: (...args: unknown[]) => void;
+    gtag?: (...args: unknown[]) => void;
+    dataLayer?: unknown[];
   }
 }
 
+// Safe check for Meta Pixel availability
+const hasMeta = (): boolean => {
+  return typeof window !== 'undefined' && !!window.fbq && !!META_PIXEL_ID;
+};
+
+// Safe check for Google Ads availability
+const hasGAds = (): boolean => {
+  return typeof window !== 'undefined' && !!window.gtag && !!GOOGLE_ADS_ID;
+};
+
 // Initialize Meta Pixel
-export const initMetaPixel = () => {
-  if (typeof window === 'undefined' || !META_PIXEL_ID || META_PIXEL_ID === 'YOUR_META_PIXEL_ID') return;
+export const initMetaPixel = (): void => {
+  if (!hasMeta()) return;
   
-  if (!window.fbq) {
-    console.warn('Meta Pixel not loaded');
-    return;
-  }
-  
-  window.fbq('init', META_PIXEL_ID);
-  console.log('[Tracking] Meta Pixel initialized');
+  window.fbq?.('init', META_PIXEL_ID);
+  console.warn('[Tracking] Meta Pixel initialized');
 };
 
 // Initialize Google Ads
-export const initGoogleAds = () => {
-  if (typeof window === 'undefined' || !GOOGLE_ADS_ID || GOOGLE_ADS_ID === 'AW-XXXXXXXXXX') return;
+export const initGoogleAds = (): void => {
+  if (!hasGAds()) return;
   
-  if (!window.gtag) {
-    console.warn('Google Ads tag not loaded');
-    return;
-  }
-  
-  window.gtag('config', GOOGLE_ADS_ID);
-  console.log('[Tracking] Google Ads initialized');
+  window.gtag?.('config', GOOGLE_ADS_ID);
+  console.warn('[Tracking] Google Ads initialized');
 };
 
 // Track page view
-export const trackPageView = (url?: string) => {
-  console.log('[Tracking] PageView:', url || window.location.pathname);
+export const trackPageView = (url?: string): void => {
+  const path = url || (typeof window !== 'undefined' ? window.location.pathname : '');
   
-  // Meta Pixel
-  if (window.fbq) {
-    window.fbq('track', 'PageView');
+  if (hasMeta()) {
+    window.fbq?.('track', 'PageView');
   }
   
-  // Google Ads
-  if (window.gtag) {
-    window.gtag('event', 'page_view', {
-      page_path: url || window.location.pathname,
+  if (hasGAds()) {
+    window.gtag?.('event', 'page_view', {
+      page_path: path,
     });
   }
 };
 
 // Track course view (ViewContent)
-export const trackViewContent = (courseType: string, coursePrice?: number) => {
-  console.log('[Tracking] ViewContent:', courseType);
-  
-  // Meta Pixel
-  if (window.fbq) {
-    window.fbq('track', 'ViewContent', {
+export const trackViewContent = (courseType: string, coursePrice?: number): void => {
+  if (hasMeta()) {
+    window.fbq?.('track', 'ViewContent', {
       content_name: courseType,
       content_category: 'Security Training',
       content_type: 'product',
@@ -78,9 +74,8 @@ export const trackViewContent = (courseType: string, coursePrice?: number) => {
     });
   }
   
-  // Google Ads
-  if (window.gtag) {
-    window.gtag('event', 'view_item', {
+  if (hasGAds()) {
+    window.gtag?.('event', 'view_item', {
       items: [{
         item_id: courseType,
         item_name: courseType,
@@ -92,12 +87,9 @@ export const trackViewContent = (courseType: string, coursePrice?: number) => {
 };
 
 // Track add to cart / enroll now click
-export const trackAddToCart = (courseType: string, coursePrice?: number) => {
-  console.log('[Tracking] AddToCart:', courseType);
-  
-  // Meta Pixel
-  if (window.fbq) {
-    window.fbq('track', 'AddToCart', {
+export const trackAddToCart = (courseType: CourseType | string, coursePrice?: number): void => {
+  if (hasMeta()) {
+    window.fbq?.('track', 'AddToCart', {
       content_name: courseType,
       content_category: 'Security Training',
       content_type: 'product',
@@ -106,9 +98,8 @@ export const trackAddToCart = (courseType: string, coursePrice?: number) => {
     });
   }
   
-  // Google Ads
-  if (window.gtag) {
-    window.gtag('event', 'add_to_cart', {
+  if (hasGAds()) {
+    window.gtag?.('event', 'add_to_cart', {
       items: [{
         item_id: courseType,
         item_name: courseType,
@@ -120,12 +111,9 @@ export const trackAddToCart = (courseType: string, coursePrice?: number) => {
 };
 
 // Track checkout initiation
-export const trackInitiateCheckout = (courseType: string, coursePrice?: number) => {
-  console.log('[Tracking] InitiateCheckout:', courseType);
-  
-  // Meta Pixel
-  if (window.fbq) {
-    window.fbq('track', 'InitiateCheckout', {
+export const trackInitiateCheckout = (courseType: string, coursePrice?: number): void => {
+  if (hasMeta()) {
+    window.fbq?.('track', 'InitiateCheckout', {
       content_name: courseType,
       content_category: 'Security Training',
       content_type: 'product',
@@ -135,8 +123,8 @@ export const trackInitiateCheckout = (courseType: string, coursePrice?: number) 
   }
   
   // Google Ads - Enrollment Started
-  if (window.gtag && GOOGLE_ADS_LABELS.enrollment_started !== 'YOUR_ENROLLMENT_LABEL') {
-    window.gtag('event', 'conversion', {
+  if (hasGAds() && GOOGLE_ADS_LABELS.enrollment_started) {
+    window.gtag?.('event', 'conversion', {
       send_to: `${GOOGLE_ADS_ID}/${GOOGLE_ADS_LABELS.enrollment_started}`,
       value: coursePrice,
       currency: 'GBP',
@@ -146,12 +134,14 @@ export const trackInitiateCheckout = (courseType: string, coursePrice?: number) 
 };
 
 // Track purchase completion
-export const trackPurchase = (courseType: string, coursePrice: number, transactionId?: string, userEmail?: string) => {
-  console.log('[Tracking] Purchase:', courseType, coursePrice);
-  
-  // Meta Pixel - Custom event name
-  if (window.fbq) {
-    window.fbq('track', 'Kairos_Enrollment_Purchase', {
+export const trackPurchase = (
+  courseType: string, 
+  coursePrice: number, 
+  transactionId?: string, 
+  userEmail?: string
+): void => {
+  if (hasMeta()) {
+    window.fbq?.('track', 'Kairos_Enrollment_Purchase', {
       content_name: courseType,
       content_category: 'Security Training',
       content_type: 'product',
@@ -161,7 +151,7 @@ export const trackPurchase = (courseType: string, coursePrice: number, transacti
     });
     
     // Also track standard Purchase event
-    window.fbq('track', 'Purchase', {
+    window.fbq?.('track', 'Purchase', {
       content_name: courseType,
       content_category: 'Security Training',
       value: coursePrice,
@@ -171,8 +161,8 @@ export const trackPurchase = (courseType: string, coursePrice: number, transacti
   }
   
   // Google Ads - Payment Completed
-  if (window.gtag && GOOGLE_ADS_LABELS.payment_completed !== 'YOUR_PAYMENT_LABEL') {
-    window.gtag('event', 'conversion', {
+  if (hasGAds() && GOOGLE_ADS_LABELS.payment_completed) {
+    window.gtag?.('event', 'conversion', {
       send_to: `${GOOGLE_ADS_ID}/${GOOGLE_ADS_LABELS.payment_completed}`,
       value: coursePrice,
       currency: 'GBP',
@@ -181,7 +171,7 @@ export const trackPurchase = (courseType: string, coursePrice: number, transacti
     
     // Enhanced conversion data
     if (userEmail) {
-      window.gtag('set', 'user_data', {
+      window.gtag?.('set', 'user_data', {
         email: userEmail,
       });
     }
@@ -189,20 +179,17 @@ export const trackPurchase = (courseType: string, coursePrice: number, transacti
 };
 
 // Track course started
-export const trackCourseStarted = (courseType: string) => {
-  console.log('[Tracking] Course Started:', courseType);
-  
-  // Meta Pixel
-  if (window.fbq) {
-    window.fbq('trackCustom', 'CourseStarted', {
+export const trackCourseStarted = (courseType: string): void => {
+  if (hasMeta()) {
+    window.fbq?.('trackCustom', 'CourseStarted', {
       content_name: courseType,
       content_category: 'Security Training',
     });
   }
   
   // Google Ads - Course Started
-  if (window.gtag && GOOGLE_ADS_LABELS.course_started !== 'YOUR_COURSE_STARTED_LABEL') {
-    window.gtag('event', 'conversion', {
+  if (hasGAds() && GOOGLE_ADS_LABELS.course_started) {
+    window.gtag?.('event', 'conversion', {
       send_to: `${GOOGLE_ADS_ID}/${GOOGLE_ADS_LABELS.course_started}`,
       transaction_id: `${courseType}_started_${Date.now()}`,
     });
@@ -210,18 +197,18 @@ export const trackCourseStarted = (courseType: string) => {
 };
 
 // Helper to get course price
-export const getCoursePriceMap = (): Record<string, number> => ({
-  'level2': 199,
-  'level3': 299,
-  'level4': 399,
-  'pepper-spray': 99,
+export const getCoursePriceMap = (): PriceMap => ({
+  'level2': 55,
+  'level3': 1,
+  'level4': 200,
+  'pepper-spray': 50,
 });
 
 // Server-side tracking helper
-export const trackServerSide = async (eventName: string, eventData: any) => {
+export const trackServerSide = async (eventName: string, eventData: Record<string, unknown>): Promise<void> => {
   try {
     const { supabase } = await import('@/integrations/supabase/client');
-    const { data, error } = await supabase.functions.invoke('track-conversion', {
+    const { error } = await supabase.functions.invoke('track-conversion', {
       body: {
         eventName,
         eventData,
@@ -230,8 +217,6 @@ export const trackServerSide = async (eventName: string, eventData: any) => {
     
     if (error) {
       console.error('[Server-side Tracking] Error:', error);
-    } else {
-      console.log('[Server-side Tracking] Success:', data);
     }
   } catch (error) {
     console.error('[Server-side Tracking] Failed:', error);

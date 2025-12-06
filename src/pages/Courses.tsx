@@ -2,48 +2,74 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Clock, Award, Users, BookOpen, ArrowRight, LogOut, ShoppingCart, CheckCircle } from "lucide-react";
+import { Shield, Clock, BookOpen, ArrowRight } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
-import { BackButton } from "@/components/BackButton";
 import { Footer } from "@/components/Footer";
 import CourseHeader from "@/components/CourseHeader";
-import kairosLogo from "@/assets/kairos-logo.png";
-import securityTrainingImage from "@/assets/security-training-courses.jpg";
 import { trackAddToCart, getCoursePriceMap } from "@/lib/tracking";
+
+interface Enrollment {
+  id: string;
+  user_id: string | null;
+  email: string;
+  course_type: string;
+  enrollment_status: string;
+}
 
 const Courses = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
-  const [enrollments, setEnrollments] = useState<any[]>([]);
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-      if (user) {
-        checkAdminStatus(user.id);
-        fetchEnrollments(user.id);
+    let alive = true;
+    
+    const initUser = async () => {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!alive) return;
+      
+      setUser(currentUser);
+      if (currentUser) {
+        const [adminResult] = await Promise.all([
+          supabase.rpc('is_admin', { _user_id: currentUser.id }),
+          fetchEnrollments(currentUser.id, false, alive),
+        ]);
+        
+        if (!alive) return;
+        if (!adminResult.error && adminResult.data) {
+          setIsAdmin(true);
+        }
       }
-    });
+    };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    initUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!alive) return;
       setUser(session?.user ?? null);
       if (session?.user) {
-        checkAdminStatus(session.user.id);
-        fetchEnrollments(session.user.id);
+        supabase.rpc('is_admin', { _user_id: session.user.id }).then(({ data, error }) => {
+          if (!alive) return;
+          if (!error && data) setIsAdmin(true);
+        });
+        fetchEnrollments(session.user.id, false, alive);
       } else {
         setIsAdmin(false);
         setEnrollments([]);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      alive = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Check for payment success and refresh enrollments
@@ -63,55 +89,21 @@ const Courses = () => {
     }
   }, [searchParams, user]);
 
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
-      if (user) {
-        checkAdminStatus(user.id);
-        fetchEnrollments(user.id);
-      }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkAdminStatus(session.user.id);
-        fetchEnrollments(session.user.id);
-      } else {
-        setIsAdmin(false);
-        setEnrollments([]);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const checkAdminStatus = async (userId: string) => {
-    const { data, error } = await supabase.rpc('is_admin', { _user_id: userId });
-    if (!error && data) {
-      setIsAdmin(true);
-    }
-  };
-
-  const fetchEnrollments = async (userId: string, showToast = false) => {
+  const fetchEnrollments = async (userId: string, showToast = false, alive = true) => {
     if (showToast) setRefreshing(true);
     
     try {
-      // Get user email first
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
       
-      if (!user?.email) {
+      if (!currentUser?.email) {
         if (showToast) toast.error('No email found on your account');
         return;
       }
 
-      console.log('Fetching enrollments for:', user.email);
-
-      // Fetch enrollments by user_id OR email
       const { data, error } = await supabase
         .from('enrollments')
-        .select('*')
-        .or(`user_id.eq.${userId},email.eq.${user.email}`);
+        .select('id, user_id, email, course_type, enrollment_status')
+        .or(`user_id.eq.${userId},email.eq.${currentUser.email}`);
       
       if (error) {
         console.error('Error fetching enrollments:', error);
@@ -119,17 +111,14 @@ const Courses = () => {
         return;
       }
 
-      console.log('Found enrollments:', data?.length || 0);
+      if (!alive) return;
 
       if (data) {
-        // Check if there are enrollments to sync
-        const enrollmentsToUpdate = data.filter(e => !e.user_id && e.email === user.email);
+        const enrollmentsToUpdate = data.filter(e => !e.user_id && e.email === currentUser.email);
         
         if (enrollmentsToUpdate.length > 0) {
-          console.log('Syncing enrollments with user account:', enrollmentsToUpdate.length);
           if (showToast) toast.info(`Syncing ${enrollmentsToUpdate.length} course(s) with your account...`);
           
-          // Call server-side sync function for secure enrollment sync
           const { data: { session } } = await supabase.auth.getSession();
           const { data: syncResult, error: syncError } = await supabase.functions.invoke('sync-enrollment', {
             headers: session ? { Authorization: `Bearer ${session.access_token}` } : undefined
@@ -139,13 +128,12 @@ const Courses = () => {
             console.error('Error syncing enrollments:', syncError);
             if (showToast) toast.error('Failed to sync enrollments');
           } else {
-            console.log('Sync result:', syncResult);
-            
-            // Refresh enrollments after sync
             const { data: updatedData } = await supabase
               .from('enrollments')
-              .select('*')
-              .or(`user_id.eq.${userId},email.eq.${user.email}`);
+              .select('id, user_id, email, course_type, enrollment_status')
+              .or(`user_id.eq.${userId},email.eq.${currentUser.email}`);
+            
+            if (!alive) return;
             
             if (updatedData) {
               setEnrollments(updatedData);
@@ -184,13 +172,11 @@ const Courses = () => {
       return;
     }
 
-    // Check if already enrolled
     if (enrollments.some(e => e.course_type === courseType && e.enrollment_status === 'enrolled')) {
       toast.info("You already own this course");
       return;
     }
 
-    // Track AddToCart
     const priceMap = getCoursePriceMap();
     const price = priceMap[courseType as keyof typeof priceMap];
     trackAddToCart(courseType, price);
