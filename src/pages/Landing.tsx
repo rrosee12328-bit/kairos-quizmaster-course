@@ -228,7 +228,7 @@ const Landing = () => {
                   <AccordionItem value="item-2">
                     <AccordionTrigger>How long does the training take?</AccordionTrigger>
                     <AccordionContent>
-                      The Level 2 course typically takes several weeks to complete, depending on your schedule and pace. We offer flexible learning options to accommodate working professionals. The Level 3 Part 1 online training has a similar timeline, with Part 2 requiring additional in-person training.
+                      The Level 2 course typically takes several weeks to complete, depending on your schedule and pace. We offer flexible learning options to accommodate working professionals. Level 3 and Level 4 are two-part courses: Part 1 is completed online, and Part 2 requires in-person training in the Houston area with Kairos Security.
                     </AccordionContent>
                   </AccordionItem>
                   
@@ -244,6 +244,15 @@ const Landing = () => {
               <TabsContent value="certification">
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="item-1">
+                    <AccordionTrigger>What is included in the Level 3 and Level 4 online course price?</AccordionTrigger>
+                    <AccordionContent>
+                      <p className="mb-2">The online price for Level 3 and Level 4 courses covers <strong>Part 1 (Online Training) only</strong>. This includes all video lessons and the online exam.</p>
+                      <p className="mb-2"><strong>Part 2 (In-Person Training) is priced separately</strong> and must be completed in person in the Houston area with Kairos Security. You'll pay for Part 2 at the time of your appointment.</p>
+                      <p>After passing the online exam, you'll receive a link to schedule your in-person training via Calendly.</p>
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="item-2">
                     <AccordionTrigger>Will further certification help me earn more as a security officer?</AccordionTrigger>
                     <AccordionContent>
                       Yes. Certain roles require more advanced certification, especially duties where carrying a firearm or protecting an important person is required. Since these roles need specialist training, they receive higher pay.
@@ -271,10 +280,17 @@ const Landing = () => {
                     </AccordionContent>
                   </AccordionItem>
                   
-                  <AccordionItem value="item-5">
+                  <AccordionItem value="item-6">
                     <AccordionTrigger>How many times can I take the final exam?</AccordionTrigger>
                     <AccordionContent>
                       You have <strong>3 attempts</strong> to pass the final exam for each course. If you fail the exam 3 times, you will need to re-purchase the course to continue. We recommend thoroughly reviewing the course materials before each attempt to maximize your chances of passing. A score of 70% or higher is required to pass.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="item-7">
+                    <AccordionTrigger>Where can I complete Part 2 in-person training for Level 3 and Level 4?</AccordionTrigger>
+                    <AccordionContent>
+                      Part 2 in-person training for Level 3 (Armed Security Officer) and Level 4 (Personal Protection Officer) is conducted in the <strong>Houston, Texas area</strong> by Kairos Security. After passing your online exam, you'll receive a Calendly link to schedule your appointment.
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>

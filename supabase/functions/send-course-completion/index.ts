@@ -110,28 +110,73 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 ? `
                   <p><strong>Certificate Registration Number:</strong> ${registrationNumber}</p>
                   <p>Your certificate has been generated and is available in your user profile. You can download it at any time by logging into your account.</p>
+                  
+                  <div style="background: #f0fdf4; border: 2px solid #22c55e; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <p style="margin: 0; font-size: 18px; font-weight: bold; color: #166534;">🔍 Looking for Security Work?</p>
+                    <p style="margin: 15px 0 0 0; font-size: 14px; color: #166534;">Join WeFind Guards to be discovered by security companies hiring in your area!</p>
+                    <div style="text-align: center; margin-top: 20px;">
+                      <a href="https://wefindguards.com" style="display: inline-block; background: #22c55e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Join WeFind Guards</a>
+                    </div>
+                  </div>
+                `
+                : passed && courseType === 'pepper-spray' && registrationNumber
+                ? `
+                  <p><strong>Certificate Registration Number:</strong> ${registrationNumber}</p>
+                  <p>Your Pepper Spray Training certificate has been generated and is available in your user profile. You can download it at any time by logging into your account.</p>
+                  
+                  <div style="background: #f0fdf4; border: 2px solid #22c55e; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <p style="margin: 0; font-size: 18px; font-weight: bold; color: #166534;">🔍 Looking for Security Work?</p>
+                    <p style="margin: 15px 0 0 0; font-size: 14px; color: #166534;">Join WeFind Guards to be discovered by security companies hiring in your area!</p>
+                    <div style="text-align: center; margin-top: 20px;">
+                      <a href="https://wefindguards.com" style="display: inline-block; background: #22c55e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Join WeFind Guards</a>
+                    </div>
+                  </div>
                 `
                 : passed && courseType === 'level3'
                 ? `
                   <div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    <p style="margin: 0; font-size: 18px; font-weight: bold; color: #1e40af;">📅 Schedule Your In-Person Training</p>
-                    <p style="margin: 15px 0 0 0; font-size: 14px; color: #1e40af;">Click the button below to book your Level 3 Part 2 in-person training session:</p>
+                    <p style="margin: 0; font-size: 18px; font-weight: bold; color: #1e40af;">📅 Schedule Your In-Person Training (Part 2)</p>
+                    <p style="margin: 15px 0 0 0; font-size: 14px; color: #1e40af;">Click the button below to book your Level 3 Part 2 in-person training session in the Houston area with Kairos Security:</p>
                     <div style="text-align: center; margin-top: 20px;">
                       <a href="https://calendly.com/rrosee12328/30min" style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Book Appointment</a>
                     </div>
                   </div>
+                  <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <p style="margin: 0; color: #856404; font-weight: bold;">💰 Important Pricing Information</p>
+                    <p style="margin: 10px 0 0 0; color: #856404; font-size: 14px;">Your online payment covered Part 1 (Online) only. <strong>Part 2 in-person training is priced separately</strong> and will be paid at the time of your appointment.</p>
+                  </div>
                   <p><strong>Important:</strong> Level 3 does not provide a certificate for the online portion. You must complete the in-person Level 3 Part 2 training to receive your full Armed Security Officer certification.</p>
+                  
+                  <div style="background: #f0fdf4; border: 2px solid #22c55e; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <p style="margin: 0; font-size: 18px; font-weight: bold; color: #166534;">🔍 Looking for Security Work?</p>
+                    <p style="margin: 15px 0 0 0; font-size: 14px; color: #166534;">Join WeFind Guards to be discovered by security companies hiring in your area!</p>
+                    <div style="text-align: center; margin-top: 20px;">
+                      <a href="https://wefindguards.com" style="display: inline-block; background: #22c55e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Join WeFind Guards</a>
+                    </div>
+                  </div>
                 `
                 : passed && courseType === 'level4'
                 ? `
                   <div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    <p style="margin: 0; font-size: 18px; font-weight: bold; color: #1e40af;">📅 Schedule Your In-Person Training</p>
-                    <p style="margin: 15px 0 0 0; font-size: 14px; color: #1e40af;">Click the button below to book your Level 4 Part 2 in-person training session:</p>
+                    <p style="margin: 0; font-size: 18px; font-weight: bold; color: #1e40af;">📅 Schedule Your In-Person Training (Part 2)</p>
+                    <p style="margin: 15px 0 0 0; font-size: 14px; color: #1e40af;">Click the button below to book your Level 4 Part 2 in-person training session in the Houston area with Kairos Security:</p>
                     <div style="text-align: center; margin-top: 20px;">
                       <a href="https://calendly.com/rrosee12328/30min" style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Book Appointment</a>
                     </div>
                   </div>
+                  <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <p style="margin: 0; color: #856404; font-weight: bold;">💰 Important Pricing Information</p>
+                    <p style="margin: 10px 0 0 0; color: #856404; font-size: 14px;">Your online payment covered Part 1 (Online) only. <strong>Part 2 in-person training is priced separately</strong> and will be paid at the time of your appointment.</p>
+                  </div>
                   <p><strong>Important:</strong> Level 4 does not provide a certificate for the online portion. You must complete the in-person Level 4 Part 2 training to receive your full Personal Protection Officer certification.</p>
+                  
+                  <div style="background: #f0fdf4; border: 2px solid #22c55e; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <p style="margin: 0; font-size: 18px; font-weight: bold; color: #166534;">🔍 Looking for Security Work?</p>
+                    <p style="margin: 15px 0 0 0; font-size: 14px; color: #166534;">Join WeFind Guards to be discovered by security companies hiring in your area!</p>
+                    <div style="text-align: center; margin-top: 20px;">
+                      <a href="https://wefindguards.com" style="display: inline-block; background: #22c55e; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Join WeFind Guards</a>
+                    </div>
+                  </div>
                 `
                 : !passed
                 ? `
