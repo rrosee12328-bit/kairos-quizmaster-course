@@ -223,8 +223,8 @@ const Courses = () => {
     },
     {
       id: "level3", 
-      title: "Level 3 Theory Prep (Online Only – Not a Certificate)",
-      subtitle: "Armed Security Professional - Theory Training",
+      title: "Level 3 Security Officer Certification (Online Only – Not a Certificate)",
+      subtitle: "Armed Security Professional - Online Training",
       description: "This self-paced online course covers the classroom/theory portion of the Texas Level 3 curriculum. ⚠️ Does NOT provide a certificate – in-person training required with Kairos Security in Houston to become certified.",
       duration: "30 hours",
       sections: 10,
@@ -244,8 +244,8 @@ const Courses = () => {
     },
     {
       id: "level4",
-      title: "Level 4 Theory Prep (Online Only – Not a Certificate)",
-      subtitle: "Bodyguard & Executive Protection - Theory Training",
+      title: "Level 4: Personal Protection Officer (Online Only – Not a Certificate)",
+      subtitle: "Bodyguard & Executive Protection - Online Training",
       description: "This self-paced online course covers the classroom/theory portion of the Texas Level 4 PPO curriculum. ⚠️ Does NOT provide a certificate – in-person training required with Kairos Security in Houston to become certified.",
       duration: "15 hours",
       sections: 1,

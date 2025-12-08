@@ -436,7 +436,7 @@ const Course = () => {
         <div className="mb-6 text-center">
           <div className="flex items-center justify-center gap-3 mb-2">
             <Shield className="h-6 w-6 text-primary" />
-            <h1 className="text-3xl font-bold">Level 3 Theory Prep (Online Only – Not a Certificate)</h1>
+            <h1 className="text-3xl font-bold">Level 3 Security Officer Certification (Online Only)</h1>
           </div>
           <p className="text-muted-foreground max-w-2xl mx-auto mb-4">
             This self-paced online course covers the classroom/theory portion of the Texas Level 3 curriculum, including laws, use of force, and safety fundamentals.
