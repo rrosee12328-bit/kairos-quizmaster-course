@@ -97,8 +97,8 @@ const CourseCheckout = () => {
         "Weapons maintenance",
         "Legal responsibilities of armed officers"
       ],
-      priceId: "price_1SN3pd2Lv7r2i0JXJQy0Imf3",
-      price: "$1.00",
+      priceId: "price_1Sc8e92Lv7r2i0JXn5yNMSZs",
+      price: "$99.00",
       isLevel3: true
     },
     level4: {
