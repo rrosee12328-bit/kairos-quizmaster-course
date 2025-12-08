@@ -442,9 +442,12 @@ const Course = () => {
             <p className="text-sm text-muted-foreground mb-3">
               <strong>Part 1 (Online):</strong> Complete all 10 sections and pass the final exam.
             </p>
-            <div className="text-sm font-semibold text-primary bg-primary/10 p-3 rounded-lg border border-primary/20">
-              ⚠️ Part 2 (In-Person): Must be completed in person after Part 1 to earn full armed certification
+            <div className="text-sm font-semibold text-primary bg-primary/10 p-3 rounded-lg border border-primary/20 mb-2">
+              ⚠️ Part 2 (In-Person): Must be completed in Houston area with Kairos Security to earn full armed certification
             </div>
+            <p className="text-xs text-muted-foreground">
+              💰 <strong>Note:</strong> Online price covers Part 1 only. Part 2 in-person training is priced separately.
+            </p>
           </div>
         </div>
 

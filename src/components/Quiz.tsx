@@ -423,22 +423,40 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
                 : `You need ${passingPercentage}% to pass. Keep studying and try again!`}
             </div>
             {passed && (courseType === 'level2' || courseType === 'pepper-spray') && (
-              <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border-2 border-green-500">
-                <p className="text-sm font-semibold text-green-900 dark:text-green-100 mb-2">
-                  ✓ Certificate Available
-                </p>
-                <p className="text-sm text-green-800 dark:text-green-200 mb-3">
-                  Your {courseType === 'pepper-spray' ? 'Pepper Spray Training' : 'Level 2 Security Officer'} certificate is now available in your user profile. 
-                  You can download it at any time by visiting your profile page.
-                </p>
-                <Button 
-                  onClick={() => navigate('/profile')}
-                  className="w-full"
-                  size="lg"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Go to Profile & Download Certificate
-                </Button>
+              <div className="space-y-4">
+                <div className="p-4 bg-green-50 dark:bg-green-950/20 rounded-lg border-2 border-green-500">
+                  <p className="text-sm font-semibold text-green-900 dark:text-green-100 mb-2">
+                    ✓ Certificate Available
+                  </p>
+                  <p className="text-sm text-green-800 dark:text-green-200 mb-3">
+                    Your {courseType === 'pepper-spray' ? 'Pepper Spray Training' : 'Level 2 Security Officer'} certificate is now available in your user profile. 
+                    You can download it at any time by visiting your profile page.
+                  </p>
+                  <Button 
+                    onClick={() => navigate('/profile')}
+                    className="w-full"
+                    size="lg"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Go to Profile & Download Certificate
+                  </Button>
+                </div>
+                <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 rounded-lg border-2 border-emerald-500">
+                  <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-100 mb-2">
+                    🔍 Looking for Security Work?
+                  </p>
+                  <p className="text-sm text-emerald-800 dark:text-emerald-200 mb-3">
+                    Join WeFind Guards to be discovered by security companies hiring in your area!
+                  </p>
+                  <Button 
+                    onClick={() => window.open('https://wefindguards.com', '_blank')}
+                    variant="outline"
+                    className="w-full border-emerald-500 text-emerald-700 hover:bg-emerald-50"
+                    size="lg"
+                  >
+                    Join WeFind Guards
+                  </Button>
+                </div>
               </div>
             )}
             {passed && courseType === 'level3' && (
@@ -449,13 +467,21 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
                 <p className="text-sm text-green-800 dark:text-green-200 mb-4">
                   Congratulations! You have successfully completed Part 1 (Online) of your Level 3 Security Officer training.
                 </p>
+                <div className="p-3 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-400 dark:border-amber-700 mb-3">
+                  <p className="text-sm font-semibold text-amber-900 dark:text-amber-100 mb-1">
+                    💰 Important Pricing Information
+                  </p>
+                  <p className="text-sm text-amber-800 dark:text-amber-200">
+                    Your online payment covered Part 1 (Online) only. <strong>Part 2 in-person training is priced separately</strong> and will be paid at the time of your appointment.
+                  </p>
+                </div>
                 <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-300 dark:border-blue-700">
                   <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                    📋 Next Step: Schedule In-Person Training (Part 2)
+                    📋 Next Step: Schedule In-Person Training (Part 2) in Houston
                   </p>
                   <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">
-                    To complete your armed certification, you must attend Part 2 in-person training. 
-                    Click below to schedule your session, or a member of our team will contact you.
+                    To complete your armed certification, you must attend Part 2 in-person training with Kairos Security in the Houston area. 
+                    Click below to schedule your session.
                   </p>
                   <Button 
                     onClick={() => window.open('https://calendly.com/rrosee12328/30min', '_blank')}
@@ -463,6 +489,22 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
                     size="lg"
                   >
                     Schedule In-Person Training Now
+                  </Button>
+                </div>
+                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 rounded-lg border border-emerald-400 dark:border-emerald-700">
+                  <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-100 mb-2">
+                    🔍 Looking for Security Work?
+                  </p>
+                  <p className="text-sm text-emerald-800 dark:text-emerald-200 mb-3">
+                    Join WeFind Guards to be discovered by security companies hiring in your area!
+                  </p>
+                  <Button 
+                    onClick={() => window.open('https://wefindguards.com', '_blank')}
+                    variant="outline"
+                    className="w-full border-emerald-500 text-emerald-700 hover:bg-emerald-50"
+                    size="lg"
+                  >
+                    Join WeFind Guards
                   </Button>
                 </div>
               </div>
@@ -491,13 +533,21 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
                 <p className="text-sm text-green-800 dark:text-green-200 mb-4">
                   Congratulations! You have successfully completed Part 1 (Online) of your Personal Protection Officer training.
                 </p>
+                <div className="p-3 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-400 dark:border-amber-700 mb-3">
+                  <p className="text-sm font-semibold text-amber-900 dark:text-amber-100 mb-1">
+                    💰 Important Pricing Information
+                  </p>
+                  <p className="text-sm text-amber-800 dark:text-amber-200">
+                    Your online payment covered Part 1 (Online) only. <strong>Part 2 in-person training is priced separately</strong> and will be paid at the time of your appointment.
+                  </p>
+                </div>
                 <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-300 dark:border-blue-700">
                   <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                    📋 Next Step: Schedule In-Person Training (Part 2)
+                    📋 Next Step: Schedule In-Person Training (Part 2) in Houston
                   </p>
                   <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">
-                    To complete your certification, you must attend Part 2 in-person training. 
-                    Click below to schedule your session, or a member of our team will contact you.
+                    To complete your certification, you must attend Part 2 in-person training with Kairos Security in the Houston area. 
+                    Click below to schedule your session.
                   </p>
                   <Button 
                     onClick={() => window.open('https://calendly.com/rrosee12328/30min', '_blank')}
@@ -505,6 +555,22 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
                     size="lg"
                   >
                     Schedule In-Person Training Now
+                  </Button>
+                </div>
+                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 rounded-lg border border-emerald-400 dark:border-emerald-700">
+                  <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-100 mb-2">
+                    🔍 Looking for Security Work?
+                  </p>
+                  <p className="text-sm text-emerald-800 dark:text-emerald-200 mb-3">
+                    Join WeFind Guards to be discovered by security companies hiring in your area!
+                  </p>
+                  <Button 
+                    onClick={() => window.open('https://wefindguards.com', '_blank')}
+                    variant="outline"
+                    className="w-full border-emerald-500 text-emerald-700 hover:bg-emerald-50"
+                    size="lg"
+                  >
+                    Join WeFind Guards
                   </Button>
                 </div>
               </div>

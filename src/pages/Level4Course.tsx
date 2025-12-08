@@ -145,11 +145,16 @@ const Level4Course = () => {
         <div className="mb-6 text-center">
           <div className="flex items-center justify-center gap-3 mb-2">
             <Shield className="h-6 w-6 text-primary" />
-            <h1 className="text-3xl font-bold">Level 4: Personal Protection Officer</h1>
+            <h1 className="text-3xl font-bold">Level 4: Personal Protection Officer (Part 1)</h1>
           </div>
-          <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-            Advanced training for Personal Protection Officers - 15 hour certification course
-          </p>
+          <div className="max-w-2xl mx-auto">
+            <p className="text-sm text-muted-foreground mb-3">
+              <strong>Part 1 (Online):</strong> 15 hour certification course - Complete the video and pass the final exam.
+            </p>
+            <div className="text-sm font-semibold text-primary bg-primary/10 p-3 rounded-lg border border-primary/20">
+              ⚠️ Part 2 (In-Person): Must be completed in Houston area with Kairos Security. <strong>Part 2 is priced separately.</strong>
+            </div>
+          </div>
         </div>
 
         <div className="mb-6 animate-fade-in">
