@@ -9,7 +9,7 @@ import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { Footer } from "@/components/Footer";
 import CourseHeader from "@/components/CourseHeader";
-import { trackAddToCart, getCoursePriceMap } from "@/lib/tracking";
+import { trackAddToCart, trackPurchase, getCoursePriceMap } from "@/lib/tracking";
 
 interface Enrollment {
   id: string;
@@ -72,12 +72,18 @@ const Courses = () => {
     };
   }, []);
 
-  // Check for payment success and refresh enrollments
+  // Check for payment success and track purchase
   useEffect(() => {
     const paymentStatus = searchParams.get('payment');
     const course = searchParams.get('course');
+    const sessionId = searchParams.get('session_id');
     
     if (paymentStatus === 'success' && course) {
+      // Track client-side purchase conversion
+      const priceMap = getCoursePriceMap();
+      const coursePrice = priceMap[course as keyof typeof priceMap] || 0;
+      trackPurchase(course, coursePrice, sessionId || undefined, user?.email || undefined);
+      
       toast.success(`Payment successful! You now have access to ${course}`);
       
       // Refresh enrollments after a short delay to allow webhook to process

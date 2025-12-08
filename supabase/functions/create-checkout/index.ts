@@ -76,9 +76,10 @@ serve(async (req) => {
     const origin = req.headers.get("origin") || "https://";
 
     // Redirect to auth page for new users (guest), courses page for logged-in users
+    // Include {CHECKOUT_SESSION_ID} placeholder for Stripe to replace with actual session ID
     const successUrl = userId 
-      ? `${origin}/courses?payment=success&course=${courseType || 'level2'}`
-      : `${origin}/auth?payment=success&course=${courseType || 'level2'}`;
+      ? `${origin}/courses?payment=success&course=${courseType || 'level2'}&session_id={CHECKOUT_SESSION_ID}`
+      : `${origin}/auth?payment=success&course=${courseType || 'level2'}&session_id={CHECKOUT_SESSION_ID}`;
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,

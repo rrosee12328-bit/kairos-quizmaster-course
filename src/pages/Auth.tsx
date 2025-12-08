@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +8,7 @@ import { Footer } from "@/components/Footer";
 import kairosLogo from "@/assets/kairos-logo.png";
 import EnrollmentForm from "@/components/EnrollmentForm";
 import SignInForm from "@/components/SignInForm";
+import { trackPurchase, getCoursePriceMap } from "@/lib/tracking";
 
 const Auth = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -17,6 +17,16 @@ const Auth = () => {
   const params = new URLSearchParams(location.search);
   const courseFromUrl = params.get('course') || undefined;
   const paymentSuccess = params.get('payment') === 'success';
+  const sessionId = params.get('session_id') || undefined;
+  
+  // Track purchase on payment success
+  useEffect(() => {
+    if (paymentSuccess && courseFromUrl) {
+      const priceMap = getCoursePriceMap();
+      const coursePrice = priceMap[courseFromUrl as keyof typeof priceMap] || 0;
+      trackPurchase(courseFromUrl, coursePrice, sessionId);
+    }
+  }, [paymentSuccess, courseFromUrl, sessionId]);
   
   // If there's a course parameter, redirect to that course page after auth
   const getCourseRedirectPath = () => {
