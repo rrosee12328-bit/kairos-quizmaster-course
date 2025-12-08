@@ -145,15 +145,56 @@ const Level4Course = () => {
         <div className="mb-6 text-center">
           <div className="flex items-center justify-center gap-3 mb-2">
             <Shield className="h-6 w-6 text-primary" />
-            <h1 className="text-3xl font-bold">Level 4: Personal Protection Officer (Part 1)</h1>
+            <h1 className="text-3xl font-bold">Level 4 Theory Prep (Online Only – Not a Certificate)</h1>
           </div>
-          <div className="max-w-2xl mx-auto">
-            <p className="text-sm text-muted-foreground mb-3">
-              <strong>Part 1 (Online):</strong> 15 hour certification course - Complete the video and pass the final exam.
+          <p className="text-muted-foreground max-w-2xl mx-auto mb-4">
+            This self-paced online course covers the classroom/theory portion of the Texas Level 4 PPO curriculum, including protection planning, defensive tactics, and use of force.
+          </p>
+        </div>
+
+        {/* Important Notice */}
+        <div className="max-w-3xl mx-auto mb-8">
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 mb-6">
+            <p className="text-sm font-semibold text-amber-700 dark:text-amber-400 mb-2">⚠️ Important:</p>
+            <p className="text-sm text-muted-foreground">
+              This course does not provide a Texas Level 4 certificate and cannot be used by itself to apply for a PPO license. To become certified, you must also complete in-person firearms and practical training with a DPS-approved school.
             </p>
-            <div className="text-sm font-semibold text-primary bg-primary/10 p-3 rounded-lg border border-primary/20">
-              ⚠️ Part 2 (In-Person): Must be completed in Houston area with Kairos Security. <strong>Part 2 is priced separately.</strong>
-            </div>
+          </div>
+
+          {/* How Our Level 4 Training Works */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="text-xl">How Our Level 4 Training Works</CardTitle>
+              <CardDescription>
+                At Kairos Security Academy, we split your Level 4 training into two parts:
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
+                <h4 className="font-semibold text-primary mb-2">Part 1: Online Theory Prep</h4>
+                <p className="text-sm text-muted-foreground">
+                  Learn protection planning, client profiling, defensive tactics, and use of force at your own pace from home.
+                </p>
+              </div>
+              <div className="bg-primary/5 p-4 rounded-lg border border-primary/20">
+                <h4 className="font-semibold text-primary mb-2">Part 2: In-Person Practical Training</h4>
+                <p className="text-sm text-muted-foreground">
+                  Complete your hands-on training, practical exercises, and required qualifications with a DPS-approved instructor in the Houston area.
+                </p>
+              </div>
+              <div className="bg-green-500/10 p-4 rounded-lg border border-green-500/30">
+                <p className="text-sm font-medium text-green-700 dark:text-green-400">
+                  ✓ To receive an official Texas Level 4 PPO Certificate, you must complete both the online theory and the in-person training with Kairos Security Academy.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Pricing Notice */}
+          <div className="bg-muted/50 p-4 rounded-lg border mb-6">
+            <p className="text-sm text-muted-foreground">
+              💰 <strong>Pricing:</strong> The online price ($200) covers Part 1 only. Part 2 in-person training is priced separately and paid at the time of your appointment.
+            </p>
           </div>
         </div>
 

@@ -243,7 +243,42 @@ const Landing = () => {
               
               <TabsContent value="certification">
                 <Accordion type="single" collapsible className="w-full">
-                  <AccordionItem value="item-1">
+                  <AccordionItem value="cert-1">
+                    <AccordionTrigger>Does the online Level 3 course by itself make me certified?</AccordionTrigger>
+                    <AccordionContent>
+                      <strong>No.</strong> The online course is theory only. It helps you learn the classroom portion, but it does not give you a Texas Level 3 certificate and does not qualify you for a commissioned officer license by itself.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="cert-2">
+                    <AccordionTrigger>Can I use the online course alone to apply with DPS/TOPS?</AccordionTrigger>
+                    <AccordionContent>
+                      <strong>No.</strong> To apply for your license, DPS/TOPS requires a completed Level 3 certificate from a DPS-approved training school. Kairos only issues that certificate after you complete both the online theory and the in-person firearms/practical training with us.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="cert-3">
+                    <AccordionTrigger>What do I get if I only finish the online theory?</AccordionTrigger>
+                    <AccordionContent>
+                      You'll receive an <strong>Online Theory Completion Report</strong> from Kairos Security Academy for your own records. This is <strong>not a DPS Level 3 certificate</strong> and cannot be submitted to DPS/TOPS for licensing.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="cert-4">
+                    <AccordionTrigger>I took an online Level 3 course somewhere else. Can I just do the in-person part with Kairos?</AccordionTrigger>
+                    <AccordionContent>
+                      <strong>No.</strong> For us to issue a Level 3 certificate in our name, we must provide and verify all required parts of the training. That means your online theory and in-person practical work must both be completed through Kairos Security Academy. We do not issue Level 3 or Level 4 certificates based solely on online training completed with another provider. If you started your training elsewhere, you can either finish with that provider or enroll in the full Kairos Certification Path.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="cert-5">
+                    <AccordionTrigger>Can I still benefit from the online-only course if I live far away?</AccordionTrigger>
+                    <AccordionContent>
+                      Yes. The online theory course is great if you want to learn the material, prepare ahead of time, or decide if a career in security is right for you. But remember, you'll still need to complete in-person training with a DPS-approved school to become fully certified.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="cert-6">
                     <AccordionTrigger>What is included in the Level 3 and Level 4 online course price?</AccordionTrigger>
                     <AccordionContent>
                       <p className="mb-2">The online price for Level 3 and Level 4 courses covers <strong>Part 1 (Online Training) only</strong>. This includes all video lessons and the online exam.</p>
@@ -252,45 +287,45 @@ const Landing = () => {
                     </AccordionContent>
                   </AccordionItem>
                   
-                  <AccordionItem value="item-2">
+                  <AccordionItem value="cert-7">
+                    <AccordionTrigger>Where can I complete Part 2 in-person training for Level 3 and Level 4?</AccordionTrigger>
+                    <AccordionContent>
+                      Part 2 in-person training for Level 3 (Armed Security Officer) and Level 4 (Personal Protection Officer) is conducted in the <strong>Houston, Texas area</strong> by Kairos Security. After passing your online exam, you'll receive a Calendly link to schedule your appointment.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="cert-8">
                     <AccordionTrigger>Will further certification help me earn more as a security officer?</AccordionTrigger>
                     <AccordionContent>
                       Yes. Certain roles require more advanced certification, especially duties where carrying a firearm or protecting an important person is required. Since these roles need specialist training, they receive higher pay.
                     </AccordionContent>
                   </AccordionItem>
                   
-                  <AccordionItem value="item-2">
+                  <AccordionItem value="cert-9">
                     <AccordionTrigger>What Does Level 2 Certification Mean for Your Security Career?</AccordionTrigger>
                     <AccordionContent>
                       It means you can be employed as a roving patrol or dedicated security guard anywhere in the state. Without the certificate you are legally barred from performing the functions of a security guard officer. If you carry out shift work without the proper certification, both you and your employer could face legal censure.
                     </AccordionContent>
                   </AccordionItem>
                   
-                  <AccordionItem value="item-3">
+                  <AccordionItem value="cert-10">
                     <AccordionTrigger>Does Where You Get Your Certification Matter?</AccordionTrigger>
                     <AccordionContent>
                       Yes. Not every security company has the same commitment to rigor as Kairos Security. Some companies are only interested in getting you through the program as quickly as possible to get you certified and on the streets, regardless of whether or not you understand the material. We will make sure you acquire all the skills you need to be an effective security guard.
                     </AccordionContent>
                   </AccordionItem>
                   
-                  <AccordionItem value="item-4">
+                  <AccordionItem value="cert-11">
                     <AccordionTrigger>Will I be able to keep the certification even if I don't stay to work with Kairos Security?</AccordionTrigger>
                     <AccordionContent>
                       Yes. The certifications offered in our courses are issued by the Texas Department of Public Safety and are valid for any security role in the State of Texas at any company.
                     </AccordionContent>
                   </AccordionItem>
                   
-                  <AccordionItem value="item-6">
+                  <AccordionItem value="cert-12">
                     <AccordionTrigger>How many times can I take the final exam?</AccordionTrigger>
                     <AccordionContent>
                       You have <strong>3 attempts</strong> to pass the final exam for each course. If you fail the exam 3 times, you will need to re-purchase the course to continue. We recommend thoroughly reviewing the course materials before each attempt to maximize your chances of passing. A score of 70% or higher is required to pass.
-                    </AccordionContent>
-                  </AccordionItem>
-                  
-                  <AccordionItem value="item-7">
-                    <AccordionTrigger>Where can I complete Part 2 in-person training for Level 3 and Level 4?</AccordionTrigger>
-                    <AccordionContent>
-                      Part 2 in-person training for Level 3 (Armed Security Officer) and Level 4 (Personal Protection Officer) is conducted in the <strong>Houston, Texas area</strong> by Kairos Security. After passing your online exam, you'll receive a Calendly link to schedule your appointment.
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
