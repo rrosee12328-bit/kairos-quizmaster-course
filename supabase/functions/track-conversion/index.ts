@@ -142,26 +142,35 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-    );
-
-    // Authenticate user
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      throw new Error("No authorization header");
-    }
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
+    // Parse request body first to check for webhook flag
+    const requestBody = await req.json();
+    const isWebhook = requestBody.isWebhook === true;
     
-    if (userError || !user) {
-      throw new Error("User not authenticated");
+    // Only require auth if not called from webhook
+    if (!isWebhook) {
+      const supabaseClient = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+      );
+
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader) {
+        throw new Error("No authorization header");
+      }
+
+      const token = authHeader.replace("Bearer ", "");
+      const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
+      
+      if (userError || !user) {
+        throw new Error("User not authenticated");
+      }
     }
 
-    // Parse request body
-    const event: ConversionEvent = await req.json();
+    // Build event from request body
+    const event: ConversionEvent = {
+      eventName: requestBody.eventName,
+      eventData: requestBody.eventData,
+    };
     
     // Get user IP and user agent for better matching
     const userAgent = req.headers.get("user-agent") || undefined;

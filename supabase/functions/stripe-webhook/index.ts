@@ -137,6 +137,39 @@ serve(async (req) => {
 
       console.log("[stripe-webhook] Enrollment processed successfully");
       
+      // Get course price for tracking
+      const coursePrices: Record<string, number> = {
+        'level2': 55,
+        'level3': 1,
+        'level4': 200,
+        'pepper-spray': 50,
+      };
+      const coursePrice = coursePrices[enrollmentData.courseType] || 0;
+      
+      // Track server-side conversion
+      try {
+        console.log("[stripe-webhook] Tracking purchase conversion");
+        await supabaseClient.functions.invoke('track-conversion', {
+          body: {
+            eventName: 'Purchase',
+            eventData: {
+              courseType: enrollmentData.courseType,
+              coursePrice: coursePrice,
+              transactionId: session.id,
+              userEmail: enrollmentData.email,
+              firstName: enrollmentData.firstName,
+              lastName: enrollmentData.lastName,
+              phone: enrollmentData.phone,
+            },
+            isWebhook: true, // Flag to skip auth check
+          },
+        });
+        console.log("[stripe-webhook] Conversion tracked successfully");
+      } catch (trackError) {
+        console.error("[stripe-webhook] Error tracking conversion:", trackError);
+        // Don't fail the webhook if tracking fails
+      }
+      
       // Send enrollment confirmation email
       try {
         console.log("[stripe-webhook] Sending enrollment confirmation email");
