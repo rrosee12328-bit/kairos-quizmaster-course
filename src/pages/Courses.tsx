@@ -223,20 +223,20 @@ const Courses = () => {
     },
     {
       id: "level3", 
-      title: "Level 3 Security Officer Certification (Part 1)",
-      subtitle: "Armed Security Professional - Online Training",
-      description: "Part 1 (Online): Advanced training for armed security professionals. Part 2 in-person training (priced separately) required for full certification. In-person training available in Houston area.",
+      title: "Level 3 Theory Prep (Online Only – Not a Certificate)",
+      subtitle: "Armed Security Professional - Theory Training",
+      description: "This self-paced online course covers the classroom/theory portion of the Texas Level 3 curriculum. ⚠️ Does NOT provide a certificate – in-person training required with Kairos Security in Houston to become certified.",
       duration: "30 hours",
       sections: 10,
       level: "Advanced",
       color: "bg-red-500",
       features: [
-        "Firearm safety and handling",
+        "Texas Level 3 laws & regulations",
+        "Use of force training",
+        "Safety fundamentals",
         "Armed response protocols",
         "Advanced threat assessment",
-        "Use of force continuum",
-        "Weapons maintenance",
-        "Legal responsibilities of armed officers"
+        "Online Theory Completion Report (not a DPS certificate)"
       ],
       route: "/course/level3",
       priceId: "price_1Sc8e92Lv7r2i0JXn5yNMSZs",
@@ -244,9 +244,9 @@ const Courses = () => {
     },
     {
       id: "level4",
-      title: "Level 4: Personal Protection Officer (Part 1)",
-      subtitle: "Bodyguard & Executive Protection - Online Training",
-      description: "Part 1 (Online): 15 hour advanced certification for Personal Protection Officers. Part 2 in-person training (priced separately) required for full certification. In-person training available in Houston area.",
+      title: "Level 4 Theory Prep (Online Only – Not a Certificate)",
+      subtitle: "Bodyguard & Executive Protection - Theory Training",
+      description: "This self-paced online course covers the classroom/theory portion of the Texas Level 4 PPO curriculum. ⚠️ Does NOT provide a certificate – in-person training required with Kairos Security in Houston to become certified.",
       duration: "15 hours",
       sections: 1,
       level: "Expert",
@@ -257,7 +257,7 @@ const Courses = () => {
         "Rings of Protection",
         "Force Continuum",
         "Unarmed Defensive Tactics",
-        "Use of Force & Deadly Force"
+        "Online Theory Completion Report (not a DPS certificate)"
       ],
       route: "/course/level4",
       priceId: "price_1SIuhk2Lv7r2i0JXmknziXJn",
