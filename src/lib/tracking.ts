@@ -199,7 +199,7 @@ export const trackCourseStarted = (courseType: string): void => {
 // Helper to get course price
 export const getCoursePriceMap = (): PriceMap => ({
   'level2': 55,
-  'level3': 1,
+  'level3': 99,
   'level4': 200,
   'pepper-spray': 50,
 });

@@ -239,8 +239,8 @@ const Courses = () => {
         "Legal responsibilities of armed officers"
       ],
       route: "/course/level3",
-      priceId: "price_1SIuap2Lv7r2i0JXWjbkKkWm",
-      price: "$1.00"
+      priceId: "price_1Sc8e92Lv7r2i0JXn5yNMSZs",
+      price: "$99.00"
     },
     {
       id: "level4",
