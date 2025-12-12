@@ -4,7 +4,7 @@ type CourseType = 'level2' | 'level3' | 'level4' | 'pepper-spray';
 type PriceMap = Record<CourseType, number>;
 
 // Use env vars with fallback to empty string
-const META_PIXEL_ID = import.meta.env.VITE_META_PIXEL_ID ?? '';
+const META_PIXEL_ID = import.meta.env.VITE_META_PIXEL_ID ?? '1556241395501952';
 const GOOGLE_ADS_ID = import.meta.env.VITE_GOOGLE_ADS_ID ?? '';
 const GOOGLE_ADS_LABELS = {
   payment_completed: import.meta.env.VITE_GOOGLE_ADS_PAYMENT_LABEL ?? '',
