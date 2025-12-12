@@ -9,6 +9,55 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Rate limiting configuration
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 3; // Max 3 requests per minute per IP
+
+// In-memory rate limit store (resets on function cold start, which is acceptable for this use case)
+const rateLimitStore = new Map<string, { count: number; resetAt: number }>();
+
+function getClientIp(req: Request): string {
+  // Check common headers for client IP
+  const forwardedFor = req.headers.get("x-forwarded-for");
+  if (forwardedFor) {
+    return forwardedFor.split(",")[0].trim();
+  }
+  const realIp = req.headers.get("x-real-ip");
+  if (realIp) {
+    return realIp;
+  }
+  // Fallback to a generic identifier if no IP available
+  return "unknown";
+}
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const record = rateLimitStore.get(ip);
+  
+  if (!record || now >= record.resetAt) {
+    // Reset or initialize the record
+    rateLimitStore.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return false;
+  }
+  
+  if (record.count >= MAX_REQUESTS_PER_WINDOW) {
+    return true;
+  }
+  
+  record.count++;
+  return false;
+}
+
+// Clean up old entries periodically (simple garbage collection)
+function cleanupRateLimitStore() {
+  const now = Date.now();
+  for (const [ip, record] of rateLimitStore.entries()) {
+    if (now >= record.resetAt) {
+      rateLimitStore.delete(ip);
+    }
+  }
+}
+
 interface BetaFeedbackRequest {
   nameRole: string;
   experienceLevel: string;
@@ -38,9 +87,63 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Clean up old rate limit entries
+  cleanupRateLimitStore();
+
+  // Get client IP and check rate limit
+  const clientIp = getClientIp(req);
+  
+  if (isRateLimited(clientIp)) {
+    console.log(`Rate limit exceeded for IP: ${clientIp}`);
+    return new Response(
+      JSON.stringify({ error: "Too many requests. Please wait a minute before submitting again." }),
+      {
+        status: 429,
+        headers: {
+          "Content-Type": "application/json",
+          "Retry-After": "60",
+          ...corsHeaders,
+        },
+      }
+    );
+  }
+
   try {
     const feedback: BetaFeedbackRequest = await req.json();
-    console.log("Received beta feedback submission from:", feedback.nameRole);
+    console.log("Received beta feedback submission from:", feedback.nameRole, "IP:", clientIp);
+
+    // Basic input validation - ensure required fields are present and not excessively long
+    const maxFieldLength = 5000;
+    const requiredFields = [
+      'nameRole', 'experienceLevel', 'deviceBrowser', 'testingTime',
+      'loginClarity', 'layoutRating', 'materialsLocation', 'visualDesign',
+      'branding', 'videoPlayback', 'aiAssistant', 'materialsUsefulness',
+      'contentEngagement', 'technicalIssues', 'testLocation', 'testInterface',
+      'scoreComm', 'certificateDelivery', 'certificateDownload',
+      'accessibilityIssues', 'mobileAdaptation'
+    ] as const;
+
+    for (const field of requiredFields) {
+      const value = feedback[field];
+      if (typeof value !== 'string') {
+        return new Response(
+          JSON.stringify({ error: `Invalid field: ${field}` }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
+      }
+      if (value.length > maxFieldLength) {
+        return new Response(
+          JSON.stringify({ error: `Field ${field} exceeds maximum length` }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
+      }
+    }
 
     // Save feedback to database
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -78,6 +181,16 @@ const handler = async (req: Request): Promise<Response> => {
     } else {
       console.log("Feedback saved to database successfully");
     }
+
+    // HTML escape function to prevent any XSS in email
+    const escapeHtml = (str: string): string => {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    };
 
     const emailHtml = `
       <!DOCTYPE html>
@@ -125,25 +238,26 @@ const handler = async (req: Request): Promise<Response> => {
       <body>
         <h1>Beta Testing Feedback Submission</h1>
         <p><strong>Submitted:</strong> ${new Date().toLocaleString()}</p>
+        <p><strong>Client IP:</strong> ${escapeHtml(clientIp)}</p>
         
         <div class="section">
           <h2>Section A: User Profile & Context</h2>
           <table>
             <tr>
               <th>Name/Role</th>
-              <td>${feedback.nameRole}</td>
+              <td>${escapeHtml(feedback.nameRole)}</td>
             </tr>
             <tr>
               <th>Experience Level</th>
-              <td>${feedback.experienceLevel}</td>
+              <td>${escapeHtml(feedback.experienceLevel)}</td>
             </tr>
             <tr>
               <th>Device & Browser</th>
-              <td>${feedback.deviceBrowser}</td>
+              <td>${escapeHtml(feedback.deviceBrowser)}</td>
             </tr>
             <tr>
               <th>Testing Time</th>
-              <td>${feedback.testingTime}</td>
+              <td>${escapeHtml(feedback.testingTime)}</td>
             </tr>
           </table>
         </div>
@@ -153,23 +267,23 @@ const handler = async (req: Request): Promise<Response> => {
           <table>
             <tr>
               <th>Login Clarity</th>
-              <td>${feedback.loginClarity}</td>
+              <td>${escapeHtml(feedback.loginClarity)}</td>
             </tr>
             <tr>
               <th>Layout Rating</th>
-              <td>${feedback.layoutRating}</td>
+              <td>${escapeHtml(feedback.layoutRating)}</td>
             </tr>
             <tr>
               <th>Materials Location</th>
-              <td>${feedback.materialsLocation}</td>
+              <td>${escapeHtml(feedback.materialsLocation)}</td>
             </tr>
             <tr>
               <th>Visual Design</th>
-              <td>${feedback.visualDesign}</td>
+              <td>${escapeHtml(feedback.visualDesign)}</td>
             </tr>
             <tr>
               <th>Branding</th>
-              <td>${feedback.branding}</td>
+              <td>${escapeHtml(feedback.branding)}</td>
             </tr>
           </table>
         </div>
@@ -179,23 +293,23 @@ const handler = async (req: Request): Promise<Response> => {
           <table>
             <tr>
               <th>Video Playback</th>
-              <td>${feedback.videoPlayback}</td>
+              <td>${escapeHtml(feedback.videoPlayback)}</td>
             </tr>
             <tr>
               <th>AI Assistant</th>
-              <td>${feedback.aiAssistant}</td>
+              <td>${escapeHtml(feedback.aiAssistant)}</td>
             </tr>
             <tr>
               <th>Materials Usefulness</th>
-              <td>${feedback.materialsUsefulness}</td>
+              <td>${escapeHtml(feedback.materialsUsefulness)}</td>
             </tr>
             <tr>
               <th>Content Engagement</th>
-              <td>${feedback.contentEngagement}</td>
+              <td>${escapeHtml(feedback.contentEngagement)}</td>
             </tr>
             <tr>
               <th>Technical Issues</th>
-              <td>${feedback.technicalIssues}</td>
+              <td>${escapeHtml(feedback.technicalIssues)}</td>
             </tr>
           </table>
         </div>
@@ -205,23 +319,23 @@ const handler = async (req: Request): Promise<Response> => {
           <table>
             <tr>
               <th>Test Location</th>
-              <td>${feedback.testLocation}</td>
+              <td>${escapeHtml(feedback.testLocation)}</td>
             </tr>
             <tr>
               <th>Test Interface</th>
-              <td>${feedback.testInterface}</td>
+              <td>${escapeHtml(feedback.testInterface)}</td>
             </tr>
             <tr>
               <th>Score Communication</th>
-              <td>${feedback.scoreComm}</td>
+              <td>${escapeHtml(feedback.scoreComm)}</td>
             </tr>
             <tr>
               <th>Certificate Delivery</th>
-              <td>${feedback.certificateDelivery}</td>
+              <td>${escapeHtml(feedback.certificateDelivery)}</td>
             </tr>
             <tr>
               <th>Certificate Download</th>
-              <td>${feedback.certificateDownload}</td>
+              <td>${escapeHtml(feedback.certificateDownload)}</td>
             </tr>
           </table>
         </div>
@@ -231,11 +345,11 @@ const handler = async (req: Request): Promise<Response> => {
           <table>
             <tr>
               <th>Accessibility Issues</th>
-              <td>${feedback.accessibilityIssues}</td>
+              <td>${escapeHtml(feedback.accessibilityIssues)}</td>
             </tr>
             <tr>
               <th>Mobile Adaptation</th>
-              <td>${feedback.mobileAdaptation}</td>
+              <td>${escapeHtml(feedback.mobileAdaptation)}</td>
             </tr>
           </table>
         </div>
@@ -246,7 +360,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: "Kairos Security Academy <onboarding@resend.dev>",
       to: ["info@kairossecurityacademy.com"],
-      subject: `Beta Feedback - ${feedback.nameRole}`,
+      subject: `Beta Feedback - ${escapeHtml(feedback.nameRole)}`,
       html: emailHtml,
     });
 

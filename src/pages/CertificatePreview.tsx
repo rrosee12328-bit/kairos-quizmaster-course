@@ -13,6 +13,18 @@ import jsPDF from "jspdf";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
+// HTML escape function to prevent XSS in document.write contexts
+const escapeHtml = (str: string): string => {
+  const entities: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  };
+  return str.replace(/[&<>"']/g, (m) => entities[m] || m);
+};
+
 const CertificatePreview = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -257,11 +269,12 @@ const CertificatePreview = () => {
         return;
       }
 
+      const safeUserName = escapeHtml(userName);
       printWindow.document.write(`
         <!DOCTYPE html>
         <html>
           <head>
-            <title>Certificate - ${userName}</title>
+            <title>Certificate - ${safeUserName}</title>
             <style>
               @media print {
                 body { margin: 0; padding: 0; }
