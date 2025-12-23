@@ -59,6 +59,26 @@ serve(async (req) => {
     const { priceId, email, courseType } = validatedInput.data;
     console.log("[create-checkout] Starting for:", userEmail || "guest", priceId, courseType);
 
+    // SERVER-SIDE DUPLICATE PAYMENT PROTECTION
+    // Check if user already has an active enrollment for this course
+    if (userId) {
+      const { data: existingEnrollment } = await supabaseClient
+        .from('enrollments')
+        .select('id, enrollment_status')
+        .eq('user_id', userId)
+        .eq('course_type', courseType)
+        .eq('enrollment_status', 'enrolled')
+        .maybeSingle();
+      
+      if (existingEnrollment) {
+        console.log("[create-checkout] User already enrolled in course:", courseType);
+        return new Response(
+          JSON.stringify({ error: "You are already enrolled in this course" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+        );
+      }
+    }
+
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
