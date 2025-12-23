@@ -170,10 +170,32 @@ const CourseCheckout = () => {
   );
 
   const handlePurchase = async () => {
+    // Prevent double-clicks while processing
+    if (processingPayment) {
+      return;
+    }
+
     if (isEnrolled && user) {
       toast.info("You already own this course");
       navigate(`/course/${courseType}`);
       return;
+    }
+
+    // Re-check enrollment status before proceeding (prevents race conditions)
+    if (user) {
+      const { data: freshEnrollments } = await supabase
+        .from('enrollments')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('course_type', courseType)
+        .eq('enrollment_status', 'enrolled');
+      
+      if (freshEnrollments && freshEnrollments.length > 0) {
+        toast.info("You already own this course");
+        setEnrollments(prev => [...prev, ...freshEnrollments]);
+        navigate(`/course/${courseType}`);
+        return;
+      }
     }
 
     // Track InitiateCheckout
