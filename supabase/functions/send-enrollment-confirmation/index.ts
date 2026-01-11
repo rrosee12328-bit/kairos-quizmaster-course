@@ -129,12 +129,27 @@ const handler = async (req: Request): Promise<Response> => {
                 </p>
               </div>
               
+              <!-- Outlook-compatible button using table -->
               <div style="text-align: center; margin-top: 30px;">
+                <!--[if mso]>
+                <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="https://www.kairossecurityacademy.com/auth" style="height:50px;v-text-anchor:middle;width:280px;" arcsize="10%" stroke="f" fillcolor="#1e3a8a">
+                  <w:anchorlock/>
+                  <center style="color:#ffffff;font-family:sans-serif;font-size:16px;font-weight:bold;">Create Account & Access Course</center>
+                </v:roundrect>
+                <![endif]-->
+                <!--[if !mso]><!-->
                 <a href="https://www.kairossecurityacademy.com/auth" 
-                   style="display: inline-block; background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
-                  Create Account & Access Course
+                   style="display: inline-block; background-color: #1e3a8a; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
+                  Create Account &amp; Access Course
                 </a>
+                <!--<![endif]-->
               </div>
+              
+              <!-- Plain text link fallback for email clients with button issues -->
+              <p style="text-align: center; font-size: 13px; color: #6b7280; margin-top: 15px;">
+                If the button above doesn't work, copy and paste this link into your browser:<br>
+                <a href="https://www.kairossecurityacademy.com/auth" style="color: #3b82f6; word-break: break-all;">https://www.kairossecurityacademy.com/auth</a>
+              </p>
               
               <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
               
