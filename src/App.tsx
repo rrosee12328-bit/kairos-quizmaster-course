@@ -14,6 +14,7 @@ import Level3Course from "./pages/Level3Course";
 import Level4Course from "./pages/Level4Course";
 import PepperSprayCourse from "./pages/PepperSprayCourse";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import VideoMetadata from "./pages/VideoMetadata";
@@ -50,6 +51,7 @@ const App = () => (
           <Route path="/course/level4" element={<Level4Course />} />
           <Route path="/course/pepper-spray" element={<PepperSprayCourse />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/admin" element={<Admin />} />
