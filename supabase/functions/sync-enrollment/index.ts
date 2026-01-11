@@ -57,14 +57,18 @@ serve(async (req) => {
 
     console.log(`Syncing enrollments for user: ${userId}, email: ${userEmail}`);
 
-    // Fetch enrollments that match the email and either:
-    // 1. Don't have a user_id (need to link)
-    // 2. Have a user_id but status is still "pending" (need to update status)
-    const { data: enrollments, error: fetchError } = await supabase
+    // Use service role to bypass RLS for reading enrollments that aren't linked yet
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Fetch enrollments that match the email (case-insensitive) and have no user_id
+    const { data: enrollments, error: fetchError } = await supabaseAdmin
       .from('enrollments')
       .select('*')
-      .eq('email', userEmail)
-      .or('user_id.is.null,enrollment_status.eq.pending');
+      .ilike('email', userEmail)
+      .is('user_id', null);
 
     if (fetchError) {
       console.error('Error fetching enrollments:', fetchError);
@@ -83,14 +87,6 @@ serve(async (req) => {
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    console.log(`Found ${enrollments.length} enrollments to sync`);
-
-    // Update enrollments with user_id - using service role for privileged operation
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
 
     const enrollmentIds = enrollments.map(e => e.id);
     
