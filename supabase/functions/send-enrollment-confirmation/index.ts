@@ -99,25 +99,40 @@ const handler = async (req: Request): Promise<Response> => {
                 <p style="margin: 10px 0;"><strong>Description:</strong> ${course.description}</p>
               </div>
               
-              <h3 style="color: #1e3a8a; margin-top: 30px;">🚀 Next Steps</h3>
+              <h3 style="color: #1e3a8a; margin-top: 30px;">🚀 Next Steps to Access Your Course</h3>
+              
+              <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0;">
+                <p style="margin: 0; font-size: 14px;">
+                  <strong>⚠️ Important:</strong> You must create an account using this email address: <strong>${email}</strong>
+                </p>
+              </div>
+              
               <ol style="padding-left: 20px;">
-                <li style="margin-bottom: 10px;">Log in to your account at <a href="https://www.kairossecurityacademy.com/auth" style="color: #3b82f6; text-decoration: none;">Kairos Security Academy</a></li>
-                <li style="margin-bottom: 10px;">Navigate to your course from the courses page</li>
-                <li style="margin-bottom: 10px;">Complete all sections and watch all training videos</li>
-                <li style="margin-bottom: 10px;">Take the final exam to receive your certification</li>
+                <li style="margin-bottom: 12px;">
+                  <strong>Create your account</strong> - Click the button below and select <strong>"Sign Up"</strong>
+                </li>
+                <li style="margin-bottom: 12px;">
+                  <strong>Use this exact email:</strong> <code style="background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${email}</code>
+                </li>
+                <li style="margin-bottom: 12px;">
+                  <strong>Create a password</strong> - Choose a secure password for your account
+                </li>
+                <li style="margin-bottom: 12px;">
+                  <strong>Start learning!</strong> - Your course will be automatically available after you sign in
+                </li>
               </ol>
               
               <div style="background: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; margin: 25px 0;">
                 <p style="margin: 0; font-size: 14px;">
-                  <strong>💡 Pro Tip:</strong> Complete each section thoroughly before moving to the next. 
-                  You'll need to pass the final exam with 70% or higher to receive your certificate.
+                  <strong>💡 Why this email?</strong> Your course access is linked to <strong>${email}</strong>. 
+                  Using a different email will prevent you from accessing your purchased course.
                 </p>
               </div>
               
               <div style="text-align: center; margin-top: 30px;">
                 <a href="https://www.kairossecurityacademy.com/auth" 
                    style="display: inline-block; background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
-                  Access Your Course Now
+                  Create Account & Access Course
                 </a>
               </div>
               
