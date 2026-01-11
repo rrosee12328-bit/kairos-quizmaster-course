@@ -10,8 +10,10 @@ const corsHeaders = {
 
 const SITE_URL = "https://www.kairossecurityacademy.com";
 
-interface AuthEmailPayload {
+// Supabase Auth Hook payload structure
+interface AuthHookPayload {
   user: {
+    id: string;
     email: string;
     user_metadata?: {
       full_name?: string;
@@ -207,16 +209,41 @@ serve(async (req) => {
   }
 
   try {
-    const payload: AuthEmailPayload = await req.json();
+    const rawPayload = await req.json();
     
-    console.log("[send-auth-email] Received auth email request:", {
-      email: payload.user.email,
-      type: payload.email_data.email_action_type,
+    console.log("[send-auth-email] Raw payload received:", JSON.stringify(rawPayload, null, 2));
+
+    // Handle the Supabase Auth Hook payload format
+    // The hook sends the payload directly, not wrapped
+    let user: { id?: string; email: string; user_metadata?: { full_name?: string } };
+    let email_data: { token?: string; token_hash: string; redirect_to?: string; email_action_type: string; site_url?: string };
+
+    // Check if this is the Auth Hook format or our expected format
+    if (rawPayload.user && rawPayload.email_data) {
+      // Standard Auth Hook format
+      user = rawPayload.user;
+      email_data = rawPayload.email_data;
+    } else if (rawPayload.email && rawPayload.token_hash) {
+      // Simplified format - maybe from direct testing
+      user = { email: rawPayload.email, user_metadata: { full_name: rawPayload.name } };
+      email_data = { 
+        token_hash: rawPayload.token_hash, 
+        email_action_type: rawPayload.type || 'recovery',
+        redirect_to: rawPayload.redirect_to
+      };
+    } else {
+      console.error("[send-auth-email] Invalid payload format:", rawPayload);
+      throw new Error("Invalid payload format - expected user and email_data fields");
+    }
+
+    const { token_hash, email_action_type } = email_data;
+    
+    console.log("[send-auth-email] Processing email request:", {
+      email: user.email,
+      type: email_action_type,
+      token_hash: token_hash?.substring(0, 10) + "...",
     });
 
-    const { user, email_data } = payload;
-    const { token_hash, redirect_to, email_action_type } = email_data;
-    
     // Build the confirmation URL pointing to your site
     // For recovery, redirect to /reset-password page
     // For other types, redirect to /auth
@@ -234,6 +261,7 @@ serve(async (req) => {
       to: user.email,
       subject: emailContent.subject,
       type: email_action_type,
+      confirmationUrl: confirmationUrl.substring(0, 80) + "...",
     });
 
     const emailResponse = await resend.emails.send({
