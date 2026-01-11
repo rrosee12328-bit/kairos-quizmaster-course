@@ -101,7 +101,7 @@ const handler = async (req: Request): Promise<Response> => {
               
               <h3 style="color: #1e3a8a; margin-top: 30px;">🚀 Next Steps</h3>
               <ol style="padding-left: 20px;">
-                <li style="margin-bottom: 10px;">Log in to your account at <a href="${req.headers.get("origin") || "https://kairos-security-academy.com"}" style="color: #3b82f6; text-decoration: none;">Kairos Security Academy</a></li>
+                <li style="margin-bottom: 10px;">Log in to your account at <a href="https://www.kairossecurityacademy.com/auth" style="color: #3b82f6; text-decoration: none;">Kairos Security Academy</a></li>
                 <li style="margin-bottom: 10px;">Navigate to your course from the courses page</li>
                 <li style="margin-bottom: 10px;">Complete all sections and watch all training videos</li>
                 <li style="margin-bottom: 10px;">Take the final exam to receive your certification</li>
@@ -115,7 +115,7 @@ const handler = async (req: Request): Promise<Response> => {
               </div>
               
               <div style="text-align: center; margin-top: 30px;">
-                <a href="${req.headers.get("origin") || "https://kairos-security-academy.com"}" 
+                <a href="https://www.kairossecurityacademy.com/auth" 
                    style="display: inline-block; background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
                   Access Your Course Now
                 </a>
@@ -124,7 +124,7 @@ const handler = async (req: Request): Promise<Response> => {
               <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
               
               <p style="font-size: 14px; color: #6b7280; margin-bottom: 10px;">
-                Need help? Contact us at <a href="mailto:support@kairossecurity.com" style="color: #3b82f6; text-decoration: none;">support@kairossecurity.com</a>
+                Need help? Contact us at <a href="mailto:info@kairossecurityacademy.com" style="color: #3b82f6; text-decoration: none;">info@kairossecurityacademy.com</a>
               </p>
               
               <p style="font-size: 12px; color: #9ca3af; margin-top: 20px;">
