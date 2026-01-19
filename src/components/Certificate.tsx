@@ -98,7 +98,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
             left: exportMode ? '9%' : '9%',
             width: exportMode ? '34%' : '34%'
           }}>
-            <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-foreground leading-none`}>
+            <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-black leading-none`}>
               {nameParts.lastName}
             </p>
           </div>
@@ -109,7 +109,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
             left: exportMode ? '44%' : '44%',
             width: exportMode ? '30%' : '30%'
           }}>
-            <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-foreground leading-none`}>
+            <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-black leading-none`}>
               {nameParts.firstName}
             </p>
           </div>
@@ -120,7 +120,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
             left: exportMode ? '76%' : '76%',
             width: exportMode ? '25%' : '25%'
           }}>
-            <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-foreground leading-none`}>
+            <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-black leading-none`}>
               {nameParts.middleInitial}
             </p>
           </div>
@@ -130,7 +130,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
             top: exportMode ? '33%' : '33%', 
             left: exportMode ? '77%' : '77%'
           }}>
-            <p className={`${exportMode ? 'text-[28px]' : 'text-[1rem]'} font-normal text-foreground leading-none`}>
+            <p className={`${exportMode ? 'text-[28px]' : 'text-[1rem]'} font-normal text-black leading-none`}>
               {formatIdNumber(4) || "1234"}
             </p>
           </div>
@@ -141,7 +141,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
             left: exportMode ? '9%' : '9%',
             width: exportMode ? '55%' : '55%'
           }}>
-            <p className={`${exportMode ? 'text-[26px]' : 'text-[0.95rem]'} font-normal text-foreground leading-none`}>
+            <p className={`${exportMode ? 'text-[26px]' : 'text-[0.95rem]'} font-normal text-black leading-none`}>
               Kairos Security
             </p>
           </div>
@@ -152,7 +152,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
             left: exportMode ? '64%' : '64%',
             width: exportMode ? '35%' : '35%'
           }}>
-            <p className={`${exportMode ? 'text-[26px]' : 'text-[0.95rem]'} font-normal text-foreground leading-none`}>
+            <p className={`${exportMode ? 'text-[26px]' : 'text-[0.95rem]'} font-normal text-black leading-none`}>
               F28623301
             </p>
           </div>
@@ -162,7 +162,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
             top: exportMode ? '46.0%' : '46.0%', 
             left: exportMode ? '25%' : '25%'
           }}>
-            <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-foreground leading-none`}>
+            <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-black leading-none`}>
               Stephen Taylor
             </p>
           </div>
@@ -198,7 +198,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
             top: exportMode ? '48.0%' : '48.0%', 
             left: exportMode ? '38%' : '38%'
           }}>
-            <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-foreground leading-none`}>
+            <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-black leading-none`}>
               Stephen Taylor
             </p>
           </div>
@@ -208,7 +208,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
             top: exportMode ? '50.0%' : '50.0%', 
             left: exportMode ? '30%' : '30%'
           }}>
-            <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-foreground leading-none`}>
+            <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-black leading-none`}>
               {formatDate(courseCompletionDate)}
             </p>
           </div>
@@ -218,7 +218,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
             top: exportMode ? '52.5%' : '52.5%', 
             left: exportMode ? '43%' : '43%'
           }}>
-            <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-bold text-foreground leading-none`}>
+            <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-bold text-black leading-none`}>
               X
             </p>
           </div>
