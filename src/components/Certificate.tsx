@@ -170,7 +170,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           {/* Instructor Signature - below the Yes checkbox */}
           <div className="absolute" style={{ 
             top: exportMode ? '54%' : '54%', 
-            left: exportMode ? '25%' : '25%'
+            left: exportMode ? '35%' : '35%'
           }}>
             <img 
               src={instructorSignature} 
