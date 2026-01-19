@@ -1,5 +1,6 @@
 import level2CertificateTemplate from "@/assets/level2-certificate-template.jpg";
 import pepperSprayCertificateTemplate from "@/assets/pepper-spray-certificate-template.jpg";
+import instructorSignature from "@/assets/stephen-taylor-signature-new.jpg";
 
 interface CertificateProps {
   userName?: string;
@@ -155,13 +156,19 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           </div>
           
           {/* Instructor Name - after "Instructor Name:" label */}
-          <div className="absolute" style={{ 
+          <div className="absolute flex items-center gap-2" style={{ 
             top: exportMode ? '46.0%' : '46.0%', 
             left: exportMode ? '25%' : '25%'
           }}>
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-foreground leading-none`}>
               Stephen Taylor
             </p>
+            <img 
+              src={instructorSignature} 
+              alt="Instructor Signature" 
+              className={`${exportMode ? 'h-[40px]' : 'h-[20px]'} w-auto object-contain`}
+              style={{ marginLeft: exportMode ? '10px' : '5px' }}
+            />
           </div>
           
           {/* Business Representative Name - after label */}
