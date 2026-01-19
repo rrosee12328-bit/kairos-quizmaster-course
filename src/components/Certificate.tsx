@@ -93,7 +93,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           {/* Level 2 TX DPS Certificate - Student Information fields */}
           {/* Last Name - below "Last Name" header in first column */}
           <div className="absolute" style={{ 
-            top: exportMode ? '28.5%' : '30.4%', 
+            top: exportMode ? '29.2%' : '30.4%', 
             left: exportMode ? '9%' : '9%',
             width: exportMode ? '34%' : '34%'
           }}>
@@ -104,7 +104,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* First Name - below "First Name" header in second column */}
           <div className="absolute" style={{ 
-            top: exportMode ? '28.5%' : '30.4%', 
+            top: exportMode ? '29.2%' : '30.4%', 
             left: exportMode ? '44%' : '44%',
             width: exportMode ? '30%' : '30%'
           }}>
@@ -115,7 +115,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Middle Initial - below "Middle Initial" header in third column */}
           <div className="absolute" style={{ 
-            top: exportMode ? '28.5%' : '30.4%', 
+            top: exportMode ? '29.2%' : '30.4%', 
             left: exportMode ? '76%' : '76%',
             width: exportMode ? '25%' : '25%'
           }}>
@@ -158,7 +158,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Instructor Name - after "Instructor Name:" label */}
           <div className="absolute" style={{ 
-            top: exportMode ? '44.5%' : '46.0%', 
+            top: exportMode ? '45.3%' : '46.0%', 
             left: exportMode ? '22%' : '25%'
           }}>
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-black leading-none`}>
@@ -168,7 +168,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Business Representative Name - after label */}
           <div className="absolute" style={{ 
-            top: exportMode ? '46.5%' : '48.0%', 
+            top: exportMode ? '47.3%' : '48.0%', 
             left: exportMode ? '36%' : '38%'
           }}>
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-black leading-none`}>
@@ -178,8 +178,8 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Course Completion Date - after label */}
           <div className="absolute" style={{ 
-            top: exportMode ? '48.5%' : '50.0%', 
-            left: exportMode ? '27%' : '30%'
+            top: exportMode ? '48.9%' : '50.0%', 
+            left: exportMode ? '43.5%' : '30%'
           }}>
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-black leading-none`}>
               {formatDate(courseCompletionDate)}
@@ -188,8 +188,8 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Online Training checkbox - X in the Yes box */}
           <div className="absolute" style={{ 
-            top: exportMode ? '50.5%' : '52.5%', 
-            left: exportMode ? '40%' : '43%'
+            top: exportMode ? '50.7%' : '52.5%', 
+            left: exportMode ? '58.2%' : '43%'
           }}>
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-bold text-black leading-none`}>
               X
