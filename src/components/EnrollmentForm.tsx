@@ -18,10 +18,10 @@ const enrollmentSchema = z.object({
   firstName: z.string().min(1, "First name is required").max(100),
   lastName: z.string().min(1, "Last name is required").max(100),
   phoneNumber: z.string().min(10, "Phone number must be at least 10 digits").max(15),
-  identificationType: z.enum(["ssn", "driver_license"], {
+  identificationType: z.enum(["ssn", "driver_license", "texas_id"], {
     required_error: "Please select an identification type",
   }),
-  lastSixDigits: z.string().length(6, "Please enter exactly 6 digits").regex(/^\d{6}$/, "Must be 6 digits only"),
+  lastFourDigits: z.string().length(4, "Please enter exactly 4 digits").regex(/^\d{4}$/, "Must be 4 digits only"),
   courseType: z.string().min(1, "Please select a course"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
@@ -46,7 +46,7 @@ const EnrollmentForm = ({ onSuccess, priceId, defaultCourseType }: EnrollmentFor
       lastName: "",
       phoneNumber: "",
       identificationType: undefined,
-      lastSixDigits: "",
+      lastFourDigits: "",
       courseType: defaultCourseType || "",
       password: "",
     },
@@ -126,7 +126,7 @@ const EnrollmentForm = ({ onSuccess, priceId, defaultCourseType }: EnrollmentFor
             last_name: data.lastName,
             phone_number: data.phoneNumber,
             identification_type: data.identificationType,
-            last_six_digits: data.lastSixDigits,
+            last_six_digits: data.lastFourDigits, // Using last 4 now, column name kept for compatibility
             course_type: data.courseType,
             enrollment_status: 'pending',
           });
@@ -340,7 +340,11 @@ const EnrollmentForm = ({ onSuccess, priceId, defaultCourseType }: EnrollmentFor
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="driver_license" id="driver_license" />
-                        <Label htmlFor="driver_license">Driver License Number</Label>
+                        <Label htmlFor="driver_license">Texas Driver License</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="texas_id" id="texas_id" />
+                        <Label htmlFor="texas_id">Texas Identification Number</Label>
                       </div>
                     </RadioGroup>
                   </FormControl>
@@ -351,16 +355,16 @@ const EnrollmentForm = ({ onSuccess, priceId, defaultCourseType }: EnrollmentFor
 
             <FormField
               control={form.control}
-              name="lastSixDigits"
+              name="lastFourDigits"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Last 6 Digits of {form.watch("identificationType") === "ssn" ? "SSN" : "Driver License"}
+                    Last 4 Digits of {form.watch("identificationType") === "ssn" ? "SSN" : form.watch("identificationType") === "driver_license" ? "Texas Driver License" : "Texas ID"}
                   </FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="123456" 
-                      maxLength={6}
+                      placeholder="1234" 
+                      maxLength={4}
                       {...field} 
                     />
                   </FormControl>

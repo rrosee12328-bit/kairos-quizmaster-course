@@ -31,12 +31,11 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
   };
 
   // Format ID number (digits only)
-  // - Level 2 TX DPS form asks for last 4
-  // - Other certificates in the app use last 6
-  const formatIdNumber = (digitsToShow: 4 | 6) => {
+  // Level 2 TX DPS form uses last 4 digits
+  const formatIdNumber = () => {
     if (!lastSixDigits) return "";
     const digits = String(lastSixDigits).replace(/\D/g, "");
-    return digits.slice(-digitsToShow);
+    return digits.slice(-4);
   };
 
   // Split name into parts for Level 2 certificate
@@ -131,7 +130,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
             left: exportMode ? '77%' : '77%'
           }}>
             <p className={`${exportMode ? 'text-[28px]' : 'text-[1rem]'} font-normal text-black leading-none`}>
-              {formatIdNumber(4) || "1234"}
+              {formatIdNumber() || "1234"}
             </p>
           </div>
           
@@ -228,7 +227,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           {/* Other course types - Original layout */}
           <div className="absolute top-[34%] left-0 right-0 flex items-baseline justify-center gap-12" style={{ letterSpacing: '0.03em' }}>
             <p className={`${exportMode ? 'text-[48px]' : 'text-[1.75rem]'} font-semibold text-foreground leading-none`} style={{ transform: exportMode ? 'translateY(-52px)' : 'translateY(-16px)', textShadow: exportMode ? '0 0 1px rgba(0,0,0,0.1)' : 'none' }}>{userName || "Student Name"}</p>
-            <p className={`${exportMode ? 'text-[36px]' : 'text-[1.125rem]'} font-normal text-foreground leading-none`} style={{ transform: exportMode ? 'translateY(-68px)' : 'translateY(-20px)', textShadow: exportMode ? '0 0 1px rgba(0,0,0,0.1)' : 'none' }}>{formatIdNumber(6)}</p>
+            <p className={`${exportMode ? 'text-[36px]' : 'text-[1.125rem]'} font-normal text-foreground leading-none`} style={{ transform: exportMode ? 'translateY(-68px)' : 'translateY(-20px)', textShadow: exportMode ? '0 0 1px rgba(0,0,0,0.1)' : 'none' }}>{formatIdNumber()}</p>
           </div>
           
           {/* Date of Completion */}
