@@ -158,18 +158,24 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           </div>
           
           {/* Instructor Name - after "Instructor Name:" label */}
-          <div className="absolute flex items-center" style={{ 
+          <div className="absolute" style={{ 
             top: exportMode ? '46.0%' : '46.0%', 
             left: exportMode ? '25%' : '25%'
           }}>
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-foreground leading-none`}>
               Stephen Taylor
             </p>
+          </div>
+          
+          {/* Instructor Signature - next to instructor name on the right */}
+          <div className="absolute" style={{ 
+            top: exportMode ? '45%' : '45%', 
+            left: exportMode ? '50%' : '50%'
+          }}>
             <img 
               src={instructorSignature} 
               alt="Instructor Signature" 
               className={`${exportMode ? 'h-[80px]' : 'h-[40px]'} w-auto object-contain`}
-              style={{ marginLeft: exportMode ? '20px' : '10px' }}
             />
           </div>
           
