@@ -127,7 +127,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
             top: exportMode ? '33%' : '33%', 
             left: exportMode ? '77%' : '77%'
           }}>
-            <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-foreground leading-none`}>
+            <p className={`${exportMode ? 'text-[28px]' : 'text-[1rem]'} font-normal text-foreground leading-none`}>
               {formatIdNumber(4) || "1234"}
             </p>
           </div>
