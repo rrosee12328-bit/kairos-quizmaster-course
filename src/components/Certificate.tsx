@@ -156,7 +156,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Instructor Name - after "Instructor Name:" label */}
           <div className="absolute" style={{ 
-            top: exportMode ? '47.0%' : '47.0%', 
+            top: exportMode ? '47.5%' : '47.5%', 
             left: exportMode ? '25%' : '25%'
           }}>
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-foreground leading-none`}>
@@ -166,10 +166,10 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Business Representative Name - after label */}
           <div className="absolute" style={{ 
-            top: exportMode ? '59.6%' : '59.6%', 
+            top: exportMode ? '51.0%' : '51.0%', 
             left: exportMode ? '43%' : '43%'
           }}>
-            <p className={`${exportMode ? 'text-[20px]' : 'text-[0.75rem]'} font-normal text-foreground leading-none`}>
+            <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-foreground leading-none`}>
               Stephen Taylor
             </p>
           </div>
