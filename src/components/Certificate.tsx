@@ -126,7 +126,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Last 4 digits - appears at end of the ID number line */}
           <div className="absolute" style={{ 
-            top: exportMode ? '31%' : '33%', 
+            top: exportMode ? '31.8%' : '33%', 
             left: exportMode ? '77%' : '77%'
           }}>
             <p className={`${exportMode ? 'text-[28px]' : 'text-[1rem]'} font-normal text-black leading-none`}>
@@ -178,7 +178,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Course Completion Date - after label */}
           <div className="absolute" style={{ 
-            top: exportMode ? '48.9%' : '50.0%', 
+            top: exportMode ? '49.5%' : '50.0%', 
             left: exportMode ? '43.5%' : '30%'
           }}>
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-black leading-none`}>
@@ -188,8 +188,8 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Online Training checkbox - X in the Yes box */}
           <div className="absolute" style={{ 
-            top: exportMode ? '50.7%' : '52.5%', 
-            left: exportMode ? '58.2%' : '43%'
+            top: exportMode ? '51.3%' : '52.5%', 
+            left: exportMode ? '54%' : '43%'
           }}>
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-bold text-black leading-none`}>
               X
