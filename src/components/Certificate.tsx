@@ -158,44 +158,18 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Instructor Name - after "Instructor Name:" label */}
           <div className="absolute" style={{ 
-            top: exportMode ? '44.0%' : '46.0%', 
-            left: exportMode ? '25%' : '25%'
+            top: exportMode ? '44.5%' : '46.0%', 
+            left: exportMode ? '22%' : '25%'
           }}>
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-black leading-none`}>
               Stephen Taylor
             </p>
           </div>
           
-          {/* Instructor Signature - first position below Yes */}
-          <div className="absolute" style={{ 
-            top: exportMode ? '48%' : '50%', 
-            left: exportMode ? '35%' : '35%'
-          }}>
-            <img 
-              src={instructorSignature} 
-              alt="Instructor Signature" 
-              className={`${exportMode ? 'h-[240px]' : 'h-[120px]'} w-auto object-contain`}
-              style={{ filter: 'brightness(0)' }}
-            />
-          </div>
-          
-          {/* Instructor Signature - lower position */}
-          <div className="absolute" style={{ 
-            top: exportMode ? '52%' : '54%', 
-            left: exportMode ? '35%' : '35%'
-          }}>
-            <img 
-              src={instructorSignature} 
-              alt="Instructor Signature" 
-              className={`${exportMode ? 'h-[240px]' : 'h-[120px]'} w-auto object-contain`}
-              style={{ filter: 'brightness(0)' }}
-            />
-          </div>
-          
           {/* Business Representative Name - after label */}
           <div className="absolute" style={{ 
-            top: exportMode ? '46.0%' : '48.0%', 
-            left: exportMode ? '38%' : '38%'
+            top: exportMode ? '46.5%' : '48.0%', 
+            left: exportMode ? '36%' : '38%'
           }}>
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-black leading-none`}>
               Stephen Taylor
@@ -204,8 +178,8 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Course Completion Date - after label */}
           <div className="absolute" style={{ 
-            top: exportMode ? '48.0%' : '50.0%', 
-            left: exportMode ? '30%' : '30%'
+            top: exportMode ? '48.5%' : '50.0%', 
+            left: exportMode ? '27%' : '30%'
           }}>
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-black leading-none`}>
               {formatDate(courseCompletionDate)}
@@ -215,11 +189,37 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           {/* Online Training checkbox - X in the Yes box */}
           <div className="absolute" style={{ 
             top: exportMode ? '50.5%' : '52.5%', 
-            left: exportMode ? '43%' : '43%'
+            left: exportMode ? '40%' : '43%'
           }}>
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-bold text-black leading-none`}>
               X
             </p>
+          </div>
+          
+          {/* Instructor Signature - on the Instructor Signature line */}
+          <div className="absolute" style={{ 
+            top: exportMode ? '51%' : '50%', 
+            left: exportMode ? '35%' : '35%'
+          }}>
+            <img 
+              src={instructorSignature} 
+              alt="Instructor Signature" 
+              className={`${exportMode ? 'h-[180px]' : 'h-[120px]'} w-auto object-contain`}
+              style={{ filter: 'brightness(0)' }}
+            />
+          </div>
+          
+          {/* Business Representative Signature - on the Business Rep Signature line */}
+          <div className="absolute" style={{ 
+            top: exportMode ? '54%' : '54%', 
+            left: exportMode ? '35%' : '35%'
+          }}>
+            <img 
+              src={instructorSignature} 
+              alt="Business Representative Signature" 
+              className={`${exportMode ? 'h-[180px]' : 'h-[120px]'} w-auto object-contain`}
+              style={{ filter: 'brightness(0)' }}
+            />
           </div>
         </>
       ) : (
