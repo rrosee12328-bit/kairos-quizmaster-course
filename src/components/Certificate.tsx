@@ -158,13 +158,19 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           </div>
           
           {/* Instructor Name - after "Instructor Name:" label */}
-          <div className="absolute" style={{ 
+          <div className="absolute flex items-center" style={{ 
             top: exportMode ? '46.0%' : '46.0%', 
             left: exportMode ? '25%' : '25%'
           }}>
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-foreground leading-none`}>
               Stephen Taylor
             </p>
+            <img 
+              src={instructorSignature} 
+              alt="Instructor Signature" 
+              className={`${exportMode ? 'h-[80px]' : 'h-[40px]'} w-auto object-contain`}
+              style={{ marginLeft: exportMode ? '20px' : '10px' }}
+            />
           </div>
           
           {/* Business Representative Name - after label */}
@@ -195,18 +201,6 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-bold text-foreground leading-none`}>
               X
             </p>
-          </div>
-          
-          {/* Instructor Signature - at the bottom signature line */}
-          <div className="absolute" style={{ 
-            top: exportMode ? '55%' : '55%', 
-            left: exportMode ? '15%' : '15%'
-          }}>
-            <img 
-              src={instructorSignature} 
-              alt="Instructor Signature" 
-              className={`${exportMode ? 'h-[60px]' : 'h-[30px]'} w-auto object-contain`}
-            />
           </div>
         </>
       ) : (
