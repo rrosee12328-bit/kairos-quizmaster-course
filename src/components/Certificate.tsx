@@ -145,11 +145,11 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Business License Number (School #) - below header on right */}
           <div className="absolute" style={{ 
-            top: exportMode ? '52.0%' : '52.0%', 
-            left: exportMode ? '60%' : '60%',
+            top: exportMode ? '43.5%' : '43.5%', 
+            left: exportMode ? '62%' : '62%',
             width: exportMode ? '35%' : '35%'
           }}>
-            <p className={`${exportMode ? 'text-[20px]' : 'text-[0.75rem]'} font-normal text-foreground leading-none`}>
+            <p className={`${exportMode ? 'text-[26px]' : 'text-[0.95rem]'} font-normal text-foreground leading-none`}>
               F28623301
             </p>
           </div>
