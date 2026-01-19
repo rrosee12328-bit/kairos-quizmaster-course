@@ -156,10 +156,10 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Instructor Name - after "Instructor Name:" label */}
           <div className="absolute" style={{ 
-            top: exportMode ? '56.1%' : '56.1%', 
+            top: exportMode ? '47.0%' : '47.0%', 
             left: exportMode ? '25%' : '25%'
           }}>
-            <p className={`${exportMode ? 'text-[20px]' : 'text-[0.75rem]'} font-normal text-foreground leading-none`}>
+            <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-foreground leading-none`}>
               Stephen Taylor
             </p>
           </div>
