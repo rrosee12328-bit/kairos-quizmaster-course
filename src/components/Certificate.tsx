@@ -89,112 +89,108 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
       ) : isLevel2 ? (
         <>
           {/* Level 2 TX DPS Certificate - Student Information fields */}
-          {/* Last Name field */}
+          {/* Last Name - below "Last Name" header in first column */}
           <div className="absolute" style={{ 
-            top: exportMode ? '32.2%' : '32.2%', 
-            left: exportMode ? '7%' : '7%',
-            width: exportMode ? '28%' : '28%'
+            top: exportMode ? '35.5%' : '35.5%', 
+            left: exportMode ? '3%' : '3%',
+            width: exportMode ? '34%' : '34%'
           }}>
-            <p className={`${exportMode ? 'text-[24px]' : 'text-[0.9rem]'} font-normal text-foreground leading-none text-center`}>
+            <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-foreground leading-none`}>
               {nameParts.lastName}
             </p>
           </div>
           
-          {/* First Name field */}
+          {/* First Name - below "First Name" header in second column */}
           <div className="absolute" style={{ 
-            top: exportMode ? '32.2%' : '32.2%', 
+            top: exportMode ? '35.5%' : '35.5%', 
             left: exportMode ? '38%' : '38%',
-            width: exportMode ? '28%' : '28%'
+            width: exportMode ? '30%' : '30%'
           }}>
-            <p className={`${exportMode ? 'text-[24px]' : 'text-[0.9rem]'} font-normal text-foreground leading-none text-center`}>
+            <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-foreground leading-none`}>
               {nameParts.firstName}
             </p>
           </div>
           
-          {/* Middle Initial field */}
+          {/* Middle Initial - below "Middle Initial" header in third column */}
           <div className="absolute" style={{ 
-            top: exportMode ? '32.2%' : '32.2%', 
-            left: exportMode ? '69%' : '69%',
-            width: exportMode ? '24%' : '24%'
+            top: exportMode ? '35.5%' : '35.5%', 
+            left: exportMode ? '70%' : '70%',
+            width: exportMode ? '25%' : '25%'
           }}>
-            <p className={`${exportMode ? 'text-[24px]' : 'text-[0.9rem]'} font-normal text-foreground leading-none text-center`}>
+            <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-foreground leading-none`}>
               {nameParts.middleInitial}
             </p>
           </div>
           
-          {/* Last 4 digits of SSN/DL/ID field */}
+          {/* Last 4 digits - appears at end of the ID number line */}
           <div className="absolute" style={{ 
-            top: exportMode ? '38.1%' : '38.1%', 
-            left: exportMode ? '7%' : '7%',
-            width: exportMode ? '86%' : '86%'
+            top: exportMode ? '42.3%' : '42.3%', 
+            left: exportMode ? '77%' : '77%'
           }}>
             <p className={`${exportMode ? 'text-[20px]' : 'text-[0.8rem]'} font-normal text-foreground leading-none`}>
               {formatIdNumber(4)}
             </p>
           </div>
           
-          {/* Business Name field */}
+          {/* Business Name - below "Business Name" header */}
           <div className="absolute" style={{ 
-            top: exportMode ? '47.1%' : '47.1%', 
-            left: exportMode ? '7%' : '7%',
-            width: exportMode ? '52%' : '52%'
+            top: exportMode ? '52.0%' : '52.0%', 
+            left: exportMode ? '3%' : '3%',
+            width: exportMode ? '55%' : '55%'
           }}>
-            <p className={`${exportMode ? 'text-[20px]' : 'text-[0.75rem]'} font-normal text-foreground leading-none text-center`}>
-              Kairos Training Academy LLC
+            <p className={`${exportMode ? 'text-[20px]' : 'text-[0.75rem]'} font-normal text-foreground leading-none`}>
+              Kairos Security
             </p>
           </div>
           
-          {/* Business License Number (School #) */}
+          {/* Business License Number (School #) - below header on right */}
           <div className="absolute" style={{ 
-            top: exportMode ? '47.1%' : '47.1%', 
-            left: exportMode ? '62%' : '62%',
-            width: exportMode ? '31%' : '31%'
+            top: exportMode ? '52.0%' : '52.0%', 
+            left: exportMode ? '60%' : '60%',
+            width: exportMode ? '35%' : '35%'
           }}>
-            <p className={`${exportMode ? 'text-[20px]' : 'text-[0.75rem]'} font-normal text-foreground leading-none text-center`}>
-              C18953-01
+            <p className={`${exportMode ? 'text-[20px]' : 'text-[0.75rem]'} font-normal text-foreground leading-none`}>
+              F28623301
             </p>
           </div>
           
-          {/* Instructor Name field */}
+          {/* Instructor Name - after "Instructor Name:" label */}
           <div className="absolute" style={{ 
-            top: exportMode ? '52.9%' : '52.9%', 
-            left: exportMode ? '26%' : '26%',
-            width: exportMode ? '50%' : '50%'
+            top: exportMode ? '56.1%' : '56.1%', 
+            left: exportMode ? '25%' : '25%'
           }}>
             <p className={`${exportMode ? 'text-[20px]' : 'text-[0.75rem]'} font-normal text-foreground leading-none`}>
               Stephen Taylor
             </p>
           </div>
           
-          {/* Business Representative Name field */}
+          {/* Business Representative Name - after label */}
           <div className="absolute" style={{ 
-            top: exportMode ? '56.4%' : '56.4%', 
-            left: exportMode ? '44%' : '44%',
-            width: exportMode ? '49%' : '49%'
+            top: exportMode ? '59.6%' : '59.6%', 
+            left: exportMode ? '43%' : '43%'
           }}>
             <p className={`${exportMode ? 'text-[20px]' : 'text-[0.75rem]'} font-normal text-foreground leading-none`}>
               Stephen Taylor
             </p>
           </div>
           
-          {/* Course Completion Date field */}
+          {/* Course Completion Date - after label */}
           <div className="absolute" style={{ 
-            top: exportMode ? '60.0%' : '60.0%', 
-            left: exportMode ? '36%' : '36%',
-            width: exportMode ? '30%' : '30%'
+            top: exportMode ? '63.2%' : '63.2%', 
+            left: exportMode ? '35%' : '35%'
           }}>
             <p className={`${exportMode ? 'text-[20px]' : 'text-[0.75rem]'} font-normal text-foreground leading-none`}>
               {formatDate(courseCompletionDate)}
             </p>
           </div>
           
-          {/* Online Training checkbox - Yes is checked */}
+          {/* Online Training checkbox - X in the Yes box */}
           <div className="absolute" style={{ 
-            top: exportMode ? '63.6%' : '63.6%', 
-            left: exportMode ? '54.0%' : '54.0%'
+            top: exportMode ? '66.6%' : '66.6%', 
+            left: exportMode ? '53.5%' : '53.5%'
           }}>
-            <p className={`${exportMode ? 'text-[24px]' : 'text-[0.9rem]'} font-bold text-foreground leading-none`}>
-              ✓
+            <p className={`${exportMode ? 'text-[20px]' : 'text-[0.8rem]'} font-bold text-foreground leading-none`}>
+              ☑
             </p>
           </div>
         </>
