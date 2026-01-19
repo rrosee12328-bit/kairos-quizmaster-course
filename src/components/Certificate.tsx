@@ -205,7 +205,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
               src={instructorSignature} 
               alt="Instructor Signature" 
               className={`${exportMode ? 'h-[180px]' : 'h-[120px]'} w-auto object-contain`}
-              style={{ filter: 'brightness(0)' }}
+              style={{ filter: 'brightness(0) saturate(100%)', WebkitFilter: 'brightness(0) saturate(100%)' }}
             />
           </div>
           
@@ -218,7 +218,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
               src={instructorSignature} 
               alt="Business Representative Signature" 
               className={`${exportMode ? 'h-[180px]' : 'h-[120px]'} w-auto object-contain`}
-              style={{ filter: 'brightness(0)' }}
+              style={{ filter: 'brightness(0) saturate(100%)', WebkitFilter: 'brightness(0) saturate(100%)' }}
             />
           </div>
         </>
