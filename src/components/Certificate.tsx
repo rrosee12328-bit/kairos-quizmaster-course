@@ -199,7 +199,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Instructor Signature - at the bottom signature line */}
           <div className="absolute" style={{ 
-            top: exportMode ? '58%' : '58%', 
+            top: exportMode ? '55%' : '55%', 
             left: exportMode ? '15%' : '15%'
           }}>
             <img 
