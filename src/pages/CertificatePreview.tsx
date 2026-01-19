@@ -520,7 +520,8 @@ const CertificatePreview = () => {
           </Card>
 
           <div className="lg:col-span-1 relative">
-            <div className="w-full" style={{ aspectRatio: '16/9' }}>
+            {/* Keep the preview container in the same portrait aspect ratio as the certificate template */}
+            <div className="w-full" style={{ aspectRatio: '8.5/11' }}>
               <Certificate
                 userName={userName}
                 registrationNumber={registrationNumber}
