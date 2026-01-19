@@ -175,7 +175,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
             <img 
               src={instructorSignature} 
               alt="Instructor Signature" 
-              className={`${exportMode ? 'h-[120px]' : 'h-[60px]'} w-auto object-contain`}
+              className={`${exportMode ? 'h-[240px]' : 'h-[120px]'} w-auto object-contain`}
             />
           </div>
           
