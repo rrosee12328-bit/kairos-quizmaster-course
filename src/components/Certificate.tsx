@@ -189,7 +189,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           {/* Online Training checkbox - X in the Yes box */}
           <div className="absolute" style={{ 
             top: exportMode ? '52%' : '52.5%', 
-            left: exportMode ? '43.5%' : '43%'
+            left: exportMode ? '42.5%' : '43%'
           }}>
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-bold text-black leading-none`}>
               X
