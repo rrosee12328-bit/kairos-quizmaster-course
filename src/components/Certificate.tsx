@@ -93,7 +93,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           {/* Level 2 TX DPS Certificate - Student Information fields */}
           {/* Last Name - below "Last Name" header in first column */}
           <div className="absolute" style={{ 
-            top: exportMode ? '30.4%' : '30.4%', 
+            top: exportMode ? '28.5%' : '30.4%', 
             left: exportMode ? '9%' : '9%',
             width: exportMode ? '34%' : '34%'
           }}>
@@ -104,7 +104,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* First Name - below "First Name" header in second column */}
           <div className="absolute" style={{ 
-            top: exportMode ? '30.4%' : '30.4%', 
+            top: exportMode ? '28.5%' : '30.4%', 
             left: exportMode ? '44%' : '44%',
             width: exportMode ? '30%' : '30%'
           }}>
@@ -115,7 +115,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Middle Initial - below "Middle Initial" header in third column */}
           <div className="absolute" style={{ 
-            top: exportMode ? '30.4%' : '30.4%', 
+            top: exportMode ? '28.5%' : '30.4%', 
             left: exportMode ? '76%' : '76%',
             width: exportMode ? '25%' : '25%'
           }}>
@@ -126,7 +126,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Last 4 digits - appears at end of the ID number line */}
           <div className="absolute" style={{ 
-            top: exportMode ? '33%' : '33%', 
+            top: exportMode ? '31%' : '33%', 
             left: exportMode ? '77%' : '77%'
           }}>
             <p className={`${exportMode ? 'text-[28px]' : 'text-[1rem]'} font-normal text-black leading-none`}>
@@ -136,7 +136,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Business Name - below "Business Name" header */}
           <div className="absolute" style={{ 
-            top: exportMode ? '43.5%' : '43.5%', 
+            top: exportMode ? '41.5%' : '43.5%', 
             left: exportMode ? '9%' : '9%',
             width: exportMode ? '55%' : '55%'
           }}>
@@ -147,7 +147,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Business License Number (School #) - below header on right */}
           <div className="absolute" style={{ 
-            top: exportMode ? '43.5%' : '43.5%', 
+            top: exportMode ? '41.5%' : '43.5%', 
             left: exportMode ? '64%' : '64%',
             width: exportMode ? '35%' : '35%'
           }}>
@@ -158,7 +158,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Instructor Name - after "Instructor Name:" label */}
           <div className="absolute" style={{ 
-            top: exportMode ? '46.0%' : '46.0%', 
+            top: exportMode ? '44.0%' : '46.0%', 
             left: exportMode ? '25%' : '25%'
           }}>
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-black leading-none`}>
@@ -168,7 +168,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Instructor Signature - first position below Yes */}
           <div className="absolute" style={{ 
-            top: exportMode ? '50%' : '50%', 
+            top: exportMode ? '48%' : '50%', 
             left: exportMode ? '35%' : '35%'
           }}>
             <img 
@@ -181,7 +181,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Instructor Signature - lower position */}
           <div className="absolute" style={{ 
-            top: exportMode ? '54%' : '54%', 
+            top: exportMode ? '52%' : '54%', 
             left: exportMode ? '35%' : '35%'
           }}>
             <img 
@@ -194,7 +194,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Business Representative Name - after label */}
           <div className="absolute" style={{ 
-            top: exportMode ? '48.0%' : '48.0%', 
+            top: exportMode ? '46.0%' : '48.0%', 
             left: exportMode ? '38%' : '38%'
           }}>
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-black leading-none`}>
@@ -204,7 +204,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Course Completion Date - after label */}
           <div className="absolute" style={{ 
-            top: exportMode ? '50.0%' : '50.0%', 
+            top: exportMode ? '48.0%' : '50.0%', 
             left: exportMode ? '30%' : '30%'
           }}>
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-black leading-none`}>
@@ -214,7 +214,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Online Training checkbox - X in the Yes box */}
           <div className="absolute" style={{ 
-            top: exportMode ? '52.5%' : '52.5%', 
+            top: exportMode ? '50.5%' : '52.5%', 
             left: exportMode ? '43%' : '43%'
           }}>
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-bold text-black leading-none`}>
