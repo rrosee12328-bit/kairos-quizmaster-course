@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import level2CertificateTemplate from "@/assets/level2-certificate-template.jpg";
 import pepperSprayCertificateTemplate from "@/assets/pepper-spray-certificate-template.jpg";
 import instructorSignature from "@/assets/stephen-taylor-signature-transparent.png";
@@ -14,6 +15,35 @@ interface CertificateProps {
 }
 
 const Certificate = ({ userName, registrationNumber, courseCompletionDate, idType, lastSixDigits, exportMode, certificateId, courseType = 'level2' }: CertificateProps) => {
+  const [blackSignature, setBlackSignature] = useState<string | null>(null);
+
+  // Pre-process signature to black using canvas (html2canvas doesn't support CSS filters)
+  useEffect(() => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        // Convert all pixels to black while preserving alpha
+        for (let i = 0; i < data.length; i += 4) {
+          data[i] = 0;     // R
+          data[i + 1] = 0; // G
+          data[i + 2] = 0; // B
+          // data[i + 3] is alpha - keep it unchanged
+        }
+        ctx.putImageData(imageData, 0, 0);
+        setBlackSignature(canvas.toDataURL("image/png"));
+      }
+    };
+    img.src = instructorSignature;
+  }, []);
+
   // Format date to MM/DD/YYYY
   const formatDate = (dateString?: string) => {
     if (!dateString) return "";
@@ -61,7 +91,8 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
 
   const nameParts = splitName();
 
-  // Use the signature directly since the new image is already clean
+  // Use the pre-processed black signature for export, or original with CSS filter for preview
+  const signatureSrc = exportMode && blackSignature ? blackSignature : instructorSignature;
 
   return (
     <div
@@ -202,10 +233,10 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
             left: exportMode ? '35%' : '35%'
           }}>
             <img 
-              src={instructorSignature} 
+              src={signatureSrc} 
               alt="Instructor Signature" 
               className={`${exportMode ? 'h-[180px]' : 'h-[120px]'} w-auto object-contain`}
-              style={{ filter: 'brightness(0) saturate(100%)', WebkitFilter: 'brightness(0) saturate(100%)' }}
+              style={!exportMode ? { filter: 'brightness(0)' } : undefined}
             />
           </div>
           
@@ -215,10 +246,10 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
             left: exportMode ? '35%' : '35%'
           }}>
             <img 
-              src={instructorSignature} 
+              src={signatureSrc} 
               alt="Business Representative Signature" 
               className={`${exportMode ? 'h-[180px]' : 'h-[120px]'} w-auto object-contain`}
-              style={{ filter: 'brightness(0) saturate(100%)', WebkitFilter: 'brightness(0) saturate(100%)' }}
+              style={!exportMode ? { filter: 'brightness(0)' } : undefined}
             />
           </div>
         </>
