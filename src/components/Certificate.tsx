@@ -167,9 +167,9 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
             </p>
           </div>
           
-          {/* Instructor Signature - upper position */}
+          {/* Instructor Signature - first position below Yes */}
           <div className="absolute" style={{ 
-            top: exportMode ? '46%' : '46%', 
+            top: exportMode ? '56%' : '56%', 
             left: exportMode ? '35%' : '35%'
           }}>
             <img 
