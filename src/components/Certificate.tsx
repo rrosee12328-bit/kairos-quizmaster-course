@@ -124,7 +124,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Last 4 digits - appears at end of the ID number line */}
           <div className="absolute" style={{ 
-            top: exportMode ? '35.5%' : '35.5%', 
+            top: exportMode ? '33%' : '33%', 
             left: exportMode ? '77%' : '77%'
           }}>
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-foreground leading-none`}>
