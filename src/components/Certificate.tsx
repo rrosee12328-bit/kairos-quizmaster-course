@@ -92,7 +92,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           {/* Last Name - below "Last Name" header in first column */}
           <div className="absolute" style={{ 
             top: exportMode ? '30.8%' : '30.8%', 
-            left: exportMode ? '7%' : '7%',
+            left: exportMode ? '9%' : '9%',
             width: exportMode ? '34%' : '34%'
           }}>
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-foreground leading-none`}>
@@ -103,7 +103,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           {/* First Name - below "First Name" header in second column */}
           <div className="absolute" style={{ 
             top: exportMode ? '30.8%' : '30.8%', 
-            left: exportMode ? '42%' : '42%',
+            left: exportMode ? '44%' : '44%',
             width: exportMode ? '30%' : '30%'
           }}>
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-foreground leading-none`}>
@@ -114,7 +114,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           {/* Middle Initial - below "Middle Initial" header in third column */}
           <div className="absolute" style={{ 
             top: exportMode ? '30.8%' : '30.8%', 
-            left: exportMode ? '74%' : '74%',
+            left: exportMode ? '76%' : '76%',
             width: exportMode ? '25%' : '25%'
           }}>
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-foreground leading-none`}>
