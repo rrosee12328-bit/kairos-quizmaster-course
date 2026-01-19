@@ -1,6 +1,6 @@
 import level2CertificateTemplate from "@/assets/level2-certificate-template.jpg";
 import pepperSprayCertificateTemplate from "@/assets/pepper-spray-certificate-template.jpg";
-import instructorSignature from "@/assets/stephen-taylor-signature-new.jpg";
+import instructorSignature from "@/assets/stephen-taylor-signature-transparent.png";
 
 interface CertificateProps {
   userName?: string;
@@ -197,7 +197,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           
           {/* Instructor Signature - at the bottom signature line */}
           <div className="absolute" style={{ 
-            top: exportMode ? '75%' : '75%', 
+            top: exportMode ? '58%' : '58%', 
             left: exportMode ? '15%' : '15%'
           }}>
             <img 
