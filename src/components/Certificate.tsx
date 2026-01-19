@@ -177,7 +177,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
           {/* Course Completion Date - after label */}
           <div className="absolute" style={{ 
             top: exportMode ? '50.0%' : '50.0%', 
-            left: exportMode ? '32%' : '32%'
+            left: exportMode ? '28%' : '28%'
           }}>
             <p className={`${exportMode ? 'text-[22px]' : 'text-[0.85rem]'} font-normal text-foreground leading-none`}>
               {formatDate(courseCompletionDate)}
