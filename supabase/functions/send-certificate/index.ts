@@ -32,11 +32,27 @@ function formatDate(dateString: string): string {
   return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
 }
 
-// Format ID number (last 6 digits only)
+// Format ID number (last 4 digits only for Level 2)
 function formatIdNumber(digits?: string): string {
   if (!digits) return "";
   const cleanDigits = String(digits).replace(/\D/g, "");
-  return cleanDigits.slice(-6);
+  return cleanDigits.slice(-4);
+}
+
+// Split name into parts for Level 2 certificate
+function splitName(fullName: string): { lastName: string; firstName: string; middleInitial: string } {
+  if (!fullName) return { lastName: "", firstName: "", middleInitial: "" };
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length === 1) {
+    return { lastName: parts[0], firstName: "", middleInitial: "" };
+  } else if (parts.length === 2) {
+    return { lastName: parts[1], firstName: parts[0], middleInitial: "" };
+  } else {
+    const firstName = parts[0];
+    const lastName = parts[parts.length - 1];
+    const middleInitial = parts[1]?.charAt(0) || "";
+    return { lastName, firstName, middleInitial };
+  }
 }
 
 async function generateCertificatePDF(
@@ -51,7 +67,7 @@ async function generateCertificatePDF(
     // Choose template based on course type
     const templateFileName = courseType === 'pepper-spray' 
       ? 'pepper-spray-certificate-template.pdf' 
-      : 'certificate-template.pdf';
+      : 'level2-certificate-template.pdf';
     
     const templateUrl =
       `https://cpjamwmwzrgqhfnirikz.supabase.co/storage/v1/object/public/certificates/${templateFileName}`;
@@ -89,9 +105,9 @@ async function generateCertificatePDF(
     } catch (templateError) {
       console.error("Error loading template PDF, using fallback:", templateError);
       
-      // Fallback: create a blank page
+      // Fallback: create a blank page (portrait 8.5x11)
       pdfDoc = await PDFDocument.create();
-      page = pdfDoc.addPage([842, 595]); // A4 landscape
+      page = pdfDoc.addPage([612, 792]); // Letter size portrait
       pageWidth = page.getWidth();
       pageHeight = page.getHeight();
 
@@ -109,69 +125,158 @@ async function generateCertificatePDF(
     const fontNormal = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
     // Helper to position elements by percentage of the page
+    // Note: PDF coordinates start from bottom-left, so we invert Y
     const pctX = (percent: number) => (pageWidth * percent) / 100;
-    const pctY = (percentFromBottom: number) => (pageHeight * percentFromBottom) / 100;
+    const pctY = (percentFromTop: number) => pageHeight - (pageHeight * percentFromTop) / 100;
 
     // === Text placement ===
     const isPepperSpray = courseType === 'pepper-spray';
+    const textColor = rgb(0, 0, 0); // Black text
     
     if (isPepperSpray) {
       // Pepper Spray Certificate Layout
       // Student Name – centered
-      const nameY = pctY(65);
+      const nameY = pctY(35);
+      const nameSize = 24;
+      const nameWidth = font.widthOfTextAtSize(name || "Student Name", nameSize);
       page.drawText(name || "Student Name", {
-        x: pctX(50) - (font.widthOfTextAtSize(name || "Student Name", Math.max(pageHeight * 0.04, 24)) / 2),
+        x: (pageWidth - nameWidth) / 2,
         y: nameY,
-        size: Math.max(pageHeight * 0.04, 24),
+        size: nameSize,
         font,
-        color: rgb(0.2, 0.2, 0.2),
+        color: textColor,
       });
 
       // Date of Completion – lower left area
       const formattedDate = formatDate(date);
-      const dateY = pctY(30);
+      const dateY = pctY(70);
 
       page.drawText(formattedDate, {
         x: pctX(32),
         y: dateY,
-        size: Math.max(pageHeight * 0.03, 16),
+        size: 16,
         font: fontNormal,
-        color: rgb(0.2, 0.2, 0.2),
+        color: textColor,
       });
     } else {
-      // Level 2 Certificate Layout
-      // Student Name – moved toward middle
-      const nameY = pctY(66);
-      page.drawText(name || "Student Name", {
-        x: pctX(40),
-        y: nameY,
-        size: Math.max(pageHeight * 0.04, 24),
-        font,
-        color: rgb(0.2, 0.2, 0.2),
+      // Level 2 TX DPS Certificate Layout - Matching the form exactly
+      const nameParts = splitName(name);
+      const fontSize = 14;
+      const smallFontSize = 12;
+      
+      // Last Name - first column (around 9% from left, 29% from top)
+      page.drawText(nameParts.lastName, {
+        x: pctX(9),
+        y: pctY(29.2),
+        size: fontSize,
+        font: fontNormal,
+        color: textColor,
       });
-
-      // Driver License Number – same line as name, toward the right end
+      
+      // First Name - second column (around 44% from left)
+      page.drawText(nameParts.firstName, {
+        x: pctX(44),
+        y: pctY(29.2),
+        size: fontSize,
+        font: fontNormal,
+        color: textColor,
+      });
+      
+      // Middle Initial - third column (around 76% from left)
+      if (nameParts.middleInitial) {
+        page.drawText(nameParts.middleInitial, {
+          x: pctX(76),
+          y: pctY(29.2),
+          size: fontSize,
+          font: fontNormal,
+          color: textColor,
+        });
+      }
+      
+      // Last 4 digits of ID - end of ID number line (around 77% from left, 32% from top)
       const formattedId = formatIdNumber(lastSixDigits);
       if (formattedId) {
         page.drawText(formattedId, {
-          x: pctX(74),
-          y: nameY,
-          size: Math.max(pageHeight * 0.035, 18),
+          x: pctX(77),
+          y: pctY(31.8),
+          size: 16,
           font: fontNormal,
-          color: rgb(0.2, 0.2, 0.2),
+          color: textColor,
         });
       }
-
-      // Date of Completion – on the Date of Completion line
-      const formattedDate = formatDate(date);
-      const dateY = pctY(51);
-
-      page.drawText(formattedDate, {
-        x: pctX(62),
-        y: dateY,
-        size: Math.max(pageHeight * 0.03, 16),
+      
+      // Business Name - below "Business Name" header (around 9% left, 41.5% from top)
+      page.drawText("Kairos Security", {
+        x: pctX(9),
+        y: pctY(41.5),
+        size: fontSize,
         font: fontNormal,
-        color: rgb(0.2, 0.2, 0.2),
+        color: textColor,
+      });
+      
+      // Business License Number (around 64% left, 41.5% from top)
+      page.drawText("F28623301", {
+        x: pctX(64),
+        y: pctY(41.5),
+        size: fontSize,
+        font: fontNormal,
+        color: textColor,
+      });
+      
+      // Instructor Name - after label (around 22% left, 45.3% from top)
+      page.drawText("Stephen Taylor", {
+        x: pctX(22),
+        y: pctY(45.3),
+        size: smallFontSize,
+        font: fontNormal,
+        color: textColor,
+      });
+      
+      // Business Representative Name - after label (around 36% left, 47.3% from top)
+      page.drawText("Stephen Taylor", {
+        x: pctX(36),
+        y: pctY(47.3),
+        size: smallFontSize,
+        font: fontNormal,
+        color: textColor,
+      });
+      
+      // Course Completion Date - after label (around 43.5% left, 49.5% from top)
+      const formattedDate = formatDate(date);
+      page.drawText(formattedDate, {
+        x: pctX(43.5),
+        y: pctY(49.5),
+        size: smallFontSize,
+        font: fontNormal,
+        color: textColor,
+      });
+      
+      // X in the Yes checkbox (around 43% left, 52% from top)
+      page.drawText("X", {
+        x: pctX(43),
+        y: pctY(52),
+        size: smallFontSize,
+        font,
+        color: textColor,
+      });
+      
+      // Instructor Signature - "Stephen Taylor" in cursive-like style (around 35% left, 53% from top)
+      // Using italic font for signature appearance
+      page.drawText("Stephen Taylor", {
+        x: pctX(42),
+        y: pctY(53.5),
+        size: 16,
+        font: fontNormal,
+        color: textColor,
+      });
+      
+      // Business Representative Signature (around 35% left, 56% from top)
+      page.drawText("Stephen Taylor", {
+        x: pctX(42),
+        y: pctY(56.5),
+        size: 16,
+        font: fontNormal,
+        color: textColor,
       });
     }
 
@@ -227,7 +332,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const emailPayload = {
       from: "Kairos Security Academy <info@kairossecurityacademy.com>",
       to: [email],
-      subject: "Your Level 2 Security Officer Certificate",
+      subject: courseType === 'pepper-spray' 
+        ? "Your Pepper Spray Training Certificate" 
+        : "Your Level 2 Security Officer Certificate",
       html: `
         <!DOCTYPE html>
         <html>
