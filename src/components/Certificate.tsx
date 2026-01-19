@@ -138,7 +138,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
             left: exportMode ? '9%' : '9%',
             width: exportMode ? '55%' : '55%'
           }}>
-            <p className={`${exportMode ? 'text-[20px]' : 'text-[0.75rem]'} font-normal text-foreground leading-none`}>
+            <p className={`${exportMode ? 'text-[26px]' : 'text-[0.95rem]'} font-normal text-foreground leading-none`}>
               Kairos Security
             </p>
           </div>
