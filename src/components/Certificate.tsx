@@ -1,6 +1,9 @@
+import { useEffect, useState } from "react";
+
 import level2CertificateTemplate from "@/assets/level2-certificate-template.jpg";
 import pepperSprayCertificateTemplate from "@/assets/pepper-spray-certificate-template.jpg";
 import instructorSignature from "@/assets/stephen-taylor-signature-transparent.png";
+import { cleanupSignatureToTransparentPng } from "@/lib/signatureCleanup";
 
 interface CertificateProps {
   userName?: string;
@@ -61,6 +64,26 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
   const isLevel2 = courseType === 'level2';
 
   const nameParts = splitName();
+
+  const [signatureSrc, setSignatureSrc] = useState<string>(instructorSignature);
+
+  useEffect(() => {
+    let cancelled = false;
+    cleanupSignatureToTransparentPng(instructorSignature, {
+      whiteThreshold: 248,
+      cropPadding: 10,
+    })
+      .then((dataUrl) => {
+        if (!cancelled) setSignatureSrc(dataUrl);
+      })
+      .catch(() => {
+        // If cleanup fails for any reason, keep the original asset.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <div
@@ -201,7 +224,7 @@ const Certificate = ({ userName, registrationNumber, courseCompletionDate, idTyp
             left: exportMode ? '15%' : '15%'
           }}>
             <img 
-              src={instructorSignature} 
+              src={signatureSrc} 
               alt="Instructor Signature" 
               className={`${exportMode ? 'h-[60px]' : 'h-[30px]'} w-auto object-contain`}
             />
