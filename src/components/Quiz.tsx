@@ -479,16 +479,21 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
                   <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
                     📋 Next Step: Schedule In-Person Training (Part 2) in Houston
                   </p>
-                  <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">
-                    To complete your armed certification, you must attend Part 2 in-person training with Kairos Security in the Houston area. 
-                    Click below to schedule your session.
+                  <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
+                    To complete your armed certification, you must attend Part 2 in-person training with Kairos Security in the Houston area.
+                  </p>
+                  <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
+                    <strong>Training is held on Saturdays only.</strong> You can schedule up to one week in advance.
+                  </p>
+                  <p className="text-sm text-amber-700 dark:text-amber-300 mb-3 font-medium">
+                    ⚠️ Please bring this confirmation email to show the instructor to verify your appointment.
                   </p>
                   <Button 
-                    onClick={() => window.open('https://calendly.com/rrosee12328/30min', '_blank')}
+                    onClick={() => window.open('https://calendly.com/kairossecurity/30min', '_blank')}
                     className="w-full"
                     size="lg"
                   >
-                    Schedule In-Person Training Now
+                    Schedule Saturday Training
                   </Button>
                 </div>
                 <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 rounded-lg border border-emerald-400 dark:border-emerald-700">
@@ -545,16 +550,21 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
                   <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
                     📋 Next Step: Schedule In-Person Training (Part 2) in Houston
                   </p>
-                  <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">
-                    To complete your certification, you must attend Part 2 in-person training with Kairos Security in the Houston area. 
-                    Click below to schedule your session.
+                  <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
+                    To complete your certification, you must attend Part 2 in-person training with Kairos Security in the Houston area.
+                  </p>
+                  <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
+                    <strong>Training is held on Saturdays only.</strong> You can schedule up to one week in advance.
+                  </p>
+                  <p className="text-sm text-amber-700 dark:text-amber-300 mb-3 font-medium">
+                    ⚠️ Please bring this confirmation email to show the instructor to verify your appointment.
                   </p>
                   <Button 
-                    onClick={() => window.open('https://calendly.com/rrosee12328/30min', '_blank')}
+                    onClick={() => window.open('https://calendly.com/kairossecurity/30min', '_blank')}
                     className="w-full"
                     size="lg"
                   >
-                    Schedule In-Person Training Now
+                    Schedule Saturday Training
                   </Button>
                 </div>
                 <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 rounded-lg border border-emerald-400 dark:border-emerald-700">
