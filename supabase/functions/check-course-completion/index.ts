@@ -82,28 +82,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
       });
     }
 
-    // 2. Check prerequisites for Level 3 (requires Level 2 completion)
-    if (course_type === 'level3') {
-      const { data: level2Completion } = await supabase
-        .from('course_completions')
-        .select('id, passed')
-        .eq('user_id', user.id)
-        .eq('course_type', 'level2')
-        .eq('passed', true)
-        .maybeSingle();
-
-      if (!level2Completion) {
-        return new Response(JSON.stringify({ 
-          error: 'Prerequisite not met',
-          exam_unlocked: false,
-          completion_percentage: 0,
-          reason: 'You must complete Level 2 Security Officer course before accessing Level 3.'
-        }), {
-          status: 403,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-    }
+    // Note: Level 2 prerequisite removed - not our responsibility to enforce
+    // Level 3 completion requires scheduling in-person Part 2 training
 
     // 3. Check exam attempt history
     const { data: completions, error: completionsError } = await supabase

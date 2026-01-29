@@ -136,10 +136,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 ? `
                   <div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
                     <p style="margin: 0; font-size: 18px; font-weight: bold; color: #1e40af;">📅 Schedule Your In-Person Training (Part 2)</p>
-                    <p style="margin: 15px 0 0 0; font-size: 14px; color: #1e40af;">Click the button below to book your Level 3 Part 2 in-person training session in the Houston area with Kairos Security:</p>
+                    <p style="margin: 15px 0 0 0; font-size: 14px; color: #1e40af;">Click the button below to book your Level 3 Part 2 in-person training session in the Houston area with Kairos Security.</p>
+                    <p style="margin: 10px 0 0 0; font-size: 14px; color: #1e40af;"><strong>Training is held on Saturdays only.</strong> You can schedule up to one week in advance.</p>
                     <div style="text-align: center; margin-top: 20px;">
-                      <a href="https://calendly.com/rrosee12328/30min" style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Book Appointment</a>
+                      <a href="https://calendly.com/kairossecurity/30min" style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Schedule Saturday Training</a>
                     </div>
+                  </div>
+                  <div style="background: #fef3c7; border: 2px solid #f59e0b; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <p style="margin: 0; color: #92400e; font-weight: bold;">⚠️ Important: Bring This Email</p>
+                    <p style="margin: 10px 0 0 0; color: #92400e; font-size: 14px;">Please be ready to show this confirmation email to the instructor to verify you are scheduled for the class.</p>
                   </div>
                   <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 15px; border-radius: 8px; margin: 15px 0;">
                     <p style="margin: 0; color: #856404; font-weight: bold;">💰 Important Pricing Information</p>
@@ -159,10 +164,15 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 ? `
                   <div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
                     <p style="margin: 0; font-size: 18px; font-weight: bold; color: #1e40af;">📅 Schedule Your In-Person Training (Part 2)</p>
-                    <p style="margin: 15px 0 0 0; font-size: 14px; color: #1e40af;">Click the button below to book your Level 4 Part 2 in-person training session in the Houston area with Kairos Security:</p>
+                    <p style="margin: 15px 0 0 0; font-size: 14px; color: #1e40af;">Click the button below to book your Level 4 Part 2 in-person training session in the Houston area with Kairos Security.</p>
+                    <p style="margin: 10px 0 0 0; font-size: 14px; color: #1e40af;"><strong>Training is held on Saturdays only.</strong> You can schedule up to one week in advance.</p>
                     <div style="text-align: center; margin-top: 20px;">
-                      <a href="https://calendly.com/rrosee12328/30min" style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Book Appointment</a>
+                      <a href="https://calendly.com/kairossecurity/30min" style="display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Schedule Saturday Training</a>
                     </div>
+                  </div>
+                  <div style="background: #fef3c7; border: 2px solid #f59e0b; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <p style="margin: 0; color: #92400e; font-weight: bold;">⚠️ Important: Bring This Email</p>
+                    <p style="margin: 10px 0 0 0; color: #92400e; font-size: 14px;">Please be ready to show this confirmation email to the instructor to verify you are scheduled for the class.</p>
                   </div>
                   <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 15px; border-radius: 8px; margin: 15px 0;">
                     <p style="margin: 0; color: #856404; font-weight: bold;">💰 Important Pricing Information</p>
