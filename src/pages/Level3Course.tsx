@@ -142,14 +142,16 @@ const Course = () => {
     }
   }, [isAuthenticated, videosLoaded]);
 
-  const checkAdminStatus = async (userId: string) => {
+  const checkAdminStatus = async (userId: string): Promise<boolean> => {
     const { data, error } = await supabase.rpc('is_admin', { _user_id: userId });
     console.log('[Level3Course] Admin check:', { userId, data, error });
     if (!error && data) {
       setIsAdmin(true);
       console.log('[Level3Course] User is admin');
+      return true;
     } else {
       console.log('[Level3Course] User is not admin');
+      return false;
     }
   };
 
