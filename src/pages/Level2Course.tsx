@@ -398,7 +398,7 @@ const Level2Course = () => {
     return false;
   };
 
-  const checkEnrollmentStatus = async (userId: string) => {
+  const checkEnrollmentStatus = async (userId: string, isAdminUser = false) => {
     try {
       const device = /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
       console.log('[Level2Course] course_access', {
