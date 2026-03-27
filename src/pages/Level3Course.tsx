@@ -155,7 +155,7 @@ const Course = () => {
     }
   };
 
-  const checkEnrollmentStatus = async (userId: string) => {
+  const checkEnrollmentStatus = async (userId: string, isAdminUser = false) => {
     try {
       // Check if user is enrolled, has any progress, or has completed the course
       const [enrollmentResult, progressResult, completionResult] = await Promise.all([
