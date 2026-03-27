@@ -151,11 +151,17 @@ const VideoPlayer = ({
     if (!isActive) return;
 
     if (!videoId) {
-      console.error('[VideoPlayer] No video ID found for section:', section.id, section.videoUrl);
-      setError('Video ID not found. Please contact support.');
-      setLoading(false);
+      // Don't show error if videoUrl is empty (still loading from parent)
+      if (section.videoUrl) {
+        console.error('[VideoPlayer] No video ID found for section:', section.id, section.videoUrl);
+        setError('Video ID not found. Please contact support.');
+      }
+      setLoading(!!section.videoUrl === false);
       return;
     }
+
+    // Clear any previous error when we have a valid videoId
+    setError(null);
 
     // Skip fetching if URL already has token & expires (already signed)
     const urlHasToken = section.videoUrl?.includes('token=') && section.videoUrl?.includes('expires=');
