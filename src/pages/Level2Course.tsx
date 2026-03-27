@@ -454,13 +454,13 @@ const Level2Course = () => {
         hasEnrollment: !!enrollment, 
         hasProgress: !!progress, 
         hasCompletion: !!completion,
-        isAdmin,
-        outcome: canRenderVideo || isAdmin ? '200' : '403',
-        reason: canRenderVideo || isAdmin ? 'ENTITLEMENT_OK' : 'NO_ENTITLEMENT'
+        isAdmin: isAdminUser,
+        outcome: canRenderVideo || isAdminUser ? '200' : '403',
+        reason: canRenderVideo || isAdminUser ? 'ENTITLEMENT_OK' : 'NO_ENTITLEMENT'
       });
 
       // Allow access if enrolled OR has progress OR completed (for review) OR is admin
-      if (!canRenderVideo && !isAdmin) {
+      if (!canRenderVideo && !isAdminUser) {
         console.error('[Level2Course] Access denied - no enrollment, progress, or completion found');
         toast.error('You need to enroll in this course first. If you already purchased it, please contact support.');
         navigate('/courses');
