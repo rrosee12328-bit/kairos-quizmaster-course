@@ -27,11 +27,11 @@ const PepperSprayCourse = () => {
   const { allSectionsComplete, failedAttempts, attemptsRemaining, refetchProgress } = useCourseProgress('pepper_spray', 1);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (user) {
         setIsAuthenticated(true);
-        checkAdminStatus(user.id);
-        checkEnrollmentStatus(user.id);
+        const adminStatus = await checkAdminStatus(user.id);
+        checkEnrollmentStatus(user.id, adminStatus);
       }
     });
 
@@ -76,14 +76,16 @@ const PepperSprayCourse = () => {
     }
   }, [showQuiz]);
 
-  const checkAdminStatus = async (userId: string) => {
+  const checkAdminStatus = async (userId: string): Promise<boolean> => {
     const { data, error } = await supabase.rpc('is_admin', { _user_id: userId });
     if (!error && data) {
       setIsAdmin(true);
+      return true;
     }
+    return false;
   };
 
-  const checkEnrollmentStatus = async (userId: string) => {
+  const checkEnrollmentStatus = async (userId: string, isAdminUser = false) => {
     try {
       // Check if user is enrolled, has any progress, or has completed the course
       const [enrollmentResult, progressResult, completionResult] = await Promise.all([
@@ -117,11 +119,11 @@ const PepperSprayCourse = () => {
         hasEnrollment: !!enrollment, 
         hasProgress: !!progress, 
         hasCompletion: !!completion,
-        isAdmin 
+        isAdmin: isAdminUser 
       });
 
       // Allow access if enrolled OR has progress OR completed (for review) OR is admin
-      if (!enrollment && !progress && !completion && !isAdmin) {
+      if (!enrollment && !progress && !completion && !isAdminUser) {
         console.error('[PepperSprayCourse] Access denied - no enrollment, progress, or completion found');
         toast.error('You need to enroll in this course first. If you already purchased it, please contact support.');
         navigate('/courses');

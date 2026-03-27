@@ -183,12 +183,12 @@ const Level2Course = () => {
   useEffect(() => {
     if (!isPageVisible) return; // Skip auth check if page not visible
     
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (user) {
         setIsAuthenticated(true);
         setDebugUserId(user.id);
-        checkAdminStatus(user.id);
-        checkEnrollmentStatus(user.id);
+        const adminStatus = await checkAdminStatus(user.id);
+        checkEnrollmentStatus(user.id, adminStatus);
       } else {
         // Redirect to login if not authenticated
         navigate('/auth?redirect=/course/level2');
@@ -389,14 +389,16 @@ const Level2Course = () => {
     }
   }, [isPageVisible, videosLoaded]);
 
-  const checkAdminStatus = async (userId: string) => {
+  const checkAdminStatus = async (userId: string): Promise<boolean> => {
     const { data, error } = await supabase.rpc('is_admin', { _user_id: userId });
     if (!error && data) {
       setIsAdmin(true);
+      return true;
     }
+    return false;
   };
 
-  const checkEnrollmentStatus = async (userId: string) => {
+  const checkEnrollmentStatus = async (userId: string, isAdminUser = false) => {
     try {
       const device = /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
       console.log('[Level2Course] course_access', {
@@ -452,13 +454,13 @@ const Level2Course = () => {
         hasEnrollment: !!enrollment, 
         hasProgress: !!progress, 
         hasCompletion: !!completion,
-        isAdmin,
-        outcome: canRenderVideo || isAdmin ? '200' : '403',
-        reason: canRenderVideo || isAdmin ? 'ENTITLEMENT_OK' : 'NO_ENTITLEMENT'
+        isAdmin: isAdminUser,
+        outcome: canRenderVideo || isAdminUser ? '200' : '403',
+        reason: canRenderVideo || isAdminUser ? 'ENTITLEMENT_OK' : 'NO_ENTITLEMENT'
       });
 
       // Allow access if enrolled OR has progress OR completed (for review) OR is admin
-      if (!canRenderVideo && !isAdmin) {
+      if (!canRenderVideo && !isAdminUser) {
         console.error('[Level2Course] Access denied - no enrollment, progress, or completion found');
         toast.error('You need to enroll in this course first. If you already purchased it, please contact support.');
         navigate('/courses');
