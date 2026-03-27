@@ -326,7 +326,7 @@ const Courses = () => {
                 <Card 
                   key={course.id} 
                   className="overflow-hidden hover:shadow-lg transition-all hover:scale-105 cursor-pointer"
-                  onClick={() => enrolled ? navigate(course.route) : navigate(`/checkout/${course.id}`)}
+                  onClick={() => (enrolled || isAdmin) ? navigate(course.route) : navigate(`/checkout/${course.id}`)}
                 >
                   <CardContent className="p-4 text-center space-y-3">
                     <div className={`w-16 h-16 mx-auto rounded-full ${course.color} flex items-center justify-center`}>
