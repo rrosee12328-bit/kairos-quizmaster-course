@@ -187,8 +187,8 @@ const Level2Course = () => {
       if (user) {
         setIsAuthenticated(true);
         setDebugUserId(user.id);
-        checkAdminStatus(user.id);
-        checkEnrollmentStatus(user.id);
+        const adminStatus = await checkAdminStatus(user.id);
+        checkEnrollmentStatus(user.id, adminStatus);
       } else {
         // Redirect to login if not authenticated
         navigate('/auth?redirect=/course/level2');
