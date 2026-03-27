@@ -120,11 +120,11 @@ const Level4Course = () => {
         hasEnrollment: !!enrollment, 
         hasProgress: !!progress, 
         hasCompletion: !!completion,
-        isAdmin 
+        isAdmin: isAdminUser 
       });
 
       // Allow access if enrolled OR has progress OR completed (for review) OR is admin
-      if (!enrollment && !progress && !completion && !isAdmin) {
+      if (!enrollment && !progress && !completion && !isAdminUser) {
         console.error('[Level4Course] Access denied - no enrollment, progress, or completion found');
         toast.error('You need to enroll in this course first. If you already purchased it, please contact support.');
         navigate('/courses');
