@@ -28,11 +28,11 @@ const Level4Course = () => {
   const { allSectionsComplete, failedAttempts, attemptsRemaining, refetchProgress } = useCourseProgress('level4', 1);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (user) {
         setIsAuthenticated(true);
-        checkAdminStatus(user.id);
-        checkEnrollmentStatus(user.id);
+        const adminStatus = await checkAdminStatus(user.id);
+        checkEnrollmentStatus(user.id, adminStatus);
       }
     });
 

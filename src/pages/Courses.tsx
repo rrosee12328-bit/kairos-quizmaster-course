@@ -392,6 +392,13 @@ const Courses = () => {
                             <ArrowRight className="ml-2 h-4 w-4" />
                           </Link>
                         </Button>
+                      ) : isAdmin ? (
+                        <Button asChild size="sm">
+                          <Link to={course.route}>
+                            View Course
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                          </Link>
+                        </Button>
                       ) : (
                         <Button asChild size="sm">
                           <Link to={`/checkout/${course.id}`}>

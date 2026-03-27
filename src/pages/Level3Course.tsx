@@ -40,12 +40,12 @@ const Course = () => {
   const [localCompletedSections, setLocalCompletedSections] = useState<number[]>([]);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (user) {
         setIsAuthenticated(true);
         setUserEmail(user.email || null);
-        checkAdminStatus(user.id);
-        checkEnrollmentStatus(user.id);
+        const adminStatus = await checkAdminStatus(user.id);
+        checkEnrollmentStatus(user.id, adminStatus);
       } else {
         // Redirect to login if not authenticated (match Level 2 behavior)
         navigate('/auth?redirect=/course/level3');

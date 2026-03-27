@@ -183,7 +183,7 @@ const Level2Course = () => {
   useEffect(() => {
     if (!isPageVisible) return; // Skip auth check if page not visible
     
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (user) {
         setIsAuthenticated(true);
         setDebugUserId(user.id);
