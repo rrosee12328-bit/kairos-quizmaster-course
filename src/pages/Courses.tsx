@@ -292,6 +292,34 @@ const Courses = () => {
     return enrollments.some(e => e.course_type === courseId && e.enrollment_status === 'enrolled');
   };
 
+  const verifyAdminStatus = async () => {
+    if (isAdmin) return true;
+    if (!user) return false;
+
+    const { data, error } = await supabase.rpc('is_admin', { _user_id: user.id });
+    if (!error && data) {
+      setIsAdmin(true);
+      return true;
+    }
+
+    return false;
+  };
+
+  const handleCourseAccess = async (course: { id: string; route: string }, enrolled: boolean) => {
+    if (enrolled) {
+      navigate(course.route);
+      return;
+    }
+
+    const adminVerified = await verifyAdminStatus();
+    if (adminVerified) {
+      navigate(course.route);
+      return;
+    }
+
+    navigate(`/checkout/${course.id}`);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
       <CourseHeader isAdmin={isAdmin} isLoggedIn={!!user} />
@@ -305,9 +333,9 @@ const Courses = () => {
               Professional certification programs for security officers
             </p>
             {user && (
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => fetchEnrollments(user.id, true)}
                 disabled={refreshing}
                 className="mt-4"
@@ -321,12 +349,12 @@ const Courses = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {courses.map((course) => {
               const enrolled = isEnrolled(course.id);
-              
+
               return (
-                <Card 
-                  key={course.id} 
+                <Card
+                  key={course.id}
                   className="overflow-hidden hover:shadow-lg transition-all hover:scale-105 cursor-pointer"
-                  onClick={() => (enrolled || isAdmin) ? navigate(course.route) : navigate(`/checkout/${course.id}`)}
+                  onClick={() => void handleCourseAccess(course, enrolled)}
                 >
                   <CardContent className="p-4 text-center space-y-3">
                     <div className={`w-16 h-16 mx-auto rounded-full ${course.color} flex items-center justify-center`}>
@@ -354,7 +382,7 @@ const Courses = () => {
             <h3 className="text-2xl font-bold text-center mb-6">Course Details</h3>
             {courses.map((course) => {
               const enrolled = isEnrolled(course.id);
-              
+
               return (
                 <Card key={course.id} className="overflow-hidden">
                   <CardHeader className="pb-4">
@@ -371,7 +399,7 @@ const Courses = () => {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <p className="text-sm text-muted-foreground line-clamp-2">{course.description}</p>
-                    
+
                     <div className="flex gap-4 text-sm">
                       <div className="flex items-center gap-2">
                         <BookOpen className="h-4 w-4 text-muted-foreground" />
@@ -385,28 +413,10 @@ const Courses = () => {
 
                     <div className="flex items-center justify-between pt-2">
                       <p className="text-xl font-bold">{course.price}</p>
-                      {enrolled ? (
-                        <Button asChild size="sm">
-                          <Link to={course.route}>
-                            Continue
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                          </Link>
-                        </Button>
-                      ) : isAdmin ? (
-                        <Button asChild size="sm">
-                          <Link to={course.route}>
-                            View Course
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                          </Link>
-                        </Button>
-                      ) : (
-                        <Button asChild size="sm">
-                          <Link to={`/checkout/${course.id}`}>
-                            View Details
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                          </Link>
-                        </Button>
-                      )}
+                      <Button size="sm" onClick={() => void handleCourseAccess(course, enrolled)}>
+                        {enrolled || isAdmin ? 'Continue' : 'View Details'}
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
