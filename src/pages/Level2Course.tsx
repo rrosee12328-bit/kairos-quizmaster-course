@@ -389,11 +389,13 @@ const Level2Course = () => {
     }
   }, [isPageVisible, videosLoaded]);
 
-  const checkAdminStatus = async (userId: string) => {
+  const checkAdminStatus = async (userId: string): Promise<boolean> => {
     const { data, error } = await supabase.rpc('is_admin', { _user_id: userId });
     if (!error && data) {
       setIsAdmin(true);
+      return true;
     }
+    return false;
   };
 
   const checkEnrollmentStatus = async (userId: string) => {
