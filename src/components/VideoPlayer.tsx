@@ -96,17 +96,17 @@ const VideoPlayer = ({
   // Extract Bunny.net identifiers from either iframe or HLS URL
   const extractIdsFromUrl = (url: string) => {
     // iframe.mediadelivery.net/embed/{libraryId}/{videoId}
-    const iframeMatch = url.match(/iframe\.mediadelivery\.net\/embed\/(\d+)\/([a-f0-9-]+)/i);
+    const iframeMatch = url.match(/iframe\.mediadelivery\.net\/embed\/(\d+)\/([^/?#]+)/i);
     if (iframeMatch) {
       return { libraryId: iframeMatch[1], videoId: iframeMatch[2] };
     }
     // generic embed/{libraryId}/{videoId}
-    const embedMatch = url.match(/embed\/(\d+)\/([a-f0-9-]+)/i);
+    const embedMatch = url.match(/embed\/(\d+)\/([^/?#]+)/i);
     if (embedMatch) {
       return { libraryId: embedMatch[1], videoId: embedMatch[2] };
     }
     // HLS signed URL: https://{cdn}/{videoId}/playlist.m3u8?token=...&expires=...
-    const hlsMatch = url.match(/https?:\/\/[^/]+\/([a-f0-9-]+)\/playlist\.m3u8/i);
+    const hlsMatch = url.match(/https?:\/\/[^/]+\/([^/?#]+)\/playlist\.m3u8/i);
     if (hlsMatch) {
       return { libraryId: undefined as unknown as string, videoId: hlsMatch[1] };
     }
@@ -157,9 +157,10 @@ const VideoPlayer = ({
         setError(null);
         return;
       }
-      // videoUrl is set but we couldn't extract an ID — that's a real error
-      console.error('[VideoPlayer] No video ID found for section:', section.id, section.videoUrl);
-      setError('Video ID not found. Please contact support.');
+      // Last-resort fallback: if URL exists but ID extraction failed, still try rendering it directly
+      console.warn('[VideoPlayer] Could not extract video ID, using direct URL fallback:', section.videoUrl);
+      setIframeUrl(section.videoUrl);
+      setError(null);
       setLoading(false);
       return;
     }
@@ -191,15 +192,18 @@ const VideoPlayer = ({
         });
 
         if (error) throw error;
-        
-        // Use iframe URL from Bunny
-        const url = data?.iframeUrl || section.videoUrl;
+
+        // Prefer signed iframe URL, otherwise fall back to a deterministic Bunny embed URL
+        const url = data?.iframeUrl || `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}`;
         console.log('[VideoPlayer] Using Bunny iframe URL:', url);
         setIframeUrl(url);
         setLoading(false);
       } catch (err) {
         console.error('[VideoPlayer] Error fetching iframe URL:', err);
-        setError('Failed to load video');
+        // Final fallback: try unsigned embed URL instead of hard-failing
+        const fallbackUrl = `https://iframe.mediadelivery.net/embed/${libraryId}/${videoId}`;
+        setIframeUrl(fallbackUrl);
+        setError(null);
         setLoading(false);
       }
     };
