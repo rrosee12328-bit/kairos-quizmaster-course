@@ -151,12 +151,16 @@ const VideoPlayer = ({
     if (!isActive) return;
 
     if (!videoId) {
-      // Don't show error if videoUrl is empty (still loading from parent)
-      if (section.videoUrl) {
-        console.error('[VideoPlayer] No video ID found for section:', section.id, section.videoUrl);
-        setError('Video ID not found. Please contact support.');
+      // If videoUrl is empty/not set yet, stay in loading state — parent is still fetching
+      if (!section.videoUrl) {
+        setLoading(true);
+        setError(null);
+        return;
       }
-      setLoading(!!section.videoUrl === false);
+      // videoUrl is set but we couldn't extract an ID — that's a real error
+      console.error('[VideoPlayer] No video ID found for section:', section.id, section.videoUrl);
+      setError('Video ID not found. Please contact support.');
+      setLoading(false);
       return;
     }
 
