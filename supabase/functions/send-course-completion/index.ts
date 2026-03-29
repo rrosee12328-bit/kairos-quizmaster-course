@@ -162,7 +162,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
                     </div>
                   </div>
                 `
-                : passed && courseType === 'level4'
+                : passed && normalizedCourseType === 'level4'
                 ? `
                   <div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
                     <p style="margin: 0; font-size: 18px; font-weight: bold; color: #1e40af;">📅 Schedule Your In-Person Training (Part 2)</p>
