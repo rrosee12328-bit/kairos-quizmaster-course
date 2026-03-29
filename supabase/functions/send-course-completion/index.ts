@@ -108,7 +108,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 ${passed ? '<p style="margin-top: 10px; font-size: 14px;">PASSED ✓</p>' : '<p style="margin-top: 10px; font-size: 14px;">Did not meet passing requirements</p>'}
               </div>
               
-              ${passed && courseType === 'level2' && registrationNumber 
+              ${passed && normalizedCourseType === 'level2' && registrationNumber 
                 ? `
                   <p><strong>Certificate Registration Number:</strong> ${registrationNumber}</p>
                   <p>Your certificate has been generated and is available in your user profile. You can download it at any time by logging into your account.</p>
