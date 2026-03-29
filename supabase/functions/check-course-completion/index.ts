@@ -10,7 +10,7 @@ const corsHeaders = {
 const COURSE_DURATIONS: Record<string, number> = {
   'level2': 60 * 60 * 6, // 6 hours
   'level3': 60 * 60 * 3, // 3 hours (actual video content length)
-  'level4': 60 * 60 * 15, // 15 hours
+  'level4': 2400, // ~40 minutes (single video section, actual duration ~2308s)
   'pepper_spray': 60 * 20, // 20 minutes
 };
 
