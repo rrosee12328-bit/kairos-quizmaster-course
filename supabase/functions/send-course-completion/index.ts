@@ -10,7 +10,7 @@ const corsHeaders = {
 const courseCompletionSchema = z.object({
   email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters"),
   studentName: z.string().trim().min(1, "Student name is required").max(100, "Name must be less than 100 characters").regex(/^[a-zA-Z\s'-]+$/, "Name contains invalid characters"),
-  courseType: z.enum(["level2", "level3", "level4", "pepper-spray"], { errorMap: () => ({ message: "Invalid course type" }) }),
+  courseType: z.enum(["level2", "level3", "level4", "level-4", "pepper-spray"], { errorMap: () => ({ message: "Invalid course type" }) }),
   score: z.number().int().min(0, "Score must be non-negative").max(1000, "Score exceeds maximum"),
   totalQuestions: z.number().int().min(1, "Total questions must be at least 1").max(1000, "Total questions exceeds maximum"),
   percentage: z.number().min(0, "Percentage must be at least 0").max(100, "Percentage must not exceed 100"),
@@ -63,9 +63,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
       ? 'Level 2 Security Officer Certification' 
       : courseType === 'level3'
       ? 'Level 3 Security Officer Certification (Part 1 - Online)'
-      : courseType === 'level4'
+      : (courseType === 'level4' || courseType === 'level-4')
       ? 'Level 4 Personal Protection Officer (Part 1 - Online)'
       : 'Pepper Spray Training Certification';
+    
+    const normalizedCourseType = courseType === 'level-4' ? 'level4' : courseType;
 
     const subject = passed 
       ? `🎉 Congratulations! You passed ${courseTitle}!`
@@ -106,7 +108,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 ${passed ? '<p style="margin-top: 10px; font-size: 14px;">PASSED ✓</p>' : '<p style="margin-top: 10px; font-size: 14px;">Did not meet passing requirements</p>'}
               </div>
               
-              ${passed && courseType === 'level2' && registrationNumber 
+              ${passed && normalizedCourseType === 'level2' && registrationNumber 
                 ? `
                   <p><strong>Certificate Registration Number:</strong> ${registrationNumber}</p>
                   <p>Your certificate has been generated and is available in your user profile. You can download it at any time by logging into your account.</p>
@@ -119,7 +121,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
                     </div>
                   </div>
                 `
-                : passed && courseType === 'pepper-spray' && registrationNumber
+                : passed && normalizedCourseType === 'pepper-spray' && registrationNumber
                 ? `
                   <p><strong>Certificate Registration Number:</strong> ${registrationNumber}</p>
                   <p>Your Pepper Spray Training certificate has been generated and is available in your user profile. You can download it at any time by logging into your account.</p>
@@ -132,7 +134,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
                     </div>
                   </div>
                 `
-                : passed && courseType === 'level3'
+                : passed && normalizedCourseType === 'level3'
                 ? `
                   <div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
                     <p style="margin: 0; font-size: 18px; font-weight: bold; color: #1e40af;">📅 Schedule Your In-Person Training (Part 2)</p>
@@ -160,7 +162,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
                     </div>
                   </div>
                 `
-                : passed && courseType === 'level4'
+                : passed && normalizedCourseType === 'level4'
                 ? `
                   <div style="background: #dbeafe; border: 2px solid #3b82f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
                     <p style="margin: 0; font-size: 18px; font-weight: bold; color: #1e40af;">📅 Schedule Your In-Person Training (Part 2)</p>
@@ -204,7 +206,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
               
               <p>Best regards,<br>The Kairos Security Academy Team</p>
               
-              ${courseType === 'level3' && passed 
+              ${normalizedCourseType === 'level3' && passed 
                 ? `
                   <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 20px; border-radius: 8px; margin-top: 20px;">
                     <p style="margin: 0; color: #856404; font-weight: bold; font-size: 16px;">⚠️ NEXT STEPS REQUIRED</p>
@@ -214,7 +216,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 `
                 : ''
               }
-              ${courseType === 'level4' && passed 
+              ${(normalizedCourseType === 'level4') && passed 
                 ? `
                   <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 20px; border-radius: 8px; margin-top: 20px;">
                     <p style="margin: 0; color: #856404; font-weight: bold; font-size: 16px;">⚠️ NEXT STEPS REQUIRED</p>
