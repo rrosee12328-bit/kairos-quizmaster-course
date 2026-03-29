@@ -121,7 +121,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
                     </div>
                   </div>
                 `
-                : passed && courseType === 'pepper-spray' && registrationNumber
+                : passed && normalizedCourseType === 'pepper-spray' && registrationNumber
                 ? `
                   <p><strong>Certificate Registration Number:</strong> ${registrationNumber}</p>
                   <p>Your Pepper Spray Training certificate has been generated and is available in your user profile. You can download it at any time by logging into your account.</p>
