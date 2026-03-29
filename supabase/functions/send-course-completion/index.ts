@@ -216,7 +216,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 `
                 : ''
               }
-              ${courseType === 'level4' && passed 
+              ${(normalizedCourseType === 'level4') && passed 
                 ? `
                   <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 20px; border-radius: 8px; margin-top: 20px;">
                     <p style="margin: 0; color: #856404; font-weight: bold; font-size: 16px;">⚠️ NEXT STEPS REQUIRED</p>
