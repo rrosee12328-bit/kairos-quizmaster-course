@@ -63,9 +63,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
       ? 'Level 2 Security Officer Certification' 
       : courseType === 'level3'
       ? 'Level 3 Security Officer Certification (Part 1 - Online)'
-      : courseType === 'level4'
+      : (courseType === 'level4' || courseType === 'level-4')
       ? 'Level 4 Personal Protection Officer (Part 1 - Online)'
       : 'Pepper Spray Training Certification';
+    
+    const normalizedCourseType = courseType === 'level-4' ? 'level4' : courseType;
 
     const subject = passed 
       ? `🎉 Congratulations! You passed ${courseTitle}!`
