@@ -10,7 +10,7 @@ const corsHeaders = {
 const adminNotificationSchema = z.object({
   studentName: z.string().trim().min(1, "Student name is required").max(100, "Name must be less than 100 characters").regex(/^[a-zA-Z\s'-]+$/, "Name contains invalid characters"),
   studentEmail: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters"),
-  courseType: z.enum(["level2", "level3", "level4", "pepper-spray"], { errorMap: () => ({ message: "Invalid course type" }) }),
+  courseType: z.enum(["level2", "level3", "level4", "level-4", "pepper-spray"], { errorMap: () => ({ message: "Invalid course type" }) }),
   score: z.number().int().min(0, "Score must be non-negative").max(1000, "Score exceeds maximum"),
   totalQuestions: z.number().int().min(1, "Total questions must be at least 1").max(1000, "Total questions exceeds maximum"),
   percentage: z.number().min(0, "Percentage must be at least 0").max(100, "Percentage must not exceed 100"),
