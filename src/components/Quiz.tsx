@@ -603,7 +603,9 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
                 )}
               </div>
             )}
-            
+
+            {passed && <CourseNextSteps courseType={courseType} />}
+
             <div className="space-y-4">
               <h3 className="font-semibold text-lg">
                 {passed 
