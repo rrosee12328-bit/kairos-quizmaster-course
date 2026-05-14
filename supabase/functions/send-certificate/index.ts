@@ -69,9 +69,6 @@ async function generateCertificatePDF(
     const templateFileName = courseType === 'pepper-spray' 
       ? 'pepper-spray-certificate-template.pdf' 
       : 'level2-certificate-template.pdf';
-    
-    const templateUrl =
-      `https://cpjamwmwzrgqhfnirikz.supabase.co/storage/v1/object/public/certificates/${templateFileName}`;
 
     let pdfDoc: any;
     let page: any;
@@ -79,14 +76,18 @@ async function generateCertificatePDF(
     let pageHeight: number;
 
     try {
-      console.log("Fetching PDF template from:", templateUrl);
-      const templateResponse = await fetch(templateUrl);
-      
-      if (!templateResponse.ok) {
-        throw new Error(`Template fetch failed: ${templateResponse.status} ${templateResponse.statusText}`);
+      console.log("Downloading PDF template via service role:", templateFileName);
+      const adminClient = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      );
+      const { data: templateBlob, error: templateError } = await adminClient.storage
+        .from("certificates")
+        .download(templateFileName);
+      if (templateError || !templateBlob) {
+        throw new Error(`Template download failed: ${templateError?.message || "no data"}`);
       }
-
-      const templatePdfBytes = await templateResponse.arrayBuffer();
+      const templatePdfBytes = await templateBlob.arrayBuffer();
       console.log("Template PDF loaded, size:", templatePdfBytes.byteLength);
       
       // Load the template PDF
