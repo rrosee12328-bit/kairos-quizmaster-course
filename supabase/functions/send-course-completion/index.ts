@@ -73,6 +73,96 @@ Deno.serve(async (req: Request): Promise<Response> => {
       ? `🎉 Congratulations! You passed ${courseTitle}!`
       : `Course Completion Notification - ${courseTitle}`;
 
+    const TOPS_URL = "https://www.dps.texas.gov/section/private-security/tops";
+    const IDENTOGO_URL = "https://www.identogo.com";
+    const CALENDLY_URL = "https://calendly.com/kairossecurity/30min";
+    const PROFILE_URL = "https://kairossecurityacademy.com/profile";
+
+    const stepCard = (n: number, title: string, body: string, cta?: { label: string; href: string; color?: string }) => `
+      <div style="display:flex;gap:12px;margin:0 0 16px 0;">
+        <div style="flex:0 0 32px;height:32px;border-radius:9999px;background:#3b82f6;color:#ffffff;font-weight:bold;text-align:center;line-height:32px;">${n}</div>
+        <div style="flex:1;">
+          <p style="margin:4px 0 6px 0;font-weight:bold;color:#111827;">${title}</p>
+          <div style="margin:0;font-size:14px;color:#4b5563;line-height:1.5;">${body}</div>
+          ${cta ? `<p style="margin:10px 0 0 0;"><a href="${cta.href}" target="_blank" style="display:inline-block;background:${cta.color || '#3b82f6'};color:#ffffff;padding:10px 18px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:14px;">${cta.label}</a></p>` : ''}
+        </div>
+      </div>
+    `;
+
+    const remindersBlock = `
+      <div style="background:#fff3cd;border:2px solid #ffc107;padding:16px;border-radius:8px;margin:20px 0;">
+        <p style="margin:0 0 8px 0;color:#856404;font-weight:bold;">⚠️ Important Reminders</p>
+        <ul style="margin:0;padding-left:20px;color:#856404;font-size:14px;line-height:1.6;">
+          <li>Make sure all information submitted to DPS is accurate.</li>
+          <li>Delays in fingerprinting, MMPI evaluations, or document uploads may delay your license approval.</li>
+          <li>Keep copies of all certificates and receipts for your records.</li>
+          <li>Monitor your TOPS account regularly for status updates and additional instructions from DPS.</li>
+        </ul>
+      </div>
+    `;
+
+    let nextStepsBlock = '';
+    if (passed) {
+      if (normalizedCourseType === 'level2') {
+        nextStepsBlock = `
+          <div style="background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:20px;margin:20px 0;">
+            <h2 style="margin:0 0 16px 0;font-size:18px;color:#111827;">Next Steps — Non-Commissioned Security Officer (Level II)</h2>
+            ${stepCard(1, 'Complete your online training course', '✓ Done — you\\'ve passed the exam.')}
+            ${stepCard(2, 'Download & print your certificate', 'Save a copy for your records and to upload to TOPS.', { label: 'Download Certificate', href: PROFILE_URL, color: '#22c55e' })}
+            ${stepCard(3, 'Create a TOPS account', 'Apply for your Non-Commissioned Security Officer License (Level II).', { label: 'Open TOPS', href: TOPS_URL })}
+            ${stepCard(4, 'Upload your certificate', 'Attach your Level II training certificate to your TOPS application.')}
+            ${stepCard(5, 'Schedule fingerprinting appointment', 'Required by Texas DPS.', { label: 'Schedule at IdentoGO', href: IDENTOGO_URL })}
+            ${stepCard(6, 'Wait for DPS approval', 'Once approved, your license status will update in TOPS and your physical license will be mailed to you.')}
+            ${remindersBlock}
+          </div>
+        `;
+      } else if (normalizedCourseType === 'level3') {
+        nextStepsBlock = `
+          <div style="background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:20px;margin:20px 0;">
+            <h2 style="margin:0 0 16px 0;font-size:18px;color:#111827;">Next Steps — Commissioned Security Officer (Level III Armed)</h2>
+            ${stepCard(1, 'Complete your online Level III course', '✓ Done — you\\'ve passed Part 1.')}
+            ${stepCard(2, 'Schedule your firearm proficiency exam', 'In-person exam with a Kairos Security licensed instructor.', { label: 'Schedule with Kairos', href: CALENDLY_URL })}
+            ${stepCard(3, 'Apply through TOPS', 'Create your account and apply for your Commissioned Security Officer License (Level III).', { label: 'Open TOPS', href: TOPS_URL })}
+            ${stepCard(4, 'Schedule fingerprinting', 'Required by Texas DPS.', { label: 'Schedule at IdentoGO', href: IDENTOGO_URL })}
+            ${stepCard(5, 'Schedule your MMPI psychological evaluation', 'Required by DPS. The psychiatrist is independent — Kairos Security is not affiliated with the evaluating psychiatrist.')}
+            ${stepCard(6, 'Attend your firearm proficiency exam', '<p style="margin:0 0 8px 0;">Your instructor will contact you with instructions. Please bring:</p><ul style="margin:0;padding-left:20px;"><li>Your semi-automatic firearm</li><li>50 rounds of ammunition</li><li>Eye protection (recommended)</li><li>Ear protection (recommended)</li></ul>')}
+            ${stepCard(7, 'Receive your firearm proficiency certificate', 'Issued by your instructor once you successfully pass.')}
+            ${stepCard(8, 'Upload certificate to TOPS', 'Log back into TOPS and upload your firearm proficiency certificate plus any remaining DPS requirements.')}
+            ${stepCard(9, 'Wait for DPS approval', 'DPS reviews your application, fingerprints, MMPI evaluation, and firearm proficiency certificate. Your license will be mailed once approved.')}
+            ${remindersBlock}
+          </div>
+        `;
+      } else if (normalizedCourseType === 'level4') {
+        nextStepsBlock = `
+          <div style="background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:20px;margin:20px 0;">
+            <h2 style="margin:0 0 16px 0;font-size:18px;color:#111827;">Next Steps — Personal Protection Officer (Level IV PPO)</h2>
+            <div style="background:#fef2f2;border:2px solid #ef4444;padding:14px;border-radius:8px;margin:0 0 16px 0;">
+              <p style="margin:0 0 6px 0;color:#991b1b;font-weight:bold;">⚠️ Prerequisite</p>
+              <p style="margin:0;color:#991b1b;font-size:14px;">Before applying for a PPO license, you must already hold an active <strong>Commissioned Security Officer License (Level III)</strong>.</p>
+            </div>
+            ${stepCard(1, 'Complete your PPO training course', '✓ Done — you\\'ve passed Part 1 (Online).')}
+            ${stepCard(2, 'Follow the same DPS steps as a Level III officer', 'Apply through TOPS, schedule fingerprinting through IdentoGO, complete any required firearm proficiency, and any DPS-required evaluations or documentation.')}
+            <div style="margin:0 0 16px 44px;display:flex;flex-wrap:wrap;gap:8px;">
+              <a href="${TOPS_URL}" target="_blank" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:8px 14px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:13px;">Open TOPS</a>
+              <a href="${IDENTOGO_URL}" target="_blank" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:8px 14px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:13px;">Schedule at IdentoGO</a>
+              <a href="${CALENDLY_URL}" target="_blank" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:8px 14px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:13px;">Schedule with Kairos</a>
+            </div>
+            ${stepCard(3, 'Upload required documents', 'Upload all required certificates and documents to your TOPS account.')}
+            ${stepCard(4, 'Wait for DPS approval', 'Once DPS approves your application, your PPO license status will update in TOPS and your license will be mailed to you.')}
+            ${remindersBlock}
+          </div>
+        `;
+      } else if (normalizedCourseType === 'pepper-spray') {
+        nextStepsBlock = `
+          <div style="background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:20px;margin:20px 0;">
+            <h2 style="margin:0 0 16px 0;font-size:18px;color:#111827;">Next Steps — Pepper Spray Certification</h2>
+            ${stepCard(1, 'Download your certificate', 'Keep a copy on file for employers and your records.', { label: 'Download Certificate', href: PROFILE_URL, color: '#22c55e' })}
+            <p style="margin:8px 0 0 0;font-size:13px;color:#6b7280;">Pepper Spray Training is a supplemental certification and is not a Texas DPS license.</p>
+          </div>
+        `;
+      }
+    }
+
     const html = `
       <!DOCTYPE html>
       <html>
