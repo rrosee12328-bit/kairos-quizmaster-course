@@ -116,8 +116,9 @@ const Profile = () => {
         .eq('email', userEmail)
         .is('user_id', null);
 
-      // Fetch profile, enrollments, completions, certificates in parallel
-      const [profileResult, enrollmentResult, completionResult, certificateResult] = await Promise.all([
+      // Fetch profile, enrollments, completions, certificates, and the latest
+      // active Level 3 approval in parallel.
+      const [profileResult, enrollmentResult, completionResult, certificateResult, approvalResult] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
         supabase.from('enrollments')
           .select('id, course_type, enrollment_status, created_at, first_name, last_name')
@@ -131,11 +132,22 @@ const Profile = () => {
           .select('id, course_type, registration_number, completion_date, student_name, completion_id')
           .eq('user_id', userId)
           .order('issued_at', { ascending: false }),
+        supabase.from('level3_approvals')
+          .select('approval_code, expires_at, used')
+          .eq('user_id', userId)
+          .eq('used', false)
+          .gt('expires_at', new Date().toISOString())
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
       ]);
 
       if (!alive) return;
       
-      setProfile(profileResult.data);
+      const profileData = profileResult.data
+        ? { ...profileResult.data, level3_approval_code: approvalResult.data?.approval_code ?? null }
+        : null;
+      setProfile(profileData);
       setEnrollments(enrollmentResult.data || []);
       setCompletions(completionResult.data || []);
       setCertificates(certificateResult.data || []);

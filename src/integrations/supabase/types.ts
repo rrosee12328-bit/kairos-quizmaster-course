@@ -391,7 +391,6 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
-          level3_approval_code: string | null
           phone_number: string | null
           state: string | null
           updated_at: string | null
@@ -405,7 +404,6 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
-          level3_approval_code?: string | null
           phone_number?: string | null
           state?: string | null
           updated_at?: string | null
@@ -419,7 +417,6 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
-          level3_approval_code?: string | null
           phone_number?: string | null
           state?: string | null
           updated_at?: string | null

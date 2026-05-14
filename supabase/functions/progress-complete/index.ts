@@ -37,7 +37,17 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const body = await req.json();
     const course_id = String(body?.course_id || '').trim();
     const section_id = Number(body?.section_id);
-    const seconds_watched = Number(body?.seconds_watched || 0);
+    const raw_seconds_watched = Number(body?.seconds_watched || 0);
+    const total_duration = Number(body?.total_duration || 0);
+    // Server-side cap to prevent inflated watch-time values from unlocking the exam gate.
+    const ABSOLUTE_MAX_SECONDS = 4 * 60 * 60;
+    const perSectionCap = total_duration > 0
+      ? Math.min(Math.ceil(total_duration * 1.05), ABSOLUTE_MAX_SECONDS)
+      : ABSOLUTE_MAX_SECONDS;
+    const seconds_watched = Math.min(
+      Math.max(0, Math.floor(raw_seconds_watched)),
+      perSectionCap,
+    );
 
     if (!course_id || !Number.isFinite(section_id)) {
       return new Response(JSON.stringify({ error: 'Invalid payload' }), {
@@ -56,7 +66,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       .maybeSingle();
 
     const payload: any = {
-      video_watch_time_seconds: Math.max(0, Math.floor(seconds_watched)),
+      video_watch_time_seconds: seconds_watched,
       completed: true,
       completed_at: new Date().toISOString(),
     };

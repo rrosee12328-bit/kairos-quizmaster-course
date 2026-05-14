@@ -275,12 +275,7 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
           try {
             await supabase.functions.invoke('send-certificate', {
               body: {
-                name: fullName,
-                email: user.email,
-                date: certData.completion_date,
                 registrationNumber: certData.registration_number,
-                lastSixDigits: enrollment.last_six_digits,
-                courseType: courseType,
               }
             });
             console.log('Certificate email with PDF sent successfully');
@@ -316,12 +311,6 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
         if (!approvalError && approvalData) {
           approvalCode = approvalData.approval_code;
           approvalExpiresAt = new Date(approvalData.expires_at).toLocaleString();
-          
-          // Save approval code to user's profile
-          await supabase
-            .from('profiles')
-            .update({ level3_approval_code: approvalCode })
-            .eq('id', user.id);
         }
       }
     }
