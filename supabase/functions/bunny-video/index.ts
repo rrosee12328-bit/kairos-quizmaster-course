@@ -59,7 +59,29 @@ serve(async (req) => {
   }
 
   try {
-    // Function is public (verify_jwt = false), no auth check needed
+    // Require auth: this function streams paid course content.
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims?.sub) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    const userId = claimsData.claims.sub as string;
+
     const userAgent = req.headers.get('user-agent') || 'unknown';
     const referrer = req.headers.get('referer') || req.headers.get('origin') || 'unknown';
     const device = /Mobile|Android|iPhone/i.test(userAgent) ? 'mobile' : 'desktop';
@@ -89,6 +111,55 @@ serve(async (req) => {
     }
 
     const { action, videoId, title, collectionId, libraryId, expiresInHours } = validationResult.data;
+
+    // Authorization: enrollment or admin check.
+    // Admin actions (create/list/get raw video) require admin role.
+    // getSignedUrl requires enrollment in the course matching this library, or admin.
+    const serviceClient = createClient(
+      supabaseUrl,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    );
+    const { data: isAdminData } = await serviceClient.rpc('is_admin', { _user_id: userId });
+    const isAdmin = !!isAdminData;
+
+    const libraryCourseMap: Record<string, string> = {
+      '510506': 'level2',
+      '506173': 'level3',
+      '512706': 'level4',
+      '512130': 'pepper-spray',
+    };
+
+    if (action !== 'getSignedUrl') {
+      // Admin-only operations against the Bunny management API.
+      if (!isAdmin) {
+        return new Response(
+          JSON.stringify({ error: 'Forbidden: admin only' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    } else if (!isAdmin) {
+      const courseType = libraryCourseMap[libraryId];
+      if (!courseType) {
+        return new Response(
+          JSON.stringify({ error: 'Unknown course library' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      const { data: enrollment } = await serviceClient
+        .from('enrollments')
+        .select('id, enrollment_status')
+        .eq('user_id', userId)
+        .eq('course_type', courseType)
+        .in('enrollment_status', ['enrolled', 'completed', 'active', 'paid'])
+        .maybeSingle();
+      if (!enrollment) {
+        return new Response(
+          JSON.stringify({ error: 'Course not purchased. Please enroll to access videos.' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
     const selectedApiKey = getApiKey(libraryId);
     const requireApiKey = action !== 'getSignedUrl';
     if (requireApiKey && !selectedApiKey) {
