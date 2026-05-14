@@ -311,12 +311,6 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
         if (!approvalError && approvalData) {
           approvalCode = approvalData.approval_code;
           approvalExpiresAt = new Date(approvalData.expires_at).toLocaleString();
-          
-          // Save approval code to user's profile
-          await supabase
-            .from('profiles')
-            .update({ level3_approval_code: approvalCode })
-            .eq('id', user.id);
         }
       }
     }
