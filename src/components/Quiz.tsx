@@ -275,12 +275,7 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
           try {
             await supabase.functions.invoke('send-certificate', {
               body: {
-                name: fullName,
-                email: user.email,
-                date: certData.completion_date,
                 registrationNumber: certData.registration_number,
-                lastSixDigits: enrollment.last_six_digits,
-                courseType: courseType,
               }
             });
             console.log('Certificate email with PDF sent successfully');
