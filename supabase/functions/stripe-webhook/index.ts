@@ -161,7 +161,6 @@ serve(async (req) => {
               lastName: enrollmentData.lastName,
               phone: enrollmentData.phone,
             },
-            isWebhook: true, // Flag to skip auth check
           },
         });
         console.log("[stripe-webhook] Conversion tracked successfully");

@@ -25,24 +25,20 @@ Deno.serve(async (req: Request): Promise<Response> => {
       })
     }
 
-    // Look up the certificate by registration number
-    const { data: certificate, error } = await supabase
-      .from('certificates')
-      .select('*')
-      .eq('registration_number', registrationNumber)
-      .single()
-
-    if (error || !certificate) {
-      return new Response('Certificate not found', { 
-        status: 404,
-        headers: corsHeaders 
+    // Validate registration number format (do NOT leak whether it exists)
+    if (!/^[A-Z0-9-]{1,64}$/.test(registrationNumber)) {
+      return new Response('Invalid registration number', {
+        status: 400,
+        headers: corsHeaders,
       })
     }
 
-    // Redirect to certificate preview page with auto-download flag
+    // Redirect to the authenticated certificate preview page.
+    // The preview page itself enforces auth + ownership and fetches PII via RLS.
+    // We intentionally do NOT include student name or ID digits in the URL.
     const appOriginParam = url.searchParams.get('o')
     const appOrigin = appOriginParam || req.headers.get('origin') || 'https://6f154051-1d90-4f63-8797-9c4db01924c2.lovableproject.com'
-    const redirectUrl = `${appOrigin}/certificate-preview?name=${encodeURIComponent(certificate.student_name)}&id=${encodeURIComponent(certificate.identification_type)}&lastSix=${encodeURIComponent(certificate.last_six_digits)}&date=${encodeURIComponent(certificate.completion_date)}&download=true`
+    const redirectUrl = `${appOrigin}/certificate-preview?registration=${encodeURIComponent(registrationNumber)}&download=true`
 
     return new Response(null, {
       status: 302,

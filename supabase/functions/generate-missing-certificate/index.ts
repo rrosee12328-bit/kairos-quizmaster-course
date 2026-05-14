@@ -5,19 +5,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-function parseJwt(token: string) {
-  try {
-    const base64Url = token.split('.')[1]
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-    }).join(''))
-    return JSON.parse(jsonPayload)
-  } catch (_) {
-    return null
-  }
-}
-
 Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -28,19 +15,27 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
-    // Extract user from Authorization header (avoid auth.getUser flakiness)
+    // Cryptographically verify the JWT via Supabase
     const authHeader = req.headers.get('Authorization') || ''
-    const jwt = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
-    const claims = jwt ? parseJwt(jwt) : null
-    const userId = claims?.sub as string | undefined
-    const userEmail = claims?.email as string | undefined
-
-    if (!userId) {
+    if (!authHeader.startsWith('Bearer ')) {
       return new Response(
         JSON.stringify({ error: 'Authentication required' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
+    const jwt = authHeader.slice(7)
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    })
+    const { data: userData, error: userErr } = await authClient.auth.getUser(jwt)
+    if (userErr || !userData?.user) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+    const userId = userData.user.id
+    const userEmail = userData.user.email
 
     // Service client for database operations (bypass RLS where needed)
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
