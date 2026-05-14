@@ -12,6 +12,7 @@ import { pepperSprayExamQuestions } from "@/data/pepperSprayExamQuestions";
 import { level4ExamQuestions } from "@/data/level4ExamQuestions";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import CourseNextSteps from "@/components/CourseNextSteps";
 
 interface QuizQuestion {
   id: number;
