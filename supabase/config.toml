@@ -13,7 +13,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.generate-missing-certificate]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-certificate]
 verify_jwt = false
@@ -28,22 +28,22 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.send-course-completion]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-admin-notification]
-verify_jwt = false
+verify_jwt = true
 
 [functions.upload-certificate-template]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-beta-feedback]
 verify_jwt = false
 
 [functions.send-refund-notification]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-auth-email]
 verify_jwt = false
 
 [functions.send-custom-notification]
-verify_jwt = false
+verify_jwt = true
