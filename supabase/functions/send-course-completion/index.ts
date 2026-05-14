@@ -107,7 +107,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         nextStepsBlock = `
           <div style="background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:20px;margin:20px 0;">
             <h2 style="margin:0 0 16px 0;font-size:18px;color:#111827;">Next Steps — Non-Commissioned Security Officer (Level II)</h2>
-            ${stepCard(1, 'Complete your online training course', '✓ Done — you\\'ve passed the exam.')}
+            ${stepCard(1, 'Complete your online training course', '✓ Done — you\'ve passed the exam.')}
             ${stepCard(2, 'Download & print your certificate', 'Save a copy for your records and to upload to TOPS.', { label: 'Download Certificate', href: PROFILE_URL, color: '#22c55e' })}
             ${stepCard(3, 'Create a TOPS account', 'Apply for your Non-Commissioned Security Officer License (Level II).', { label: 'Open TOPS', href: TOPS_URL })}
             ${stepCard(4, 'Upload your certificate', 'Attach your Level II training certificate to your TOPS application.')}
@@ -120,7 +120,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         nextStepsBlock = `
           <div style="background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:20px;margin:20px 0;">
             <h2 style="margin:0 0 16px 0;font-size:18px;color:#111827;">Next Steps — Commissioned Security Officer (Level III Armed)</h2>
-            ${stepCard(1, 'Complete your online Level III course', '✓ Done — you\\'ve passed Part 1.')}
+            ${stepCard(1, 'Complete your online Level III course', '✓ Done — you\'ve passed Part 1.')}
             ${stepCard(2, 'Schedule your firearm proficiency exam', 'In-person exam with a Kairos Security licensed instructor.', { label: 'Schedule with Kairos', href: CALENDLY_URL })}
             ${stepCard(3, 'Apply through TOPS', 'Create your account and apply for your Commissioned Security Officer License (Level III).', { label: 'Open TOPS', href: TOPS_URL })}
             ${stepCard(4, 'Schedule fingerprinting', 'Required by Texas DPS.', { label: 'Schedule at IdentoGO', href: IDENTOGO_URL })}
@@ -140,7 +140,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
               <p style="margin:0 0 6px 0;color:#991b1b;font-weight:bold;">⚠️ Prerequisite</p>
               <p style="margin:0;color:#991b1b;font-size:14px;">Before applying for a PPO license, you must already hold an active <strong>Commissioned Security Officer License (Level III)</strong>.</p>
             </div>
-            ${stepCard(1, 'Complete your PPO training course', '✓ Done — you\\'ve passed Part 1 (Online).')}
+            ${stepCard(1, 'Complete your PPO training course', '✓ Done — you\'ve passed Part 1 (Online).')}
             ${stepCard(2, 'Follow the same DPS steps as a Level III officer', 'Apply through TOPS, schedule fingerprinting through IdentoGO, complete any required firearm proficiency, and any DPS-required evaluations or documentation.')}
             <div style="margin:0 0 16px 44px;display:flex;flex-wrap:wrap;gap:8px;">
               <a href="${TOPS_URL}" target="_blank" style="display:inline-block;background:#3b82f6;color:#ffffff;padding:8px 14px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:13px;">Open TOPS</a>
