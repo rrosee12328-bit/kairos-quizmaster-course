@@ -420,14 +420,6 @@ const Admin = () => {
 
       if (insertError) throw insertError;
 
-      // Update user's profile
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ level3_approval_code: newCode })
-        .eq('id', selectedCompletion.user_id);
-
-      if (updateError) throw updateError;
-
       sonnerToast.success(`Approval code ${newCode} generated successfully`);
       setShowGenerateDialog(false);
       setSelectedCompletion(null);
@@ -481,13 +473,6 @@ const Admin = () => {
         });
 
       if (insertError) throw insertError;
-
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ level3_approval_code: newCode })
-        .eq('id', approval.user_id);
-
-      if (updateError) throw updateError;
 
       sonnerToast.success(`New code ${newCode} generated`);
       fetchAllData();
