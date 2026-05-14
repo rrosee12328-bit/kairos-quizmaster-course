@@ -1,7 +1,7 @@
 project_id = "cpjamwmwzrgqhfnirikz"
 
 [functions.bunny-video]
-verify_jwt = false
+verify_jwt = true
 
 [functions.sync-enrollment]
 verify_jwt = true
