@@ -111,207 +111,62 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
       return false;
     }
 
-    const score = calculateScore(answers);
-    const percentage = Math.round((score / questions.length) * 100);
-    const passed = percentage >= passingPercentage;
+    // Score and persist server-side. The client never inserts completions or
+    // certificates — submit-exam validates answers against the server answer key.
+    const answerArray: number[] = questions.map((_, i) => answers[i] ?? -1);
+    const { data: result, error: submitError } = await supabase.functions.invoke('submit-exam', {
+      body: {
+        course_type: courseType,
+        answers: answerArray,
+        started_at: startTime,
+      },
+    });
 
-    // Check for existing passing completion before inserting
-    const { data: existingPassing } = await supabase
-      .from('course_completions')
-      .select('id, passed')
-      .eq('user_id', user.id)
-      .eq('course_type', courseType)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    // If there's already a passing completion, reuse it and don't insert again
-    if (existingPassing?.passed) {
-      console.warn('Reusing existing passing completion:', existingPassing.id);
-      completionSavedRef.current = true;
-      return true;
+    if (submitError || !result) {
+      console.error('submit-exam failed', submitError);
+      toast({
+        title: 'Error',
+        description: (submitError as any)?.message || 'Failed to submit your exam. Please contact support.',
+        variant: 'destructive',
+      });
+      return false;
     }
 
-    // Get enrollment data for user's name
+    const passed: boolean = !!result.passed;
+    const registrationNumber: string | null = result.registration_number ?? null;
+    const approvalCode: string | null = result.approval_code ?? null;
+    const approvalExpiresAt: string | null = result.approval_expires_at
+      ? new Date(result.approval_expires_at).toLocaleString()
+      : null;
+
+    // Look up enrollment for student-name display & emails
     const { data: enrollment } = await supabase
       .from('enrollments')
-      .select('first_name, last_name, last_six_digits, identification_type')
+      .select('first_name, last_name')
       .eq('user_id', user.id)
       .eq('course_type', courseType)
       .maybeSingle();
-
-    const fullName = enrollment 
-      ? `${enrollment.first_name} ${enrollment.last_name}` 
+    const fullName = enrollment
+      ? `${enrollment.first_name} ${enrollment.last_name}`
       : 'Student';
 
-    // Save course completion with attempt tracking
-    const endTime = new Date().toISOString();
-    const durationSeconds = Math.floor((new Date(endTime).getTime() - new Date(startTime).getTime()) / 1000);
-    
-    let completionData: { id: string; completed_at: string } | null = null;
-
-    const { data: newCompletion, error: completionError } = await supabase
-      .from('course_completions')
-      .insert({
-        user_id: user.id,
-        course_type: courseType,
-        score,
-        total_questions: questions.length,
-        percentage,
-        passed,
-        started_at: startTime,
-        ended_at: endTime,
-        duration_seconds: durationSeconds,
-        user_agent: navigator.userAgent
-      })
-      .select()
-      .single();
-
-    if (completionError) {
-      // Handle case where a passing completion already exists due to DB constraint
-      if (completionError.code === '23505' &&
-          (completionError as any).message?.includes('unique_passing_completion')) {
-        console.warn('Duplicate passing completion detected, reusing latest passing record');
-
-        const { data: existingCompletion, error: existingError } = await supabase
-          .from('course_completions')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('course_type', courseType)
-          .eq('passed', true)
-          .order('completed_at', { ascending: false })
-          .limit(1)
-          .single();
-
-        if (existingError || !existingCompletion) {
-          console.error('Error fetching existing completion after duplicate constraint:', existingError);
-          toast({
-            title: "Error",
-            description: "Failed to save your results. Please contact support.",
-            variant: "destructive",
-          });
-          return false;
-        }
-
-        completionData = existingCompletion;
-      } else {
-        console.error('Error saving completion:', completionError);
-        toast({
-          title: "Error",
-          description: "Failed to save your results. Please contact support.",
-          variant: "destructive",
+    // Trigger certificate email for Level 2 / Pepper Spray
+    if (passed && registrationNumber && (courseType === 'level2' || courseType === 'pepper-spray')) {
+      try {
+        await supabase.functions.invoke('send-certificate', {
+          body: { registrationNumber },
         });
-        return false;
-      }
-    } else {
-      completionData = newCompletion;
-    }
-    let registrationNumber: string | null = null;
-    let approvalCode: string | null = null;
-    let approvalExpiresAt: string | null = null;
-
-    if (passed && completionData && enrollment) {
-      if (courseType === 'level2' || courseType === 'pepper-spray') {
-        // For Level 2 and Pepper Spray: Check if certificate already exists or create new one
-        const { data: existingCert } = await supabase
-          .from('certificates')
-          .select()
-          .eq('completion_id', completionData.id)
-          .single();
-
-        let certData = existingCert;
-        let certError = null;
-
-        if (!existingCert) {
-          // Generate registration number using database function
-          const { data: regNumData, error: regNumError } = await supabase
-            .rpc('generate_registration_number');
-
-          if (regNumError || !regNumData) {
-            console.error('Failed to generate registration number:', regNumError);
-            toast({
-              title: "Certificate Error",
-              description: "Failed to generate certificate number. Please contact support.",
-              variant: "destructive",
-              duration: 10000,
-            });
-            certError = regNumError;
-          } else {
-            // Create certificate with generated registration number
-            const { data: newCert, error: newCertError } = await supabase
-              .from('certificates')
-              .insert({
-                user_id: user.id,
-                completion_id: completionData.id,
-                course_type: courseType,
-                student_name: fullName,
-                completion_date: completionData.completed_at.split('T')[0],
-                last_six_digits: enrollment.last_six_digits,
-                identification_type: enrollment.identification_type,
-                registration_number: regNumData
-              })
-              .select()
-              .single();
-
-            certData = newCert;
-            certError = newCertError;
-
-            if (newCertError) {
-              console.error('CRITICAL: Certificate creation failed:', newCertError);
-              toast({
-                title: "Certificate Error",
-                description: "Your completion was saved but certificate generation failed. Please contact support with completion ID: " + completionData.id,
-                variant: "destructive",
-                duration: 10000,
-              });
-            }
-          }
-        }
-
-        if (!certError && certData) {
-          registrationNumber = certData.registration_number;
-          
-          // Send certificate email with PDF attachment (generated server-side)
-          try {
-            await supabase.functions.invoke('send-certificate', {
-              body: {
-                registrationNumber: certData.registration_number,
-              }
-            });
-            console.log('Certificate email with PDF sent successfully');
-            toast({
-              title: "Certificate Sent!",
-              description: "Your certificate has been emailed to you as a PDF attachment.",
-            });
-          } catch (emailError) {
-            console.error('Error sending certificate email:', emailError);
-            toast({
-              title: "Email Error",
-              description: "Certificate created but email failed. You can download it from your profile.",
-              variant: "destructive",
-            });
-          }
-        }
-      } else {
-        // For Level 3: Generate approval code instead of certificate
-        const expiresAt = new Date();
-        expiresAt.setHours(expiresAt.getHours() + 24);
-
-        const { data: approvalData, error: approvalError } = await supabase
-          .from('level3_approvals')
-          .insert({
-            user_id: user.id,
-            completion_id: completionData.id,
-            approval_code: null, // Will be generated by database function
-            expires_at: expiresAt.toISOString()
-          })
-          .select()
-          .single();
-
-        if (!approvalError && approvalData) {
-          approvalCode = approvalData.approval_code;
-          approvalExpiresAt = new Date(approvalData.expires_at).toLocaleString();
-        }
+        toast({
+          title: 'Certificate Sent!',
+          description: 'Your certificate has been emailed to you as a PDF attachment.',
+        });
+      } catch (emailError) {
+        console.error('Error sending certificate email:', emailError);
+        toast({
+          title: 'Email Error',
+          description: 'Certificate created but email failed. You can download it from your profile.',
+          variant: 'destructive',
+        });
       }
     }
 
@@ -322,9 +177,9 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
           email: user.email,
           studentName: fullName,
           courseType: courseType,
-          score,
+          score: result.score,
           totalQuestions: questions.length,
-          percentage,
+          percentage: result.percentage,
           passed,
           registrationNumber,
           approvalCode,
@@ -356,9 +211,9 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
           studentName: fullName,
           studentEmail: user.email,
           courseType: courseType,
-          score,
+          score: result.score,
           totalQuestions: questions.length,
-          percentage,
+          percentage: result.percentage,
           passed,
           registrationNumber,
           approvalCode,
