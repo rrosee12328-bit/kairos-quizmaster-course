@@ -49,8 +49,20 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const body = await req.json();
     const course_id = String(body?.course_id || '').trim();
     const section_id = Number(body?.section_id);
-    const seconds_watched = Number(body?.seconds_watched || 0);
+    const raw_seconds_watched = Number(body?.seconds_watched || 0);
     const total_duration = Number(body?.total_duration || 0);
+    // Hard cap to defeat client-supplied inflated watch-time values used to
+    // unlock the exam without actually watching. We allow a small buffer over
+    // the reported total duration, and a global ceiling of 4 hours per section
+    // (longest course is Level 3 at ~3 hours).
+    const ABSOLUTE_MAX_SECONDS = 4 * 60 * 60;
+    const perSectionCap = total_duration > 0
+      ? Math.min(Math.ceil(total_duration * 1.05), ABSOLUTE_MAX_SECONDS)
+      : ABSOLUTE_MAX_SECONDS;
+    const seconds_watched = Math.min(
+      Math.max(0, Math.floor(raw_seconds_watched)),
+      perSectionCap,
+    );
     const has_quiz = Boolean(body?.has_quiz);
     // Allow explicit marking as complete from frontend
     const mark_complete = Boolean(body?.mark_complete);
