@@ -9,12 +9,13 @@ const corsHeaders = {
 };
 
 const certificateEmailSchema = z.object({
-  name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
-  email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters"),
-  date: z.string().trim().min(1, "Date is required").max(50, "Date must be less than 50 characters"),
-  registrationNumber: z.string().trim().min(1, "Registration number is required").max(50, "Registration number must be less than 50 characters"),
-  lastSixDigits: z.string().optional(),
-  courseType: z.string().optional().default('level2'),
+  // Only the registration number is required from the caller. Everything that
+  // appears on the PDF is fetched from the database, scoped to the caller's
+  // user_id, so a caller cannot forge name/date/ID-digits.
+  registrationNumber: z.string().trim().min(1).max(50).regex(/^[A-Z0-9-]+$/, "Invalid registration number"),
+  // Optional override for the recipient email. If omitted, the certificate is
+  // sent to the email on the caller's auth account.
+  email: z.string().trim().email().max(255).optional(),
 });
 
 // Format date to MM/DD/YYYY
@@ -303,6 +304,41 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Require authentication. Service-role calls (from other edge functions)
+    // are also accepted and skip the ownership check.
+    const authHeader = req.headers.get("Authorization") || "";
+    if (!authHeader.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const token = authHeader.slice(7);
+    const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const isServiceRole = SERVICE_ROLE_KEY && token === SERVICE_ROLE_KEY;
+
+    const adminClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+
+    let callerUserId: string | null = null;
+    let callerEmail: string | null = null;
+    if (!isServiceRole) {
+      const userClient = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_ANON_KEY")!,
+        { global: { headers: { Authorization: authHeader } } },
+      );
+      const { data: userData, error: userErr } = await userClient.auth.getUser();
+      if (userErr || !userData?.user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      callerUserId = userData.user.id;
+      callerEmail = userData.user.email ?? null;
+    }
+
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) {
       throw new Error("RESEND_API_KEY not configured");
@@ -321,7 +357,43 @@ Deno.serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    const { name, email, date, registrationNumber, lastSixDigits, courseType } = validation.data;
+    const { registrationNumber, email: overrideEmail } = validation.data;
+
+    // Look up the certificate by registration number using the service role.
+    // Verify the caller owns this certificate (or is the service role).
+    const { data: cert, error: certErr } = await adminClient
+      .from("certificates")
+      .select("user_id, student_name, completion_date, last_six_digits, course_type, registration_number")
+      .eq("registration_number", registrationNumber)
+      .maybeSingle();
+    if (certErr || !cert) {
+      return new Response(JSON.stringify({ error: "Certificate not found" }), {
+        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (!isServiceRole && cert.user_id !== callerUserId) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Trust DB values, never the caller, for everything that appears on the PDF.
+    const name = cert.student_name;
+    const date = cert.completion_date;
+    const lastSixDigits = cert.last_six_digits;
+    const courseType = cert.course_type || "level2";
+    // For service-role calls, fall back to the email on the certificate's owning account.
+    let email = overrideEmail || callerEmail;
+    if (!email) {
+      const { data: ownerProfile } = await adminClient
+        .from("profiles").select("email").eq("id", cert.user_id).maybeSingle();
+      email = ownerProfile?.email ?? null;
+    }
+    if (!email) {
+      return new Response(JSON.stringify({ error: "No recipient email" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Generate PDF in background
     const pdfBytes = await generateCertificatePDF(name, date, courseType || 'level2', lastSixDigits);
