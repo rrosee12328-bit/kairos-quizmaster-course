@@ -1,6 +1,7 @@
 import { Resend } from "https://esm.sh/resend@2.0.0";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 import { PDFDocument, rgb, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -68,9 +69,6 @@ async function generateCertificatePDF(
     const templateFileName = courseType === 'pepper-spray' 
       ? 'pepper-spray-certificate-template.pdf' 
       : 'level2-certificate-template.pdf';
-    
-    const templateUrl =
-      `https://cpjamwmwzrgqhfnirikz.supabase.co/storage/v1/object/public/certificates/${templateFileName}`;
 
     let pdfDoc: any;
     let page: any;
@@ -78,14 +76,18 @@ async function generateCertificatePDF(
     let pageHeight: number;
 
     try {
-      console.log("Fetching PDF template from:", templateUrl);
-      const templateResponse = await fetch(templateUrl);
-      
-      if (!templateResponse.ok) {
-        throw new Error(`Template fetch failed: ${templateResponse.status} ${templateResponse.statusText}`);
+      console.log("Downloading PDF template via service role:", templateFileName);
+      const adminClient = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      );
+      const { data: templateBlob, error: templateError } = await adminClient.storage
+        .from("certificates")
+        .download(templateFileName);
+      if (templateError || !templateBlob) {
+        throw new Error(`Template download failed: ${templateError?.message || "no data"}`);
       }
-
-      const templatePdfBytes = await templateResponse.arrayBuffer();
+      const templatePdfBytes = await templateBlob.arrayBuffer();
       console.log("Template PDF loaded, size:", templatePdfBytes.byteLength);
       
       // Load the template PDF
