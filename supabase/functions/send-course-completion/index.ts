@@ -316,6 +316,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
                 `
                 : ''
               }
+              ${nextStepsBlock}
             </div>
             <div class="footer">
               <p>© 2025 Kairos Security Academy. All Rights Reserved. License #: F28623301</p>
