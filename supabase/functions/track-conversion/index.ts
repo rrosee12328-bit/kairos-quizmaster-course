@@ -144,25 +144,29 @@ serve(async (req) => {
   try {
     // Parse request body first to check for webhook flag
     const requestBody = await req.json();
-    const isWebhook = requestBody.isWebhook === true;
-    
-    // Only require auth if not called from webhook
-    if (!isWebhook) {
+
+    // Require either a valid user JWT or the service role key (server-to-server from stripe-webhook)
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const token = authHeader.replace("Bearer ", "");
+    const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    const isServiceRole = SERVICE_ROLE_KEY && token === SERVICE_ROLE_KEY;
+    if (!isServiceRole) {
       const supabaseClient = createClient(
         Deno.env.get("SUPABASE_URL") ?? "",
         Deno.env.get("SUPABASE_ANON_KEY") ?? ""
       );
-
-      const authHeader = req.headers.get("Authorization");
-      if (!authHeader) {
-        throw new Error("No authorization header");
-      }
-
-      const token = authHeader.replace("Bearer ", "");
-      const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
-      
-      if (userError || !user) {
-        throw new Error("User not authenticated");
+      const { data: claims, error: userError } = await supabaseClient.auth.getClaims(token);
+      if (userError || !claims?.claims?.sub) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
     }
 
