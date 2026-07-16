@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCourseProgress } from "@/hooks/useCourseProgress";
 import { trackCourseStarted } from "@/lib/tracking";
+import { syncEnrollmentsForCurrentSession } from "@/lib/enrollmentSync";
 import {
   Carousel,
   CarouselContent,
@@ -400,6 +401,8 @@ const Level2Course = () => {
 
   const checkEnrollmentStatus = async (userId: string, isAdminUser = false) => {
     try {
+      await syncEnrollmentsForCurrentSession();
+
       const device = /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
       console.log('[Level2Course] course_access', {
         userId,

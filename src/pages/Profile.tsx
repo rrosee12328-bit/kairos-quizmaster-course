@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { BackButton } from "@/components/BackButton";
 import { Footer } from "@/components/Footer";
 import CourseHeader from "@/components/CourseHeader";
+import { syncEnrollmentsForCurrentSession } from "@/lib/enrollmentSync";
 import { Shield, Award, BookOpen, Download, Settings, CheckCircle, Clock, XCircle, ArrowRight, Copy, Sparkles } from "lucide-react";
 import { format } from "date-fns";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -98,6 +99,7 @@ const Profile = () => {
         await fetchUserData(targetUserId, targetProfile?.email || '', alive);
       } else {
         // Viewing own profile
+        await syncEnrollmentsForCurrentSession();
         await fetchUserData(user.id, user.email || '', alive);
       }
     };
@@ -109,13 +111,6 @@ const Profile = () => {
 
   const fetchUserData = async (userId: string, userEmail: string, alive = true) => {
     try {
-      // First, attach any legacy enrollments with matching email but no user_id
-      await supabase
-        .from('enrollments')
-        .update({ user_id: userId })
-        .eq('email', userEmail)
-        .is('user_id', null);
-
       // Fetch profile, enrollments, completions, certificates, and the latest
       // active Level 3 approval in parallel.
       const [profileResult, enrollmentResult, completionResult, certificateResult, approvalResult] = await Promise.all([

@@ -147,7 +147,7 @@ const EnrollmentForm = ({ onSuccess, priceId, defaultCourseType }: EnrollmentFor
       if (priceId) {
         toast.success("Enrollment saved! Redirecting to payment...");
         const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('create-checkout', {
-          body: { priceId, email: data.email }
+          body: { priceId, email: data.email, courseType: data.courseType }
         });
 
         if (checkoutError) {

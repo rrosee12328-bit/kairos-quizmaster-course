@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Footer } from "@/components/Footer";
 import CourseHeader from "@/components/CourseHeader";
 import { trackAddToCart, trackPurchase, getCoursePriceMap } from "@/lib/tracking";
+import { syncEnrollmentsForCurrentSession } from "@/lib/enrollmentSync";
 
 interface Enrollment {
   id: string;
@@ -106,12 +107,8 @@ const Courses = () => {
         return;
       }
 
-      // First, attach any legacy enrollments with matching email but no user_id
-      await supabase
-        .from('enrollments')
-        .update({ user_id: userId })
-        .eq('email', currentUser.email)
-        .is('user_id', null);
+      // Attach legacy/purchased enrollments by email via the service-role edge function.
+      await syncEnrollmentsForCurrentSession();
 
       // Now fetch only by user_id (legacy rows are now attached)
       const { data, error } = await supabase

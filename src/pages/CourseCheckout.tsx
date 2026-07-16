@@ -9,6 +9,7 @@ import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import CourseHeader from "@/components/CourseHeader";
 import { trackViewContent, trackInitiateCheckout, getCoursePriceMap } from "@/lib/tracking";
+import { syncEnrollmentsForCurrentSession } from "@/lib/enrollmentSync";
 import level3SecurityImage from "@/assets/level3-security-professional.jpg";
 import level2SecurityImage from "@/assets/level2-security-vehicle.jpg";
 import level4BodyguardImage from "@/assets/level4-bodyguard.jpg";
@@ -50,6 +51,8 @@ const CourseCheckout = () => {
   }, [courseType]);
 
   const fetchEnrollments = async (userId: string) => {
+    await syncEnrollmentsForCurrentSession();
+
     const { data, error } = await supabase
       .from('enrollments')
       .select('*')
