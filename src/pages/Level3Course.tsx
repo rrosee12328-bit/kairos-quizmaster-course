@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCourseProgress } from "@/hooks/useCourseProgress";
 import { trackCourseStarted } from "@/lib/tracking";
-import { checkCourseAccess } from "@/lib/courseAccess";
+import { checkCourseAccess, checkUserIsAdmin } from "@/lib/courseAccess";
 import {
   Carousel,
   CarouselContent,
@@ -144,16 +144,10 @@ const Course = () => {
   }, [isAuthenticated, videosLoaded]);
 
   const checkAdminStatus = async (userId: string): Promise<boolean> => {
-    const { data, error } = await supabase.rpc('is_admin', { _user_id: userId });
-    console.log('[Level3Course] Admin check:', { userId, data, error });
-    if (!error && data) {
-      setIsAdmin(true);
-      console.log('[Level3Course] User is admin');
-      return true;
-    } else {
-      console.log('[Level3Course] User is not admin');
-      return false;
-    }
+    const adminStatus = await checkUserIsAdmin(userId);
+    setIsAdmin(adminStatus);
+    console.log('[Level3Course] Admin check:', { userId, isAdmin: adminStatus });
+    return adminStatus;
   };
 
   const checkEnrollmentStatus = async (userId: string, isAdminUser = false) => {

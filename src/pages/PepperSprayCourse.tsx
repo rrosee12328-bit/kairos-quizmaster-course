@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { pepperSprayExamQuestions } from "@/data/pepperSprayExamQuestions";
 import { useCourseProgress } from "@/hooks/useCourseProgress";
 import { trackCourseStarted } from "@/lib/tracking";
-import { checkCourseAccess } from "@/lib/courseAccess";
+import { checkCourseAccess, checkUserIsAdmin } from "@/lib/courseAccess";
 
 const LIBRARY_ID = "512130";
 const VIDEO_GUID = "9ccd2d12-bbcf-4fd7-a74f-15cf1188e453";
@@ -78,12 +78,9 @@ const PepperSprayCourse = () => {
   }, [showQuiz]);
 
   const checkAdminStatus = async (userId: string): Promise<boolean> => {
-    const { data, error } = await supabase.rpc('is_admin', { _user_id: userId });
-    if (!error && data) {
-      setIsAdmin(true);
-      return true;
-    }
-    return false;
+    const adminStatus = await checkUserIsAdmin(userId);
+    setIsAdmin(adminStatus);
+    return adminStatus;
   };
 
   const checkEnrollmentStatus = async (userId: string, isAdminUser = false) => {

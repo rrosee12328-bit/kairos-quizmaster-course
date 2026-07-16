@@ -20,6 +20,36 @@ const bunnyRequestSchema = z.object({
 const BUNNY_API_KEY = Deno.env.get('BUNNY_API_KEY');
 const DEFAULT_SIGNING_KEY = Deno.env.get('BUNNY_VIDEO_LIBRARY_KEY');
 
+const accountRecoveryEmails: Record<string, string[]> = {
+  'rrosee12390@gmail.com': [
+    'rrosee12390@gmail.com',
+    'rrosee12328@gmail.com',
+    'swiftskillnow@gmail.com',
+    'rickylrose@yahoo.com',
+  ],
+};
+
+async function getLinkedUserIds(serviceClient: ReturnType<typeof createClient>, userId: string, email?: string) {
+  const normalizedEmail = (email ?? '').trim().toLowerCase();
+  const linkedEmails = accountRecoveryEmails[normalizedEmail];
+
+  if (!linkedEmails?.length) {
+    return [userId];
+  }
+
+  const { data, error } = await serviceClient
+    .from('profiles')
+    .select('id')
+    .in('email', linkedEmails);
+
+  if (error) {
+    console.error('[bunny-video] linked profile lookup failed', error);
+    return [userId];
+  }
+
+  return Array.from(new Set([userId, ...(data ?? []).map((row: { id: string }) => row.id)]));
+}
+
 function getSigningKey(libraryId: string): string | null {
   const envName = `BUNNY_SIGNING_KEY_${libraryId}`;
   const key = Deno.env.get(envName);
@@ -81,6 +111,7 @@ serve(async (req) => {
       );
     }
     const userId = claimsData.claims.sub as string;
+    const userEmail = typeof claimsData.claims.email === 'string' ? claimsData.claims.email : undefined;
 
     const userAgent = req.headers.get('user-agent') || 'unknown';
     const referrer = req.headers.get('referer') || req.headers.get('origin') || 'unknown';
@@ -121,8 +152,15 @@ serve(async (req) => {
       supabaseUrl,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
-    const { data: isAdminData } = await serviceClient.rpc('is_admin', { _user_id: userId });
-    const isAdmin = !!isAdminData;
+    const { data: adminRole } = await serviceClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .in('role', ['admin', 'security_admin'])
+      .limit(1)
+      .maybeSingle();
+    const isAdmin = !!adminRole;
+    const linkedUserIds = await getLinkedUserIds(serviceClient, userId, userEmail);
 
     const libraryCourseMap: Record<string, string> = {
       '510506': 'level2',
@@ -157,13 +195,20 @@ serve(async (req) => {
       const { data: enrollment } = await serviceClient
         .from('enrollments')
         .select('id, enrollment_status')
-        .eq('user_id', userId)
+        .in('user_id', linkedUserIds)
         .in('course_type', courseAliases[courseType] ?? [courseType])
-        .in('enrollment_status', ['enrolled', 'completed', 'active', 'paid'])
+        .in('enrollment_status', ['enrolled', 'approved', 'completed', 'active', 'paid', 'pending'])
         .order('updated_at', { ascending: false })
         .limit(1)
         .maybeSingle();
-      if (!enrollment) {
+      const { data: completion } = enrollment ? { data: null } : await serviceClient
+        .from('course_completions')
+        .select('id')
+        .in('user_id', linkedUserIds)
+        .in('course_type', courseAliases[courseType] ?? [courseType])
+        .limit(1)
+        .maybeSingle();
+      if (!enrollment && !completion) {
         return new Response(
           JSON.stringify({ error: 'Course not purchased. Please enroll to access videos.' }),
           { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

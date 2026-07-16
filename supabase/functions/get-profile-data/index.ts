@@ -96,8 +96,14 @@ Deno.serve(async (req) => {
     const targetUserId = parsed.data.userId ?? user.id;
 
     if (targetUserId !== user.id) {
-      const { data: isAdmin } = await admin.rpc('is_admin', { _user_id: user.id });
-      if (!isAdmin) {
+      const { data: adminRole } = await admin
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .in('role', ['admin', 'security_admin'])
+        .limit(1)
+        .maybeSingle();
+      if (!adminRole) {
         return new Response(JSON.stringify({ error: 'Forbidden' }), {
           status: 403,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -15,7 +15,7 @@ import { Shield, Award, BookOpen, Download, Settings, CheckCircle, Clock, XCircl
 import { format } from "date-fns";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import kairosLogo from "@/assets/kairos-logo.png";
-import { ACTIVE_ENROLLMENT_STATUSES, getCourseRoute, getCourseTitle, normalizeCourseType } from "@/lib/courseAccess";
+import { ACTIVE_ENROLLMENT_STATUSES, checkUserIsAdmin, getCourseRoute, getCourseTitle, normalizeCourseType } from "@/lib/courseAccess";
 
 interface Enrollment {
   id: string;
@@ -79,9 +79,9 @@ const Profile = () => {
       setUser(user);
 
       // Check if user is admin
-      const { data: adminCheck } = await supabase.rpc('is_admin', { _user_id: user.id });
+      const adminCheck = await checkUserIsAdmin(user.id);
       if (!alive) return;
-      setIsAdmin(adminCheck || false);
+      setIsAdmin(adminCheck);
 
       // Check for userId query parameter (admin viewing student profile)
       const params = new URLSearchParams(window.location.search);
