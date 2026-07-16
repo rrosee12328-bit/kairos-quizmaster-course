@@ -63,12 +63,12 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Fetch enrollments that match the email (case-insensitive) and have no user_id
+    // Fetch enrollments that match the email. Some older purchases/history rows
+    // may be unlinked or tied to a previous auth user id for the same email.
     const { data: enrollments, error: fetchError } = await supabaseAdmin
       .from('enrollments')
-      .select('*')
-      .ilike('email', userEmail)
-      .is('user_id', null);
+      .select('id, user_id, course_type')
+      .ilike('email', userEmail);
 
     if (fetchError) {
       console.error('Error fetching enrollments:', fetchError);
@@ -89,6 +89,13 @@ serve(async (req) => {
     }
 
     const enrollmentIds = enrollments.map(e => e.id);
+    const previousUserIds = Array.from(
+      new Set(
+        enrollments
+          .map((e) => e.user_id)
+          .filter((id): id is string => Boolean(id) && id !== userId)
+      )
+    );
     
     const { error: updateError } = await supabaseAdmin
       .from('enrollments')
@@ -106,12 +113,36 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Successfully synced ${enrollments.length} enrollments`);
+    // Move course history/certificates that were created under an older auth id
+    // for this same purchase email so Profile shows courses previously taken.
+    if (previousUserIds.length > 0) {
+      const tablesToRelink = [
+        'course_progress',
+        'course_completions',
+        'course_completions_summary',
+        'certificates',
+        'level3_approvals',
+      ];
+
+      for (const table of tablesToRelink) {
+        const { error: relinkError } = await supabaseAdmin
+          .from(table as 'course_progress' | 'course_completions' | 'course_completions_summary' | 'certificates' | 'level3_approvals')
+          .update({ user_id: userId })
+          .in('user_id', previousUserIds);
+
+        if (relinkError) {
+          console.warn(`Could not relink ${table}:`, relinkError);
+        }
+      }
+    }
+
+    console.log(`Successfully synced ${enrollments.length} enrollments and ${previousUserIds.length} previous user ids`);
 
     return new Response(
       JSON.stringify({ 
         message: 'Enrollments synced successfully',
-        synced: enrollments.length
+        synced: enrollments.length,
+        relinked_user_ids: previousUserIds.length
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
