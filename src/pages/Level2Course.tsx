@@ -16,7 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCourseProgress } from "@/hooks/useCourseProgress";
 import { trackCourseStarted } from "@/lib/tracking";
-import { syncEnrollmentsForCurrentSession } from "@/lib/enrollmentSync";
+import { checkCourseAccess } from "@/lib/courseAccess";
 import {
   Carousel,
   CarouselContent,
@@ -401,8 +401,6 @@ const Level2Course = () => {
 
   const checkEnrollmentStatus = async (userId: string, isAdminUser = false) => {
     try {
-      await syncEnrollmentsForCurrentSession();
-
       const device = /Mobile|Android|iPhone/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
       console.log('[Level2Course] course_access', {
         userId,
@@ -416,35 +414,13 @@ const Level2Course = () => {
         }
       });
 
-      // Check if user is enrolled, has any progress, or has completed the course
-      const [enrollmentResult, progressResult, completionResult] = await Promise.all([
-        supabase
-          .from('enrollments')
-          .select('enrollment_status')
-          .eq('user_id', userId)
-          .eq('course_type', 'level2')
-          .maybeSingle(),
-        supabase
-          .from('course_progress')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('course_type', 'level2')
-          .limit(1)
-          .maybeSingle(),
-        supabase
-          .from('course_completions')
-          .select('id, passed')
-          .eq('user_id', userId)
-          .eq('course_type', 'level2')
-          .maybeSingle()
-      ]);
-
-      const enrollment = enrollmentResult.data;
-      const progress = progressResult.data;
-      const completion = completionResult.data;
+      const { enrollment, progress, completion, hasAccess, errors } = await checkCourseAccess(userId, 'level2');
+      if (errors.enrollment || errors.progress || errors.completion) {
+        console.warn('[Level2Course] Access query warnings:', errors);
+      }
 
       // Visibility rule: canRenderVideo = isEnrolled(user, courseId) - INDEPENDENT of pass/fail
-      const canRenderVideo = !!(enrollment || progress || completion);
+      const canRenderVideo = hasAccess;
       const assessmentResult = completion?.passed === false ? 'failed' : completion?.passed ? 'passed' : 'none';
 
       console.log('[Level2Course] course_access', { 
