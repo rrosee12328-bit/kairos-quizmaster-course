@@ -112,41 +112,22 @@ const Profile = () => {
 
   const fetchUserData = async (userId: string, userEmail: string, alive = true) => {
     try {
-      // Fetch profile, enrollments, completions, certificates, and the latest
-      // active Level 3 approval in parallel.
-      const [profileResult, enrollmentResult, completionResult, certificateResult, approvalResult] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
-        supabase.from('enrollments')
-          .select('id, course_type, enrollment_status, created_at, first_name, last_name')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: false }),
-        supabase.from('course_completions')
-          .select('id, course_type, score, total_questions, percentage, passed, completed_at, attempt_number, started_at, ended_at, duration_seconds')
-          .eq('user_id', userId)
-          .order('completed_at', { ascending: false }),
-        supabase.from('certificates')
-          .select('id, course_type, registration_number, completion_date, student_name, completion_id')
-          .eq('user_id', userId)
-          .order('issued_at', { ascending: false }),
-        supabase.from('level3_approvals')
-          .select('approval_code, expires_at, used')
-          .eq('user_id', userId)
-          .eq('used', false)
-          .gt('expires_at', new Date().toISOString())
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle(),
-      ]);
+      const { data: { session } } = await supabase.auth.getSession();
+      const { data, error } = await supabase.functions.invoke('get-profile-data', {
+        headers: session ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+        body: { userId },
+      });
+
+      if (error) {
+        throw error;
+      }
 
       if (!alive) return;
-      
-      const profileData = profileResult.data
-        ? { ...profileResult.data, level3_approval_code: approvalResult.data?.approval_code ?? null }
-        : null;
-      setProfile(profileData);
-      setEnrollments(enrollmentResult.data || []);
-      setCompletions(completionResult.data || []);
-      setCertificates(certificateResult.data || []);
+
+      setProfile(data?.profile || null);
+      setEnrollments(data?.enrollments || []);
+      setCompletions(data?.completions || []);
+      setCertificates(data?.certificates || []);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching user data:', error);
