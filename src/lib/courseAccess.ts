@@ -3,7 +3,7 @@ import { syncEnrollmentsForCurrentSession } from "@/lib/enrollmentSync";
 
 export type CourseAccessId = "level2" | "level3" | "level4" | "level-4" | "pepper-spray" | "pepper_spray";
 
-const ACTIVE_ENROLLMENT_STATUSES = ["enrolled", "completed", "active", "paid", "pending"];
+export const ACTIVE_ENROLLMENT_STATUSES = ["enrolled", "approved", "completed", "active", "paid", "pending"];
 
 const COURSE_ALIASES: Record<string, string[]> = {
   level2: ["level2"],
@@ -23,6 +23,26 @@ export interface EnrollmentSummary {
 }
 
 export const getCourseAliases = (courseId: CourseAccessId | string) => COURSE_ALIASES[courseId] ?? [courseId];
+
+export const normalizeCourseType = (courseId: CourseAccessId | string) => {
+  if (courseId === "level-4") return "level4";
+  if (courseId === "pepper_spray") return "pepper-spray";
+  return courseId;
+};
+
+export const getCourseRoute = (courseId: CourseAccessId | string) => {
+  const normalized = normalizeCourseType(courseId);
+  return normalized === "pepper-spray" ? "/course/pepper-spray" : `/course/${normalized}`;
+};
+
+export const getCourseTitle = (courseId: CourseAccessId | string) => {
+  const normalized = normalizeCourseType(courseId);
+  if (normalized === "level2") return "Level 2 Security Officer Certification";
+  if (normalized === "level3") return "Level 3 Security Officer Certification (Part 1)";
+  if (normalized === "level4") return "Level 4 Personal Protection Officer (Part 1)";
+  if (normalized === "pepper-spray") return "Pepper Spray Training Course";
+  return courseId;
+};
 
 export const fetchMyActiveEnrollments = async (userId: string): Promise<EnrollmentSummary[]> => {
   await syncEnrollmentsForCurrentSession();
