@@ -15,6 +15,7 @@ import { Shield, Award, BookOpen, Download, Settings, CheckCircle, Clock, XCircl
 import { format } from "date-fns";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import kairosLogo from "@/assets/kairos-logo.png";
+import { ACTIVE_ENROLLMENT_STATUSES, getCourseRoute, getCourseTitle, normalizeCourseType } from "@/lib/courseAccess";
 
 interface Enrollment {
   id: string;
@@ -152,12 +153,6 @@ const Profile = () => {
       toast.error('Failed to load profile data');
       setLoading(false);
     }
-  };
-
-  const getCourseTitle = (courseType: string) => {
-    if (courseType === 'level2') return 'Level 2 Security Officer Certification';
-    if (courseType === 'level3') return 'Level 3 Security Officer Certification (Part 1)';
-    return courseType;
   };
 
   const getStatusBadge = (status: string) => {
@@ -496,14 +491,14 @@ const Profile = () => {
                 {/* Get unique course types from enrollments and completions */}
                 {(() => {
                   const courseTypes = new Set<string>();
-                  enrollments.forEach(e => courseTypes.add(e.course_type));
-                  completions.forEach(c => courseTypes.add(c.course_type));
+                  enrollments.forEach(e => courseTypes.add(normalizeCourseType(e.course_type)));
+                  completions.forEach(c => courseTypes.add(normalizeCourseType(c.course_type)));
                   
                   return Array.from(courseTypes).map((courseType, courseIndex) => {
-                    const enrollment = enrollments.find(e => e.course_type === courseType);
-                    const courseCompletions = completions.filter(c => c.course_type === courseType);
+                    const enrollment = enrollments.find(e => normalizeCourseType(e.course_type) === courseType);
+                    const courseCompletions = completions.filter(c => normalizeCourseType(c.course_type) === courseType);
                     const latestCompletion = courseCompletions.length > 0 ? courseCompletions[0] : null;
-                    const canAccess = enrollment && (enrollment.enrollment_status === 'enrolled' || enrollment.enrollment_status === 'pending') && !latestCompletion?.passed;
+                    const canAccess = !!enrollment && ACTIVE_ENROLLMENT_STATUSES.includes(enrollment.enrollment_status);
                     
                     return (
                       <div 
@@ -514,7 +509,7 @@ const Profile = () => {
                         {/* Course Header */}
                         <div 
                           className={`p-6 ${canAccess ? 'cursor-pointer hover:bg-muted/30' : ''} transition-all duration-300`}
-                          onClick={() => canAccess && navigate(`/course/${courseType}`)}
+                          onClick={() => canAccess && navigate(getCourseRoute(courseType))}
                         >
                           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
                             <div className="flex-1">
@@ -548,7 +543,7 @@ const Profile = () => {
                           
                           {canAccess && (
                             <div className="mt-4 flex items-center justify-center py-3 rounded-xl bg-primary/5 text-sm text-primary font-semibold group">
-                              Continue Course
+                              {latestCompletion?.passed ? 'Review Course' : 'Continue Course'}
                               <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                             </div>
                           )}
