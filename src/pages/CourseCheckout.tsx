@@ -166,7 +166,7 @@ const CourseCheckout = () => {
 
   const courseAliases = courseType ? getCourseAliases(courseType) : [];
   const isEnrolled = enrollments.some(
-    e => courseAliases.includes(e.course_type) && ACTIVE_ENROLLMENT_STATUSES.includes(e.enrollment_status)
+    e => courseAliases.includes(e.course_type) && (!e.enrollment_status || ACTIVE_ENROLLMENT_STATUSES.includes(e.enrollment_status))
   );
 
   const handlePurchase = async () => {
