@@ -12,6 +12,16 @@ const BodySchema = z.object({
 
 type SupabaseAdmin = ReturnType<typeof createClient>;
 
+const accountRecoveryEmails: Record<string, string[]> = {
+  // Historical Rose/Kairos login emails used before the current account was created.
+  'rrosee12390@gmail.com': [
+    'rrosee12390@gmail.com',
+    'rrosee12328@gmail.com',
+    'swiftskillnow@gmail.com',
+    'rickylrose@yahoo.com',
+  ],
+};
+
 async function getProfileEmail(admin: SupabaseAdmin, userId: string) {
   const { data } = await admin
     .from('profiles')
@@ -20,6 +30,27 @@ async function getProfileEmail(admin: SupabaseAdmin, userId: string) {
     .maybeSingle();
 
   return data?.email ?? '';
+}
+
+async function getLinkedUserIds(admin: SupabaseAdmin, targetUserId: string, targetEmail: string) {
+  const normalizedEmail = targetEmail.trim().toLowerCase();
+  const linkedEmails = accountRecoveryEmails[normalizedEmail];
+
+  if (!linkedEmails?.length) {
+    return [targetUserId];
+  }
+
+  const { data, error } = await admin
+    .from('profiles')
+    .select('id, email')
+    .in('email', linkedEmails);
+
+  if (error) {
+    console.error('[get-profile-data] linked profile lookup failed', error);
+    return [targetUserId];
+  }
+
+  return Array.from(new Set([targetUserId, ...(data ?? []).map((row: { id: string }) => row.id)]));
 }
 
 Deno.serve(async (req) => {
@@ -77,6 +108,7 @@ Deno.serve(async (req) => {
     const targetEmail = targetUserId === user.id
       ? user.email ?? await getProfileEmail(admin, targetUserId)
       : await getProfileEmail(admin, targetUserId);
+    const linkedUserIds = await getLinkedUserIds(admin, targetUserId, targetEmail);
 
     if (targetEmail) {
       const { data: matchingEnrollments } = await admin
@@ -97,19 +129,19 @@ Deno.serve(async (req) => {
       admin.from('profiles').select('*').eq('id', targetUserId).maybeSingle(),
       admin.from('enrollments')
         .select('id, course_type, enrollment_status, created_at, first_name, last_name')
-        .eq('user_id', targetUserId)
+        .in('user_id', linkedUserIds)
         .order('created_at', { ascending: false }),
       admin.from('course_completions')
         .select('id, course_type, score, total_questions, percentage, passed, completed_at, attempt_number, started_at, ended_at, duration_seconds')
-        .eq('user_id', targetUserId)
+        .in('user_id', linkedUserIds)
         .order('completed_at', { ascending: false }),
       admin.from('certificates')
         .select('id, course_type, registration_number, completion_date, student_name, completion_id')
-        .eq('user_id', targetUserId)
+        .in('user_id', linkedUserIds)
         .order('issued_at', { ascending: false }),
       admin.from('level3_approvals')
         .select('approval_code, expires_at, used')
-        .eq('user_id', targetUserId)
+        .in('user_id', linkedUserIds)
         .eq('used', false)
         .gt('expires_at', new Date().toISOString())
         .order('created_at', { ascending: false })
