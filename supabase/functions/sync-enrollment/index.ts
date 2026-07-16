@@ -126,7 +126,7 @@ serve(async (req) => {
 
       for (const table of tablesToRelink) {
         const { error: relinkError } = await supabaseAdmin
-          .from(table)
+          .from(table as 'course_progress' | 'course_completions' | 'course_completions_summary' | 'certificates' | 'level3_approvals')
           .update({ user_id: userId })
           .in('user_id', previousUserIds);
 
