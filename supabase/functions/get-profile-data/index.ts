@@ -136,7 +136,7 @@ Deno.serve(async (req) => {
         .in('user_id', linkedUserIds)
         .order('completed_at', { ascending: false }),
       admin.from('certificates')
-        .select('id, course_type, registration_number, completion_date, student_name, completion_id')
+        .select('id, course_type, registration_number, completion_date, student_name, completion_id, identification_type, last_six_digits')
         .in('user_id', linkedUserIds)
         .order('issued_at', { ascending: false }),
       admin.from('level3_approvals')

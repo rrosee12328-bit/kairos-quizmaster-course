@@ -72,22 +72,35 @@ const CertificatePreview = () => {
         return;
       }
 
-      // Fetch certificate from database
-      const { data: cert, error } = await supabase
-        .from('certificates')
-        .select('*')
-        .eq('registration_number', regNum)
-        .eq('user_id', user.id)
-        .single();
+      const { data: { session } } = await supabase.auth.getSession();
+      const { data: profileData } = await supabase.functions.invoke('get-profile-data', {
+        headers: session ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+        body: { userId: user.id },
+      });
 
-      if (error || !cert) {
-        toast({
-          title: "Error",
-          description: "Certificate not found or access denied",
-          variant: "destructive",
-        });
-        navigate('/profile');
-        return;
+      let cert = profileData?.certificates?.find(
+        (certificate: any) => certificate.registration_number === regNum
+      );
+
+      if (!cert) {
+        const { data: ownedCert, error } = await supabase
+          .from('certificates')
+          .select('*')
+          .eq('registration_number', regNum)
+          .eq('user_id', user.id)
+          .single();
+
+        if (error || !ownedCert) {
+          toast({
+            title: "Error",
+            description: "Certificate not found or access denied",
+            variant: "destructive",
+          });
+          navigate('/profile');
+          return;
+        }
+
+        cert = ownedCert;
       }
 
       setUserName(cert.student_name);
