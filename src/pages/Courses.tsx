@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { Footer } from "@/components/Footer";
 import CourseHeader from "@/components/CourseHeader";
 import { trackAddToCart, trackPurchase, getCoursePriceMap } from "@/lib/tracking";
-import { syncEnrollmentsForCurrentSession } from "@/lib/enrollmentSync";
+import { fetchMyActiveEnrollments, getCourseAliases } from "@/lib/courseAccess";
 
 interface Enrollment {
   id: string;
@@ -107,21 +107,7 @@ const Courses = () => {
         return;
       }
 
-      // Attach legacy/purchased enrollments by email via the service-role edge function.
-      await syncEnrollmentsForCurrentSession();
-
-      // Now fetch only by user_id (legacy rows are now attached)
-      const { data, error } = await supabase
-        .from('enrollments')
-        .select('id, user_id, email, course_type, enrollment_status')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-      
-      if (error) {
-        console.error('Error fetching enrollments:', error);
-        if (showToast) toast.error('Failed to fetch enrollments');
-        return;
-      }
+      const data = await fetchMyActiveEnrollments(userId);
 
       if (!alive) return;
 
@@ -286,7 +272,8 @@ const Courses = () => {
   ];
 
   const isEnrolled = (courseId: string) => {
-    return enrollments.some(e => e.course_type === courseId && e.enrollment_status === 'enrolled');
+    const courseAliases = getCourseAliases(courseId);
+    return enrollments.some(e => courseAliases.includes(e.course_type));
   };
 
   const verifyAdminStatus = async () => {

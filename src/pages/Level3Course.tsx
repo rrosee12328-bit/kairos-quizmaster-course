@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCourseProgress } from "@/hooks/useCourseProgress";
 import { trackCourseStarted } from "@/lib/tracking";
+import { checkCourseAccess } from "@/lib/courseAccess";
 import {
   Carousel,
   CarouselContent,
@@ -157,32 +158,10 @@ const Course = () => {
 
   const checkEnrollmentStatus = async (userId: string, isAdminUser = false) => {
     try {
-      // Check if user is enrolled, has any progress, or has completed the course
-      const [enrollmentResult, progressResult, completionResult] = await Promise.all([
-        supabase
-          .from('enrollments')
-          .select('enrollment_status')
-          .eq('user_id', userId)
-          .eq('course_type', 'level3')
-          .maybeSingle(),
-        supabase
-          .from('course_progress')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('course_type', 'level3')
-          .limit(1)
-          .maybeSingle(),
-        supabase
-          .from('course_completions')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('course_type', 'level3')
-          .maybeSingle()
-      ]);
-
-      const enrollment = enrollmentResult.data;
-      const progress = progressResult.data;
-      const completion = completionResult.data;
+      const { enrollment, progress, completion, hasAccess, errors } = await checkCourseAccess(userId, 'level3');
+      if (errors.enrollment || errors.progress || errors.completion) {
+        console.warn('[Level3Course] Access query warnings:', errors);
+      }
 
       console.log('[Level3Course] Access check:', { 
         userId, 
@@ -193,7 +172,7 @@ const Course = () => {
       });
 
       // Allow access if enrolled OR has progress OR completed (for review) OR is admin
-      if (!enrollment && !progress && !completion && !isAdminUser) {
+      if (!hasAccess && !isAdminUser) {
         console.error('[Level3Course] Access denied - no enrollment, progress, or completion found');
         toast.error('You need to enroll in this course first. If you already purchased it, please contact support.');
         navigate('/courses');

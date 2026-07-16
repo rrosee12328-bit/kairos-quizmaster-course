@@ -129,6 +129,13 @@ serve(async (req) => {
       '512130': 'pepper-spray',
     };
 
+    const courseAliases: Record<string, string[]> = {
+      level2: ['level2'],
+      level3: ['level3'],
+      level4: ['level4', 'level-4'],
+      'pepper-spray': ['pepper-spray', 'pepper_spray'],
+    };
+
     if (action !== 'getSignedUrl') {
       // Admin-only operations against the Bunny management API.
       if (!isAdmin) {
@@ -149,8 +156,10 @@ serve(async (req) => {
         .from('enrollments')
         .select('id, enrollment_status')
         .eq('user_id', userId)
-        .eq('course_type', courseType)
+        .in('course_type', courseAliases[courseType] ?? [courseType])
         .in('enrollment_status', ['enrolled', 'completed', 'active', 'paid'])
+        .order('updated_at', { ascending: false })
+        .limit(1)
         .maybeSingle();
       if (!enrollment) {
         return new Response(
