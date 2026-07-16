@@ -25,6 +25,7 @@ import {
 import { format } from "date-fns";
 import { toast as sonnerToast } from "sonner";
 import kairosLogo from "@/assets/kairos-logo.png";
+import { checkUserIsAdmin } from "@/lib/courseAccess";
 
 interface EnhancedCompletion {
   id: string;
@@ -128,7 +129,7 @@ const Admin = () => {
         return;
       }
 
-      const { data: adminCheck } = await supabase.rpc('is_admin', { _user_id: user.id });
+      const adminCheck = await checkUserIsAdmin(user.id);
       
       if (!alive) return;
       

@@ -9,12 +9,12 @@ import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import CourseHeader from "@/components/CourseHeader";
 import { trackViewContent, trackInitiateCheckout, getCoursePriceMap } from "@/lib/tracking";
-import { syncEnrollmentsForCurrentSession } from "@/lib/enrollmentSync";
 import level3SecurityImage from "@/assets/level3-security-professional.jpg";
 import level2SecurityImage from "@/assets/level2-security-vehicle.jpg";
 import level4BodyguardImage from "@/assets/level4-bodyguard.jpg";
 import pepperSprayHeroImage from "@/assets/pepper-spray-hero.jpg";
 import pepperSprayCanister from "@/assets/pepper-spray-canister.jpg";
+import { ACTIVE_ENROLLMENT_STATUSES, checkCourseAccess, fetchMyCourseEntitlements, getCourseAliases } from "@/lib/courseAccess";
 
 const CourseCheckout = () => {
   const { courseType } = useParams();
@@ -51,15 +51,11 @@ const CourseCheckout = () => {
   }, [courseType]);
 
   const fetchEnrollments = async (userId: string) => {
-    await syncEnrollmentsForCurrentSession();
-
-    const { data, error } = await supabase
-      .from('enrollments')
-      .select('*')
-      .eq('user_id', userId);
-    
-    if (!error && data) {
+    try {
+      const data = await fetchMyCourseEntitlements(userId);
       setEnrollments(data);
+    } catch (error) {
+      console.error('[CourseCheckout] Failed to load course entitlements:', error);
     }
   };
 
@@ -168,8 +164,9 @@ const CourseCheckout = () => {
     );
   }
 
+  const courseAliases = courseType ? getCourseAliases(courseType) : [];
   const isEnrolled = enrollments.some(
-    e => e.course_type === courseType && e.enrollment_status === 'enrolled'
+    e => courseAliases.includes(e.course_type) && ACTIVE_ENROLLMENT_STATUSES.includes(e.enrollment_status)
   );
 
   const handlePurchase = async () => {
@@ -186,16 +183,10 @@ const CourseCheckout = () => {
 
     // Re-check enrollment status before proceeding (prevents race conditions)
     if (user) {
-      const { data: freshEnrollments } = await supabase
-        .from('enrollments')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('course_type', courseType)
-        .eq('enrollment_status', 'enrolled');
-      
-      if (freshEnrollments && freshEnrollments.length > 0) {
+      const freshAccess = await checkCourseAccess(user.id, courseType!);
+
+      if (freshAccess.hasAccess) {
         toast.info("You already own this course");
-        setEnrollments(prev => [...prev, ...freshEnrollments]);
         navigate(`/course/${courseType}`);
         return;
       }

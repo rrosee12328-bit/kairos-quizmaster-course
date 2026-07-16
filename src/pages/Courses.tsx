@@ -10,14 +10,11 @@ import { toast } from "sonner";
 import { Footer } from "@/components/Footer";
 import CourseHeader from "@/components/CourseHeader";
 import { trackAddToCart, trackPurchase, getCoursePriceMap } from "@/lib/tracking";
-import { fetchMyActiveEnrollments, getCourseAliases } from "@/lib/courseAccess";
+import { ACTIVE_ENROLLMENT_STATUSES, checkUserIsAdmin, fetchMyCourseEntitlements, getCourseAliases } from "@/lib/courseAccess";
 
 interface Enrollment {
-  id: string;
-  user_id: string | null;
-  email: string;
   course_type: string;
-  enrollment_status: string;
+  enrollment_status?: string;
 }
 
 const Courses = () => {
@@ -39,12 +36,12 @@ const Courses = () => {
       setUser(currentUser);
       if (currentUser) {
         const [adminResult] = await Promise.all([
-          supabase.rpc('is_admin', { _user_id: currentUser.id }),
+          checkUserIsAdmin(currentUser.id),
           fetchEnrollments(currentUser.id, false, alive),
         ]);
         
         if (!alive) return;
-        if (!adminResult.error && adminResult.data) {
+        if (adminResult) {
           setIsAdmin(true);
         }
       }
@@ -56,9 +53,9 @@ const Courses = () => {
       if (!alive) return;
       setUser(session?.user ?? null);
       if (session?.user) {
-        supabase.rpc('is_admin', { _user_id: session.user.id }).then(({ data, error }) => {
+        checkUserIsAdmin(session.user.id).then((isAdminUser) => {
           if (!alive) return;
-          if (!error && data) setIsAdmin(true);
+          setIsAdmin(isAdminUser);
         });
         fetchEnrollments(session.user.id, false, alive);
       } else {
@@ -107,7 +104,7 @@ const Courses = () => {
         return;
       }
 
-      const data = await fetchMyActiveEnrollments(userId);
+      const data = await fetchMyCourseEntitlements(userId);
 
       if (!alive) return;
 
@@ -138,7 +135,8 @@ const Courses = () => {
       return;
     }
 
-    if (enrollments.some(e => e.course_type === courseType && e.enrollment_status === 'enrolled')) {
+    const courseAliases = getCourseAliases(courseType);
+    if (enrollments.some(e => courseAliases.includes(e.course_type) && (!e.enrollment_status || ACTIVE_ENROLLMENT_STATUSES.includes(e.enrollment_status)))) {
       toast.info("You already own this course");
       return;
     }
@@ -280,8 +278,8 @@ const Courses = () => {
     if (isAdmin) return true;
     if (!user) return false;
 
-    const { data, error } = await supabase.rpc('is_admin', { _user_id: user.id });
-    if (!error && data) {
+    const isAdminUser = await checkUserIsAdmin(user.id);
+    if (isAdminUser) {
       setIsAdmin(true);
       return true;
     }

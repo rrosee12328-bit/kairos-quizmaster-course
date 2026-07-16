@@ -22,6 +22,18 @@ export interface EnrollmentSummary {
   enrollment_status: string;
 }
 
+export interface CourseEntitlementSummary {
+  course_type: string;
+  source: "enrollment" | "progress" | "completion";
+  enrollment_status?: string;
+}
+
+interface ProfileAccessData {
+  enrollments?: Array<{ course_type: string; enrollment_status?: string }>;
+  completions?: Array<{ course_type: string }>;
+  certificates?: Array<{ course_type: string }>;
+}
+
 export const getCourseAliases = (courseId: CourseAccessId | string) => COURSE_ALIASES[courseId] ?? [courseId];
 
 export const normalizeCourseType = (courseId: CourseAccessId | string) => {
@@ -44,6 +56,54 @@ export const getCourseTitle = (courseId: CourseAccessId | string) => {
   return courseId;
 };
 
+export const checkUserIsAdmin = async (userId: string): Promise<boolean> => {
+  const { data, error } = await supabase
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .in("role", ["admin", "security_admin"])
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.warn("[courseAccess] Admin role lookup failed:", error);
+    return false;
+  }
+
+  return !!data;
+};
+
+const fetchProfileAccessData = async (userId: string): Promise<ProfileAccessData | null> => {
+  const { data: { session } } = await supabase.auth.getSession();
+  const { data, error } = await supabase.functions.invoke("get-profile-data", {
+    headers: session ? { Authorization: `Bearer ${session.access_token}` } : undefined,
+    body: { userId },
+  });
+
+  if (error) {
+    console.warn("[courseAccess] Profile access fallback failed:", error);
+    return null;
+  }
+
+  return data ?? null;
+};
+
+const addEntitlement = (
+  entitlements: Map<string, CourseEntitlementSummary>,
+  courseType: string,
+  source: CourseEntitlementSummary["source"],
+  enrollmentStatus?: string,
+) => {
+  const normalized = normalizeCourseType(courseType);
+  if (!entitlements.has(normalized)) {
+    entitlements.set(normalized, {
+      course_type: courseType,
+      source,
+      enrollment_status: enrollmentStatus,
+    });
+  }
+};
+
 export const fetchMyActiveEnrollments = async (userId: string): Promise<EnrollmentSummary[]> => {
   await syncEnrollmentsForCurrentSession();
 
@@ -61,10 +121,98 @@ export const fetchMyActiveEnrollments = async (userId: string): Promise<Enrollme
   return data ?? [];
 };
 
+export const fetchMyCourseEntitlements = async (userId: string): Promise<CourseEntitlementSummary[]> => {
+  await syncEnrollmentsForCurrentSession();
+
+  const profileAccess = await fetchProfileAccessData(userId);
+  if (profileAccess) {
+    const entitlements = new Map<string, CourseEntitlementSummary>();
+
+    for (const row of profileAccess.enrollments ?? []) {
+      if (!row.enrollment_status || ACTIVE_ENROLLMENT_STATUSES.includes(row.enrollment_status)) {
+        addEntitlement(entitlements, row.course_type, "enrollment", row.enrollment_status);
+      }
+    }
+
+    for (const row of profileAccess.completions ?? []) {
+      addEntitlement(entitlements, row.course_type, "completion");
+    }
+
+    for (const row of profileAccess.certificates ?? []) {
+      addEntitlement(entitlements, row.course_type, "completion");
+    }
+
+    if (entitlements.size > 0) {
+      return Array.from(entitlements.values());
+    }
+  }
+
+  const [enrollmentResult, progressResult, completionResult] = await Promise.all([
+    supabase
+      .from("enrollments")
+      .select("course_type, enrollment_status")
+      .eq("user_id", userId)
+      .in("enrollment_status", ACTIVE_ENROLLMENT_STATUSES),
+    supabase
+      .from("course_progress")
+      .select("course_type")
+      .eq("user_id", userId),
+    supabase
+      .from("course_completions")
+      .select("course_type")
+      .eq("user_id", userId),
+  ]);
+
+  const errors = [enrollmentResult.error, progressResult.error, completionResult.error].filter(Boolean);
+  if (errors.length > 0) {
+    throw errors[0];
+  }
+
+  const entitlements = new Map<string, CourseEntitlementSummary>();
+
+  for (const row of enrollmentResult.data ?? []) {
+    addEntitlement(entitlements, row.course_type, "enrollment", row.enrollment_status);
+  }
+
+  for (const row of progressResult.data ?? []) {
+    addEntitlement(entitlements, row.course_type, "progress");
+  }
+
+  for (const row of completionResult.data ?? []) {
+    addEntitlement(entitlements, row.course_type, "completion");
+  }
+
+  return Array.from(entitlements.values());
+};
+
 export const checkCourseAccess = async (userId: string, courseId: CourseAccessId | string) => {
   await syncEnrollmentsForCurrentSession();
 
   const courseAliases = getCourseAliases(courseId);
+  const profileAccess = await fetchProfileAccessData(userId);
+
+  if (profileAccess) {
+    const enrollment = (profileAccess.enrollments ?? []).find(
+      (row) => courseAliases.includes(row.course_type) && (!row.enrollment_status || ACTIVE_ENROLLMENT_STATUSES.includes(row.enrollment_status))
+    );
+    const completion = (profileAccess.completions ?? []).find((row) => courseAliases.includes(row.course_type));
+    const certificate = (profileAccess.certificates ?? []).find((row) => courseAliases.includes(row.course_type));
+
+    if (enrollment || completion || certificate) {
+      return {
+        enrollment: enrollment ? { id: "profile-recovery", enrollment_status: enrollment.enrollment_status, course_type: enrollment.course_type } : null,
+        progress: null,
+        completion: completion || certificate ? { id: "profile-recovery", passed: true } : null,
+        errors: {
+          enrollment: null,
+          progress: null,
+          completion: null,
+        },
+        hasAccess: true,
+      };
+    }
+  }
+
   const [enrollmentResult, progressResult, completionResult] = await Promise.all([
     supabase
       .from("enrollments")

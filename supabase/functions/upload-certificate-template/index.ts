@@ -31,8 +31,15 @@ Deno.serve(async (req) => {
         status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    const { data: isAdmin, error: roleErr } = await authClient.rpc('is_admin', { _user_id: userData.user.id });
-    if (roleErr || !isAdmin) {
+    const adminCheckClient = createClient(supabaseUrl, supabaseKey);
+    const { data: adminRole, error: roleErr } = await adminCheckClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userData.user.id)
+      .in('role', ['admin', 'security_admin'])
+      .limit(1)
+      .maybeSingle();
+    if (roleErr || !adminRole) {
       return new Response(JSON.stringify({ error: 'Forbidden' }), {
         status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
