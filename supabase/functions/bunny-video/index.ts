@@ -113,7 +113,9 @@ serve(async (req) => {
     const { action, videoId, title, collectionId, libraryId, expiresInHours } = validationResult.data;
 
     // Authorization: enrollment or admin check.
-    // Admin actions (create/list/get raw video) require admin role.
+    // create/get raw video require admin role.
+    // listVideos is needed by the student Level 2 course page, so it requires
+    // enrollment in the course matching this library, or admin.
     // getSignedUrl requires enrollment in the course matching this library, or admin.
     const serviceClient = createClient(
       supabaseUrl,
@@ -136,7 +138,7 @@ serve(async (req) => {
       'pepper-spray': ['pepper-spray', 'pepper_spray'],
     };
 
-    if (action !== 'getSignedUrl') {
+    if (action === 'createVideo' || action === 'getVideo') {
       // Admin-only operations against the Bunny management API.
       if (!isAdmin) {
         return new Response(
