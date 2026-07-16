@@ -29,9 +29,51 @@ const accountRecoveryEmails: Record<string, string[]> = {
   ],
 };
 
-async function getLinkedUserIds(serviceClient: ReturnType<typeof createClient>, userId: string, email?: string) {
+function getFallbackLinkedEmails(normalizedEmail: string) {
+  return accountRecoveryEmails[normalizedEmail] ?? [normalizedEmail];
+}
+
+function emailOrFilter(emails: string[]) {
+  return emails.map((email) => `email.ilike.${email}`).join(',');
+}
+
+async function getLinkedEmails(serviceClient: ReturnType<typeof createClient>, email?: string) {
   const normalizedEmail = (email ?? '').trim().toLowerCase();
-  const linkedEmails = accountRecoveryEmails[normalizedEmail];
+  if (!normalizedEmail) return [];
+
+  const { data: directRows, error: directError } = await serviceClient
+    .from('account_recovery_emails')
+    .select('group_id, email')
+    .ilike('email', normalizedEmail);
+
+  if (directError) {
+    console.warn('[bunny-video] account recovery lookup failed, using fallback map', directError);
+    return getFallbackLinkedEmails(normalizedEmail);
+  }
+
+  const groupIds = Array.from(new Set((directRows ?? []).map((row: { group_id: string }) => row.group_id)));
+  if (groupIds.length === 0) {
+    return getFallbackLinkedEmails(normalizedEmail);
+  }
+
+  const { data: groupRows, error: groupError } = await serviceClient
+    .from('account_recovery_emails')
+    .select('email')
+    .in('group_id', groupIds);
+
+  if (groupError) {
+    console.warn('[bunny-video] account recovery group lookup failed, using fallback map', groupError);
+    return getFallbackLinkedEmails(normalizedEmail);
+  }
+
+  return Array.from(new Set([
+    normalizedEmail,
+    ...(groupRows ?? []).map((row: { email: string }) => row.email.trim().toLowerCase()),
+  ]));
+}
+
+async function getLinkedUserIds(serviceClient: ReturnType<typeof createClient>, userId: string, email?: string) {
+  const linkedEmails = await getLinkedEmails(serviceClient, email);
 
   if (!linkedEmails?.length) {
     return [userId];
@@ -40,7 +82,7 @@ async function getLinkedUserIds(serviceClient: ReturnType<typeof createClient>, 
   const { data, error } = await serviceClient
     .from('profiles')
     .select('id')
-    .in('email', linkedEmails);
+    .or(emailOrFilter(linkedEmails));
 
   if (error) {
     console.error('[bunny-video] linked profile lookup failed', error);

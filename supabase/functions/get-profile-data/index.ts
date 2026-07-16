@@ -22,6 +22,49 @@ const accountRecoveryEmails: Record<string, string[]> = {
   ],
 };
 
+function getFallbackLinkedEmails(normalizedEmail: string) {
+  return accountRecoveryEmails[normalizedEmail] ?? [normalizedEmail];
+}
+
+function emailOrFilter(emails: string[]) {
+  return emails.map((email) => `email.ilike.${email}`).join(',');
+}
+
+async function getLinkedEmails(admin: SupabaseAdmin, targetEmail: string) {
+  const normalizedEmail = targetEmail.trim().toLowerCase();
+  if (!normalizedEmail) return [];
+
+  const { data: directRows, error: directError } = await admin
+    .from('account_recovery_emails')
+    .select('group_id, email')
+    .ilike('email', normalizedEmail);
+
+  if (directError) {
+    console.warn('[get-profile-data] account recovery lookup failed, using fallback map', directError);
+    return getFallbackLinkedEmails(normalizedEmail);
+  }
+
+  const groupIds = Array.from(new Set((directRows ?? []).map((row: { group_id: string }) => row.group_id)));
+  if (groupIds.length === 0) {
+    return getFallbackLinkedEmails(normalizedEmail);
+  }
+
+  const { data: groupRows, error: groupError } = await admin
+    .from('account_recovery_emails')
+    .select('email')
+    .in('group_id', groupIds);
+
+  if (groupError) {
+    console.warn('[get-profile-data] account recovery group lookup failed, using fallback map', groupError);
+    return getFallbackLinkedEmails(normalizedEmail);
+  }
+
+  return Array.from(new Set([
+    normalizedEmail,
+    ...(groupRows ?? []).map((row: { email: string }) => row.email.trim().toLowerCase()),
+  ]));
+}
+
 async function getProfileEmail(admin: SupabaseAdmin, userId: string) {
   const { data } = await admin
     .from('profiles')
@@ -34,7 +77,7 @@ async function getProfileEmail(admin: SupabaseAdmin, userId: string) {
 
 async function getLinkedUserIds(admin: SupabaseAdmin, targetUserId: string, targetEmail: string) {
   const normalizedEmail = targetEmail.trim().toLowerCase();
-  const linkedEmails = accountRecoveryEmails[normalizedEmail];
+  const linkedEmails = await getLinkedEmails(admin, normalizedEmail);
 
   if (!linkedEmails?.length) {
     return [targetUserId];
@@ -43,7 +86,7 @@ async function getLinkedUserIds(admin: SupabaseAdmin, targetUserId: string, targ
   const { data, error } = await admin
     .from('profiles')
     .select('id, email')
-    .in('email', linkedEmails);
+    .or(emailOrFilter(linkedEmails));
 
   if (error) {
     console.error('[get-profile-data] linked profile lookup failed', error);
