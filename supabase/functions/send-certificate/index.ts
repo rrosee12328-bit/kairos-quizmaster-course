@@ -397,8 +397,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
     // Generate PDF in background
     const pdfBytes = await generateCertificatePDF(name, date, courseType || 'level2', lastSixDigits);
     
-    // Convert PDF to base64 for email attachment
-    const pdfBase64 = btoa(String.fromCharCode(...pdfBytes));
+    // Convert PDF to base64 for email attachment (chunked to avoid stack overflow)
+    let binary = "";
+    const CHUNK = 0x8000;
+    for (let i = 0; i < pdfBytes.length; i += CHUNK) {
+      binary += String.fromCharCode(...pdfBytes.subarray(i, i + CHUNK));
+    }
+    const pdfBase64 = btoa(binary);
+    console.log("PDF size bytes:", pdfBytes.length);
 
     const resend = new Resend(RESEND_API_KEY);
 
