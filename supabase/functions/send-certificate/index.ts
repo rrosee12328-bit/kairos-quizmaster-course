@@ -97,7 +97,7 @@ async function generateCertificatePDF(
     } else {
       const { data: signatureBlob, error: signatureError } = await adminClient.storage
         .from("certificates")
-        .download("stephen-taylor-signature-transparent.png");
+        .download("stephen-taylor-signature-black.png");
       if (signatureError || !signatureBlob) {
         throw new Error(`Certificate signature unavailable: ${signatureError?.message || "no data"}`);
       }
@@ -121,6 +121,10 @@ async function generateCertificatePDF(
     // Note: PDF coordinates start from bottom-left, so we invert Y
     const pctX = (percent: number) => (pageWidth * percent) / 100;
     const pctY = (percentFromTop: number) => pageHeight - (pageHeight * percentFromTop) / 100;
+    // CSS positions the top of each line box, while pdf-lib positions the text
+    // baseline. Subtracting the font size makes the server PDF match the
+    // browser-rendered certificate instead of covering the form labels.
+    const textY = (percentFromTop: number, fontSize: number) => pctY(percentFromTop) - fontSize;
 
     // === Text placement ===
     const textColor = rgb(0, 0, 0); // Black text
@@ -153,14 +157,18 @@ async function generateCertificatePDF(
     } else {
       // Level 2 TX DPS Certificate Layout - Matching the form exactly
       const nameParts = splitName(name);
-      const fontSize = 14;
-      const smallFontSize = 12;
+      // Browser export is 1275px wide and the PDF is 612pt wide. Scale the
+      // browser's 22px/26px/28px field sizes by 612/1275 for an exact match.
+      const nameFontSize = 11;
+      const businessFontSize = 12.5;
+      const idFontSize = 13.5;
+      const smallFontSize = 11;
       
       // Last Name - first column (around 9% from left, 29% from top)
       page.drawText(nameParts.lastName, {
         x: pctX(9),
-        y: pctY(29.2),
-        size: fontSize,
+        y: textY(29.2, nameFontSize),
+        size: nameFontSize,
         font: fontNormal,
         color: textColor,
       });
@@ -168,8 +176,8 @@ async function generateCertificatePDF(
       // First Name - second column (around 44% from left)
       page.drawText(nameParts.firstName, {
         x: pctX(44),
-        y: pctY(29.2),
-        size: fontSize,
+        y: textY(29.2, nameFontSize),
+        size: nameFontSize,
         font: fontNormal,
         color: textColor,
       });
@@ -178,8 +186,8 @@ async function generateCertificatePDF(
       if (nameParts.middleInitial) {
         page.drawText(nameParts.middleInitial, {
           x: pctX(76),
-          y: pctY(29.2),
-          size: fontSize,
+          y: textY(29.2, nameFontSize),
+          size: nameFontSize,
           font: fontNormal,
           color: textColor,
         });
@@ -190,27 +198,27 @@ async function generateCertificatePDF(
       if (formattedId) {
         page.drawText(formattedId, {
           x: pctX(77),
-          y: pctY(31.8),
-          size: 16,
+          y: textY(31.8, idFontSize),
+          size: idFontSize,
           font: fontNormal,
           color: textColor,
         });
       }
       
-      // Business Name - below "Business Name" header (around 9% left, 41.5% from top)
+      // Business Name - on the second line, below the printed field label.
       page.drawText("Kairos Security", {
         x: pctX(9),
-        y: pctY(41.5),
-        size: fontSize,
+        y: textY(42.5, businessFontSize),
+        size: businessFontSize,
         font: fontNormal,
         color: textColor,
       });
       
-      // Business License Number (around 64% left, 41.5% from top)
+      // Business License Number - on the second line below its printed label.
       page.drawText("F28623301", {
         x: pctX(64),
-        y: pctY(41.5),
-        size: fontSize,
+        y: textY(42.5, businessFontSize),
+        size: businessFontSize,
         font: fontNormal,
         color: textColor,
       });
@@ -218,7 +226,7 @@ async function generateCertificatePDF(
       // Instructor Name - after label (around 22% left, 45.3% from top)
       page.drawText("Stephen Taylor", {
         x: pctX(22),
-        y: pctY(45.3),
+        y: textY(45.3, smallFontSize),
         size: smallFontSize,
         font: fontNormal,
         color: textColor,
@@ -227,7 +235,7 @@ async function generateCertificatePDF(
       // Business Representative Name - after label (around 36% left, 47.3% from top)
       page.drawText("Stephen Taylor", {
         x: pctX(36),
-        y: pctY(47.3),
+        y: textY(47.3, smallFontSize),
         size: smallFontSize,
         font: fontNormal,
         color: textColor,
@@ -237,7 +245,7 @@ async function generateCertificatePDF(
       const formattedDate = formatDate(date);
       page.drawText(formattedDate, {
         x: pctX(43.5),
-        y: pctY(49.5),
+        y: textY(49.5, smallFontSize),
         size: smallFontSize,
         font: fontNormal,
         color: textColor,
@@ -246,7 +254,7 @@ async function generateCertificatePDF(
       // X in the Yes checkbox (around 43% left, 52% from top)
       page.drawText("X", {
         x: pctX(43),
-        y: pctY(52),
+        y: textY(52, smallFontSize),
         size: smallFontSize,
         font,
         color: textColor,
