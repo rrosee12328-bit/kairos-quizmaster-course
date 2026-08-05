@@ -12,6 +12,7 @@ import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { checkUserIsAdmin } from "@/lib/courseAccess";
 
 // HTML escape function to prevent XSS in document.write contexts
 const escapeHtml = (str: string): string => {
@@ -83,11 +84,15 @@ const CertificatePreview = () => {
       );
 
       if (!cert) {
+        // Admins may preview certificates for students they manage. The
+        // certificates SELECT remains protected by RLS, so this does not grant
+        // ordinary users access to someone else's certificate.
+        const isAdmin = await checkUserIsAdmin(user.id);
         const { data: ownedCert, error } = await supabase
           .from('certificates')
           .select('*')
           .eq('registration_number', regNum)
-          .eq('user_id', user.id)
+          .eq(isAdmin ? 'registration_number' : 'user_id', isAdmin ? regNum : user.id)
           .single();
 
         if (error || !ownedCert) {

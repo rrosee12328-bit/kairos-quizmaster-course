@@ -828,6 +828,7 @@ const Admin = () => {
                       <TableHead>ID Type</TableHead>
                       <TableHead>Last 6 Digits</TableHead>
                       <TableHead>Issued At</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -842,6 +843,16 @@ const Admin = () => {
                         <TableCell className="capitalize">{cert.identification_type?.replace('_', ' ')}</TableCell>
                         <TableCell className="font-mono">{cert.last_six_digits}</TableCell>
                         <TableCell>{format(new Date(cert.issued_at), 'MMM dd, yyyy HH:mm')}</TableCell>
+                        <TableCell>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => navigate(`/certificate-preview?registration=${encodeURIComponent(cert.registration_number)}`)}
+                          >
+                            <Download className="h-3 w-3 mr-1" />
+                            View / Download
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -1275,7 +1286,7 @@ const Admin = () => {
                           size="sm"
                           variant="outline"
                           onClick={() => {
-                            navigate(`/certificate-preview?name=${encodeURIComponent(cert.student_name)}&id=${encodeURIComponent(cert.identification_type)}&lastSix=${encodeURIComponent(cert.last_six_digits)}&date=${encodeURIComponent(cert.completion_date)}`);
+                            navigate(`/certificate-preview?registration=${encodeURIComponent(cert.registration_number)}`);
                           }}
                         >
                           <Download className="h-3 w-3 mr-1" />

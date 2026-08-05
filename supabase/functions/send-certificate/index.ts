@@ -360,7 +360,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const { registrationNumber, email: overrideEmail } = validation.data;
 
     // Look up the certificate by registration number using the service role.
-    // Verify the caller owns this certificate (or is the service role).
+    // Verify the caller owns this certificate, is an admin, or is the service role.
     const { data: cert, error: certErr } = await adminClient
       .from("certificates")
       .select("user_id, student_name, completion_date, last_six_digits, course_type, registration_number")
@@ -372,9 +372,18 @@ Deno.serve(async (req: Request): Promise<Response> => {
       });
     }
     if (!isServiceRole && cert.user_id !== callerUserId) {
-      return new Response(JSON.stringify({ error: "Forbidden" }), {
-        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      const { data: adminRole, error: adminRoleError } = await adminClient
+        .from("user_roles")
+        .select("id")
+        .eq("user_id", callerUserId)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (adminRoleError || !adminRole) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     // Trust DB values, never the caller, for everything that appears on the PDF.
