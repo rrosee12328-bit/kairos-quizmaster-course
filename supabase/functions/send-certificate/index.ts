@@ -66,62 +66,52 @@ async function generateCertificatePDF(
   console.log("Generating certificate PDF", { name, date, courseType, lastSixDigits });
 
   try {
-    // Choose template based on course type
-    const templateFileName = courseType === 'pepper-spray' 
-      ? 'pepper-spray-certificate-template.pdf' 
-      : 'level2-certificate-template.pdf';
+    const isPepperSpray = courseType === 'pepper-spray';
+    const templateFileName = isPepperSpray
+      ? 'pepper-spray-certificate-template.pdf'
+      : 'level2-certificate-template.jpg';
 
     let pdfDoc: any;
     let page: any;
     let pageWidth: number;
     let pageHeight: number;
 
-    try {
-      console.log("Downloading PDF template via service role:", templateFileName);
-      const adminClient = createClient(
-        Deno.env.get("SUPABASE_URL")!,
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-      );
-      const { data: templateBlob, error: templateError } = await adminClient.storage
-        .from("certificates")
-        .download(templateFileName);
-      if (templateError || !templateBlob) {
-        throw new Error(`Template download failed: ${templateError?.message || "no data"}`);
-      }
-      const templatePdfBytes = await templateBlob.arrayBuffer();
-      console.log("Template PDF loaded, size:", templatePdfBytes.byteLength);
-      
-      // Load the template PDF
-      const templatePdf = await PDFDocument.load(templatePdfBytes);
-      
-      // Create a new PDF document
+    console.log("Downloading certificate assets via service role:", templateFileName);
+    const adminClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+    const { data: templateBlob, error: templateError } = await adminClient.storage
+      .from("certificates")
+      .download(templateFileName);
+    if (templateError || !templateBlob) {
+      throw new Error(`Certificate template unavailable: ${templateError?.message || "no data"}`);
+    }
+
+    let signatureImage: any = null;
+    if (isPepperSpray) {
+      const templatePdf = await PDFDocument.load(await templateBlob.arrayBuffer());
       pdfDoc = await PDFDocument.create();
-      
-      // Copy the first page from the template
       const [templatePage] = await pdfDoc.copyPages(templatePdf, [0]);
       page = pdfDoc.addPage(templatePage);
-      
-      pageWidth = page.getWidth();
-      pageHeight = page.getHeight();
-      
-      console.log("Template page copied", { pageWidth, pageHeight });
-    } catch (templateError) {
-      console.error("Error loading template PDF, using fallback:", templateError);
-      
-      // Fallback: create a blank page (portrait 8.5x11)
-      pdfDoc = await PDFDocument.create();
-      page = pdfDoc.addPage([612, 792]); // Letter size portrait
-      pageWidth = page.getWidth();
-      pageHeight = page.getHeight();
+    } else {
+      const { data: signatureBlob, error: signatureError } = await adminClient.storage
+        .from("certificates")
+        .download("stephen-taylor-signature-transparent.png");
+      if (signatureError || !signatureBlob) {
+        throw new Error(`Certificate signature unavailable: ${signatureError?.message || "no data"}`);
+      }
 
-      page.drawRectangle({
-        x: 0,
-        y: 0,
-        width: pageWidth,
-        height: pageHeight,
-        color: rgb(0.95, 0.95, 0.95),
-      });
+      pdfDoc = await PDFDocument.create();
+      page = pdfDoc.addPage([612, 792]);
+      const templateImage = await pdfDoc.embedJpg(await templateBlob.arrayBuffer());
+      page.drawImage(templateImage, { x: 0, y: 0, width: 612, height: 792 });
+      signatureImage = await pdfDoc.embedPng(await signatureBlob.arrayBuffer());
     }
+
+    pageWidth = page.getWidth();
+    pageHeight = page.getHeight();
+    console.log("Certificate template loaded", { pageWidth, pageHeight });
 
     // Embed fonts
     const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
@@ -133,7 +123,6 @@ async function generateCertificatePDF(
     const pctY = (percentFromTop: number) => pageHeight - (pageHeight * percentFromTop) / 100;
 
     // === Text placement ===
-    const isPepperSpray = courseType === 'pepper-spray';
     const textColor = rgb(0, 0, 0); // Black text
     
     if (isPepperSpray) {
@@ -263,27 +252,28 @@ async function generateCertificatePDF(
         color: textColor,
       });
       
-      // Instructor Signature - "Stephen Taylor" in cursive-like style (around 35% left, 53% from top)
-      // Using italic font for signature appearance
-      page.drawText("Stephen Taylor", {
-        x: pctX(42),
-        y: pctY(53.5),
-        size: 16,
-        font: fontNormal,
-        color: textColor,
+      // Match the handwritten signature image used by the browser download.
+      const signatureHeight = pageHeight * (180 / 1650);
+      const signatureWidth = signatureHeight * (1920 / 1080);
+      const signatureX = pageWidth * 0.35;
+      page.drawImage(signatureImage, {
+        x: signatureX,
+        y: pageHeight - (pageHeight * 0.51) - signatureHeight,
+        width: signatureWidth,
+        height: signatureHeight,
       });
-      
-      // Business Representative Signature (around 35% left, 56% from top)
-      page.drawText("Stephen Taylor", {
-        x: pctX(42),
-        y: pctY(56.5),
-        size: 16,
-        font: fontNormal,
-        color: textColor,
+      page.drawImage(signatureImage, {
+        x: signatureX,
+        y: pageHeight - (pageHeight * 0.54) - signatureHeight,
+        width: signatureWidth,
+        height: signatureHeight,
       });
     }
 
     const pdfBytes = await pdfDoc.save();
+    if (!isPepperSpray && pdfBytes.length < 100_000) {
+      throw new Error("Generated Level 2 certificate failed the completeness check");
+    }
     console.log("PDF generated successfully", {
       size: pdfBytes.length,
       pageWidth,
