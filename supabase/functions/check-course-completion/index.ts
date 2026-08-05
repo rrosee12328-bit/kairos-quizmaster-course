@@ -16,6 +16,14 @@ const COURSE_DURATIONS: Record<string, number> = {
 
 const MAX_FAILED_ATTEMPTS = 3;
 
+// Number of video sections per course
+const COURSE_SECTIONS: Record<string, number> = {
+  'level2': 9,
+  'level3': 10,
+  'level4': 8,
+  'pepper_spray': 5,
+};
+
 Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -124,7 +132,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     // 4. Calculate total watch time from all sections
     const { data: progress, error: progressError } = await supabase
       .from('course_progress')
-      .select('video_watch_time_seconds')
+      .select('section_id, video_watch_time_seconds, video_completed')
       .eq('user_id', user.id)
       .eq('course_type', course_type);
 
@@ -147,13 +155,23 @@ Deno.serve(async (req: Request): Promise<Response> => {
       ? (totalWatchTime / expectedDuration) * 100 
       : 0;
     
+    // Count distinct sections the student has actually finished watching
+    const completedSectionIds = new Set(
+      (progress || []).filter((r) => r.video_completed).map((r) => r.section_id)
+    );
+    const requiredSections = COURSE_SECTIONS[course_type] || 0;
+    const allSectionsWatched =
+      requiredSections > 0 && completedSectionIds.size >= requiredSections;
+
     // Unlock exam if: 90% watch time completed OR user has already attempted the exam (and has attempts left)
     const watchTimeUnlocked = completionPercentage >= 90;
     const hasAttemptsRemaining = failedAttempts < MAX_FAILED_ATTEMPTS;
     const previouslyAttempted = totalAttempts > 0;
     
-    // Allow exam access if they've watched enough OR they've already taken it before (still have attempts)
-    const isUnlocked = watchTimeUnlocked || (previouslyAttempted && hasAttemptsRemaining);
+    // Allow exam access if they've finished every section, watched enough total time,
+    // or they've already taken it before (still have attempts)
+    const isUnlocked =
+      allSectionsWatched || watchTimeUnlocked || (previouslyAttempted && hasAttemptsRemaining);
 
     console.log('[check-course-completion]', {
       userId: user.id,
@@ -163,6 +181,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
       expectedDuration,
       completionPercentage: completionPercentage.toFixed(2),
       watchTimeUnlocked,
+      completedSections: completedSectionIds.size,
+      requiredSections,
+      allSectionsWatched,
       previouslyAttempted,
       failedAttempts,
       hasAttemptsRemaining,
@@ -171,7 +192,10 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     let reason = 'Exam unlocked';
     if (!isUnlocked) {
-      reason = `Complete ${(90 - completionPercentage).toFixed(1)}% more of the course to unlock the exam.`;
+      const sectionsLeft = Math.max(requiredSections - completedSectionIds.size, 0);
+      reason = sectionsLeft > 0
+        ? `Complete ${sectionsLeft} more section${sectionsLeft === 1 ? '' : 's'} to unlock the exam.`
+        : `Complete ${(90 - completionPercentage).toFixed(1)}% more of the course to unlock the exam.`;
     } else if (previouslyAttempted && !watchTimeUnlocked) {
       const attemptsLeft = MAX_FAILED_ATTEMPTS - failedAttempts;
       reason = `Exam unlocked. You have ${attemptsLeft} attempt${attemptsLeft === 1 ? '' : 's'} remaining.`;
@@ -180,7 +204,11 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return new Response(JSON.stringify({
       total_watch_time_seconds: totalWatchTime,
       expected_duration_seconds: expectedDuration,
-      completion_percentage: Math.round(completionPercentage * 10) / 10,
+      completion_percentage: allSectionsWatched
+        ? 100
+        : Math.round(completionPercentage * 10) / 10,
+      completed_sections: completedSectionIds.size,
+      required_sections: requiredSections,
       exam_unlocked: isUnlocked,
       has_enrollment: true,
       failed_attempts: failedAttempts,
