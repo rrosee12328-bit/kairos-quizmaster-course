@@ -65,14 +65,16 @@ const Quiz = ({ courseType = 'level3', questions: customQuestions, passingPercen
         setCurrentQuestion(prev => prev + 1);
         setSelectedAnswer("");
       } else {
-        // Save completion immediately when quiz is finished
-        // Pass the updated answers directly to avoid race condition with state update
+        // Do not reveal a passing result unless the server has durably saved it.
+        // This prevents the UI from claiming success when a completion write fails.
         setIsSavingCompletion(true);
-        await saveCompletion(updatedAnswers);
+        const completionSaved = await saveCompletion(updatedAnswers);
         setIsSavingCompletion(false);
-        setShowResults(true);
-        // Notify parent to refresh progress data
-        onQuizComplete?.();
+        if (completionSaved) {
+          setShowResults(true);
+          // Notify parent to refresh progress data only after a durable save.
+          onQuizComplete?.();
+        }
       }
     }
   };
