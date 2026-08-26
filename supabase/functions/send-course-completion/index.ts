@@ -74,7 +74,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       : `Course Completion Notification - ${courseTitle}`;
 
     const TOPS_URL = "https://www.dps.texas.gov/section/private-security/tops";
-    const IDENTOGO_URL = "https://www.identogo.com";
+    const IDENTOGO_URL = "https://www.identogo.com/services/live-scan-fingerprinting";
     const CALENDLY_URL = "https://calendly.com/kairossecurity/30min";
     const PROFILE_URL = "https://kairossecurityacademy.com/profile";
 
@@ -107,12 +107,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
         nextStepsBlock = `
           <div style="background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:20px;margin:20px 0;">
             <h2 style="margin:0 0 16px 0;font-size:18px;color:#111827;">Next Steps — Non-Commissioned Security Officer (Level II)</h2>
-            ${stepCard(1, 'Complete your online training course', '✓ Done — you\'ve passed the exam.')}
-            ${stepCard(2, 'Download & print your certificate', 'Save a copy for your records and to upload to TOPS.', { label: 'Download Certificate', href: PROFILE_URL, color: '#22c55e' })}
-            ${stepCard(3, 'Create a TOPS account', 'Apply for your Non-Commissioned Security Officer License (Level II).', { label: 'Open TOPS', href: TOPS_URL })}
-            ${stepCard(4, 'Upload your certificate', 'Attach your Level II training certificate to your TOPS application.')}
-            ${stepCard(5, 'Schedule fingerprinting appointment', 'Required by Texas DPS.', { label: 'Schedule at IdentoGO', href: IDENTOGO_URL })}
-            ${stepCard(6, 'Wait for DPS approval', 'Once approved, your license status will update in TOPS and your physical license will be mailed to you.')}
+            ${stepCard(1, 'Go to Texas Online Private Security (TOPS)', 'Visit the TOPS portal to begin your application.', { label: 'Open TOPS', href: TOPS_URL })}
+            ${stepCard(2, 'Create or access your individual TOPS profile', 'If you were previously licensed and cannot access your profile, use the "Can\'t Login" option on the TOPS sign-in page.')}
+            ${stepCard(3, 'Submit an original Non-Commissioned Security Officer application', 'Apply for your Level II Non-Commissioned Security Officer license through TOPS.')}
+            ${stepCard(4, 'Pay the application fee', 'Submit the required DPS application fee through the TOPS portal.')}
+            ${stepCard(5, 'Upload your Level II certificate', 'Use Checklist/Upload Docs in TOPS to upload your certificate when requested.', { label: 'Download Certificate', href: PROFILE_URL, color: '#22c55e' })}
+            ${stepCard(6, 'Schedule electronic fingerprints', 'Use the instructions DPS provides, or schedule live-scan fingerprinting through IdentoGO.', { label: 'Schedule at IdentoGO', href: IDENTOGO_URL })}
+            ${stepCard(7, 'Monitor TOPS and your email', 'Watch your TOPS account and email for status updates and any additional requests from DPS.')}
+            ${stepCard(8, 'Complete affiliation with a licensed security company', 'DPS allows you to apply without an employer, but you will not receive your pocket card until you are affiliated with a licensed security company.')}
             ${remindersBlock}
           </div>
         `;
