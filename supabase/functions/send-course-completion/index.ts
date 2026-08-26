@@ -74,7 +74,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       : `Course Completion Notification - ${courseTitle}`;
 
     const TOPS_URL = "https://www.dps.texas.gov/section/private-security/tops";
-    const IDENTOGO_URL = "https://www.identogo.com";
+    const IDENTOGO_URL = "https://www.identogo.com/services/live-scan-fingerprinting";
     const CALENDLY_URL = "https://calendly.com/kairossecurity/30min";
     const PROFILE_URL = "https://kairossecurityacademy.com/profile";
 

@@ -6,7 +6,7 @@ import { Download, ExternalLink, AlertTriangle } from "lucide-react";
 type CourseType = "level2" | "level3" | "level4" | "level-4" | "pepper-spray";
 
 const TOPS_URL = "https://www.dps.texas.gov/section/private-security/tops";
-const IDENTOGO_URL = "https://www.identogo.com";
+const IDENTOGO_URL = "https://www.identogo.com/services/live-scan-fingerprinting";
 const CALENDLY_URL = "https://calendly.com/kairossecurity/30min";
 
 interface Step {
