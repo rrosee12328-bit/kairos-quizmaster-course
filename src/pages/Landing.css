@@ -941,3 +941,7 @@
 .ks-questions [role="tablist"] {
   height: auto;
 }
+
+/* Keep the Texas-specific licensing headline within its text column. */
+.ks-hero h1 { font-size: clamp(48px, 5.3vw, 82px); }
+@media (max-width: 700px) { .ks-hero h1 { font-size: clamp(26px, 7.1vw, 48px); } }
