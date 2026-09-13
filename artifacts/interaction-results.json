@@ -1,0 +1,26 @@
+[
+  {
+    "width": 1440,
+    "allFourPaths": true,
+    "faq": true,
+    "checkoutRoute": true,
+    "mobileMenu": "not applicable",
+    "failedRequests": []
+  },
+  {
+    "width": 390,
+    "allFourPaths": true,
+    "faq": true,
+    "checkoutRoute": true,
+    "mobileMenu": "passed",
+    "failedRequests": []
+  },
+  {
+    "width": 360,
+    "allFourPaths": true,
+    "faq": true,
+    "checkoutRoute": true,
+    "mobileMenu": "passed",
+    "failedRequests": []
+  }
+]
