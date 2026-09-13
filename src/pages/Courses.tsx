@@ -1,8 +1,10 @@
+import level2Image from "@/assets/level2-security-vehicle.jpg";
+import level3Image from "@/assets/level3-security-professional.jpg";
+import level4Image from "@/assets/level4-bodyguard.jpg";
+import pepperImage from "@/assets/pepper-spray-hero.jpg";
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Shield, Clock, BookOpen, ArrowRight } from "lucide-react";
+import { Clock, BookOpen, ArrowRight } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
@@ -302,115 +304,26 @@ const Courses = () => {
     navigate(`/checkout/${course.id}`);
   };
 
+  const images: Record<string, string> = { level2: level2Image, level3: level3Image, level4: level4Image, "pepper-spray": pepperImage };
+  const titles: Record<string, string> = { level2: "Unarmed security officer", level3: "Armed security officer", level4: "Personal protection officer", "pepper-spray": "Pepper spray training" };
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
+    <div className="academy-page academy-catalog min-h-screen flex flex-col">
       <CourseHeader isAdmin={isAdmin} isLoggedIn={!!user} />
-
-      {/* Main Content */}
-      <main className="flex-1 container mx-auto px-6 py-12">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">Security Training Courses</h2>
-            <p className="text-xl text-muted-foreground">
-              Professional certification programs for security officers
-            </p>
-            {user && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => fetchEnrollments(user.id, true)}
-                disabled={refreshing}
-                className="mt-4"
-              >
-                {refreshing ? 'Refreshing...' : 'Refresh My Courses'}
-              </Button>
-            )}
-          </div>
-
-          {/* Course Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            {courses.map((course) => {
-              const enrolled = isEnrolled(course.id);
-
-              return (
-                <Card
-                  key={course.id}
-                  className="overflow-hidden hover:shadow-lg transition-all hover:scale-105 cursor-pointer"
-                  onClick={() => void handleCourseAccess(course, enrolled)}
-                >
-                  <CardContent className="p-4 text-center space-y-3">
-                    <div className={`w-16 h-16 mx-auto rounded-full ${course.color} flex items-center justify-center`}>
-                      <Shield className="h-8 w-8 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-sm line-clamp-2 mb-1">{course.title}</h3>
-                      <p className="text-xs text-muted-foreground">{course.duration}</p>
-                    </div>
-                    {enrolled ? (
-                      <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-green-500/20 text-xs">
-                        ✓ Owned
-                      </Badge>
-                    ) : (
-                      <p className="text-sm font-bold text-primary">{course.price}</p>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-
-          {/* Detailed Course Information */}
-          <div className="space-y-6">
-            <h3 className="text-2xl font-bold text-center mb-6">Course Details</h3>
-            {courses.map((course) => {
-              const enrolled = isEnrolled(course.id);
-
-              return (
-                <Card key={course.id} className="overflow-hidden">
-                  <CardHeader className="pb-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <Badge className={course.color}>{course.level}</Badge>
-                      {enrolled && (
-                        <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-green-500/20">
-                          ✓ Purchased
-                        </Badge>
-                      )}
-                    </div>
-                    <CardTitle className="text-xl">{course.title}</CardTitle>
-                    <CardDescription>{course.subtitle}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-sm text-muted-foreground line-clamp-2">{course.description}</p>
-
-                    <div className="flex gap-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <BookOpen className="h-4 w-4 text-muted-foreground" />
-                        <span>{course.sections} sections</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span>{course.duration}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2">
-                      <p className="text-xl font-bold">{course.price}</p>
-                      <Button size="sm" onClick={() => void handleCourseAccess(course, enrolled)}>
-                        {enrolled || isAdmin ? 'Continue' : 'View Details'}
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-      </main>
-
-      <Footer />
+      <main className="academy-catalog-main">
+        <header className="academy-catalog-heading"><p className="academy-kicker">TRAINING THAT MOVES YOU FORWARD</p><h1>Build your skills.<br /><span>Choose your path.</span></h1><p>From your first course to your next professional challenge. Find the training that fits your direction.</p>
+          {user && <Button variant="outline" onClick={() => fetchEnrollments(user.id, true)} disabled={refreshing}>{refreshing ? 'Refreshing...' : 'Refresh My Courses'}</Button>}
+        </header>
+        <nav className="academy-course-index" aria-label="Course index">{courses.map(course => <a key={course.id} href={`#path-${course.id}`}>{course.id === 'pepper-spray' ? 'Specialty' : course.id.replace('level', 'Level ')} <ArrowRight size={15} /></a>)}</nav>
+        <div className="academy-catalog-list">{courses.map(course => {
+          const enrolled = isEnrolled(course.id);
+          return <article id={`path-${course.id}`} key={course.id} className="academy-catalog-course">
+            <div className="academy-catalog-image"><img src={images[course.id]} alt={titles[course.id]} width="1200" height="800" loading="lazy" /></div>
+            <div className="academy-catalog-copy"><div className="academy-course-label"><span>{course.id === 'pepper-spray' ? 'SPECIALTY TRAINING' : course.id.replace('level', 'LEVEL ')}</span>{enrolled && <span className="academy-owned">Purchased</span>}</div><h2>{titles[course.id]}</h2><p>{course.description}</p><div className="academy-hero-facts"><span><Clock size={16} />{course.duration}</span><span><BookOpen size={16} />{course.sections} modules</span></div>{(course.id === 'level3' || course.id === 'level4') && <p className="academy-part-note">Part 1 online theory only. Required in-person training with Kairos in Houston is priced separately.</p>}<div className="academy-course-action"><span>{course.price}<small>{course.id === 'level3' || course.id === 'level4' ? 'Online theory' : 'Course price'}</small></span><Button onClick={() => void handleCourseAccess(course, enrolled)}>{enrolled || isAdmin ? 'Continue training' : 'View course'}<ArrowRight size={17} /></Button></div></div>
+          </article>;
+        })}</div>
+        <section className="academy-catalog-help"><div><h2>Not sure where to start?</h2><p>Explore the training-path guide or ask the academy about your next step.</p></div><Link to="/#training">Find your path <ArrowRight size={17} /></Link></section>
+      </main><Footer />
     </div>
   );
 };
-
 export default Courses;

@@ -1,9 +1,10 @@
+import "@/styles/academy.css";
 import { Link } from "react-router-dom";
 import kairosLogo from "@/assets/kairos-logo.png";
 
 export const Footer = () => {
   return (
-    <footer className="border-t py-12 px-6 bg-background">
+    <footer className="academy-footer border-t py-12 px-6 bg-background">
       <div className="container mx-auto max-w-6xl">
         <div className="grid md:grid-cols-4 gap-8 text-center md:text-left">
           <div>
@@ -50,7 +51,7 @@ export const Footer = () => {
           </div>
         </div>
         <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
-          © 2025 Kairos Security Academy. All Rights Reserved. License #: F28623301
+          © {new Date().getFullYear()} Kairos Security Academy. All Rights Reserved. License #: F28623301
         </div>
       </div>
     </footer>

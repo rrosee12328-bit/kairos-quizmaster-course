@@ -103,7 +103,7 @@ export default function BetaFeedback() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="academy-page min-h-screen flex flex-col bg-background">
       <div className="flex-1">
         <div className="container mx-auto max-w-4xl px-4 py-12">
           <div className="mb-8">

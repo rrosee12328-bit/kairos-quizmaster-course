@@ -194,7 +194,7 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
+      <div className="academy-page min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
         <div className="text-center animate-fade-in">
           <div className="relative">
             <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
@@ -215,7 +215,7 @@ const Profile = () => {
       : 'Student';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex flex-col">
+    <div className="academy-page min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex flex-col">
       <CourseHeader isAdmin={isAdmin} isLoggedIn={true} />
 
       <main className="flex-1 container mx-auto px-4 sm:px-6 py-8 sm:py-12">

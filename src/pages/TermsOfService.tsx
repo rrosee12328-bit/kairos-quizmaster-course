@@ -18,7 +18,7 @@ const TermsOfService = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="academy-page min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
       <CourseHeader isLoggedIn={!!user} />
 
       {/* Main Content */}

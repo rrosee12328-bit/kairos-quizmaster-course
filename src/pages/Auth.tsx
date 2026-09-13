@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
 import { Footer } from "@/components/Footer";
-import kairosLogo from "@/assets/kairos-logo.png";
+import CourseHeader from "@/components/CourseHeader";
 import EnrollmentForm from "@/components/EnrollmentForm";
 import SignInForm from "@/components/SignInForm";
 import { trackPurchase, getCoursePriceMap } from "@/lib/tracking";
@@ -112,15 +112,14 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
-      <div className="flex-1 flex items-center justify-center p-6">
+    <div className="academy-page academy-auth min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex flex-col">
+      <CourseHeader isLoggedIn={!!user} />
+      <div className="academy-auth-layout flex-1 flex items-center justify-center p-6">
+        <aside className="academy-auth-story"><span>YOUR NEXT CHAPTER</span><h2>Build confidence.<br />Carry it forward.</h2><p>Your courses, your progress, your next step. Welcome to the academy.</p><Link to="/courses">Explore training paths →</Link></aside>
         <div className="w-full max-w-lg">
           {/* Header */}
           <div className="text-center mb-8">
-            <Link to="/" className="inline-flex items-center gap-3 mb-4 hover:opacity-80 transition-opacity">
-              <img src={kairosLogo} alt="Kairos Security Academy" className="h-8 w-8" />
-              <h1 className="text-2xl font-bold">Kairos Security Academy</h1>
-            </Link>
+            <h1 className="text-3xl font-semibold mb-4">Your training starts here.</h1>
             {paymentSuccess && (
               <div className="mb-4 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
                 <p className="text-green-600 font-semibold">✓ Payment Successful!</p>

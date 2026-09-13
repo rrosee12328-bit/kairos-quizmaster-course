@@ -173,7 +173,7 @@ const Settings = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="academy-page min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Shield className="h-12 w-12 animate-pulse text-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Loading settings...</p>
@@ -183,7 +183,7 @@ const Settings = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="academy-page min-h-screen bg-background flex flex-col">
       <CourseHeader isLoggedIn={true} />
 
       <main className="flex-1 container mx-auto px-6 py-12 max-w-4xl">

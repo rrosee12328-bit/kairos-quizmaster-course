@@ -1,0 +1,386 @@
+[
+  {
+    "width": 1440,
+    "route": "/courses",
+    "finalUrl": "http://127.0.0.1:4173/courses",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 1440,
+    "route": "/checkout/level2",
+    "finalUrl": "http://127.0.0.1:4173/checkout/level2",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": [],
+    "enrollmentVisible": true
+  },
+  {
+    "width": 1440,
+    "route": "/checkout/level3",
+    "finalUrl": "http://127.0.0.1:4173/checkout/level3",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": [],
+    "enrollmentVisible": true
+  },
+  {
+    "width": 1440,
+    "route": "/checkout/level4",
+    "finalUrl": "http://127.0.0.1:4173/checkout/level4",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": [],
+    "enrollmentVisible": true
+  },
+  {
+    "width": 1440,
+    "route": "/checkout/pepper-spray",
+    "finalUrl": "http://127.0.0.1:4173/checkout/pepper-spray",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": [],
+    "enrollmentVisible": true
+  },
+  {
+    "width": 1440,
+    "route": "/auth",
+    "finalUrl": "http://127.0.0.1:4173/auth",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 1440,
+    "route": "/reset-password",
+    "finalUrl": "http://127.0.0.1:4173/reset-password",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 1440,
+    "route": "/privacy-policy",
+    "finalUrl": "http://127.0.0.1:4173/privacy-policy",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 1440,
+    "route": "/terms-of-service",
+    "finalUrl": "http://127.0.0.1:4173/terms-of-service",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 1440,
+    "route": "/course/level2",
+    "finalUrl": "http://127.0.0.1:4173/auth?redirect=/course/level2",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 1440,
+    "route": "/course/level3",
+    "finalUrl": "http://127.0.0.1:4173/auth?redirect=/course/level3",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 1440,
+    "route": "/course/level4",
+    "finalUrl": "http://127.0.0.1:4173/course/level4",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 1440,
+    "route": "/course/pepper-spray",
+    "finalUrl": "http://127.0.0.1:4173/course/pepper-spray",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 1440,
+    "route": "/profile",
+    "finalUrl": "http://127.0.0.1:4173/auth",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 1440,
+    "route": "/settings",
+    "finalUrl": "http://127.0.0.1:4173/auth",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 1440,
+    "hashNavigation": true
+  },
+  {
+    "width": 390,
+    "route": "/courses",
+    "finalUrl": "http://127.0.0.1:4173/courses",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 390,
+    "route": "/checkout/level2",
+    "finalUrl": "http://127.0.0.1:4173/checkout/level2",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": [],
+    "enrollmentVisible": true
+  },
+  {
+    "width": 390,
+    "route": "/checkout/level3",
+    "finalUrl": "http://127.0.0.1:4173/checkout/level3",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": [],
+    "enrollmentVisible": true
+  },
+  {
+    "width": 390,
+    "route": "/checkout/level4",
+    "finalUrl": "http://127.0.0.1:4173/checkout/level4",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": [],
+    "enrollmentVisible": true
+  },
+  {
+    "width": 390,
+    "route": "/checkout/pepper-spray",
+    "finalUrl": "http://127.0.0.1:4173/checkout/pepper-spray",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": [],
+    "enrollmentVisible": true
+  },
+  {
+    "width": 390,
+    "route": "/auth",
+    "finalUrl": "http://127.0.0.1:4173/auth",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 390,
+    "route": "/reset-password",
+    "finalUrl": "http://127.0.0.1:4173/reset-password",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 390,
+    "route": "/privacy-policy",
+    "finalUrl": "http://127.0.0.1:4173/privacy-policy",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 390,
+    "route": "/terms-of-service",
+    "finalUrl": "http://127.0.0.1:4173/terms-of-service",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 390,
+    "route": "/course/level2",
+    "finalUrl": "http://127.0.0.1:4173/auth?redirect=/course/level2",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 390,
+    "route": "/course/level3",
+    "finalUrl": "http://127.0.0.1:4173/auth?redirect=/course/level3",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 390,
+    "route": "/course/level4",
+    "finalUrl": "http://127.0.0.1:4173/course/level4",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 390,
+    "route": "/course/pepper-spray",
+    "finalUrl": "http://127.0.0.1:4173/course/pepper-spray",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 390,
+    "route": "/profile",
+    "finalUrl": "http://127.0.0.1:4173/auth",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 390,
+    "route": "/settings",
+    "finalUrl": "http://127.0.0.1:4173/auth",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 390,
+    "hashNavigation": true
+  },
+  {
+    "width": 360,
+    "route": "/courses",
+    "finalUrl": "http://127.0.0.1:4173/courses",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 360,
+    "route": "/checkout/level2",
+    "finalUrl": "http://127.0.0.1:4173/checkout/level2",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": [],
+    "enrollmentVisible": true
+  },
+  {
+    "width": 360,
+    "route": "/checkout/level3",
+    "finalUrl": "http://127.0.0.1:4173/checkout/level3",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": [],
+    "enrollmentVisible": true
+  },
+  {
+    "width": 360,
+    "route": "/checkout/level4",
+    "finalUrl": "http://127.0.0.1:4173/checkout/level4",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": [],
+    "enrollmentVisible": true
+  },
+  {
+    "width": 360,
+    "route": "/checkout/pepper-spray",
+    "finalUrl": "http://127.0.0.1:4173/checkout/pepper-spray",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": [],
+    "enrollmentVisible": true
+  },
+  {
+    "width": 360,
+    "route": "/auth",
+    "finalUrl": "http://127.0.0.1:4173/auth",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 360,
+    "route": "/reset-password",
+    "finalUrl": "http://127.0.0.1:4173/reset-password",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 360,
+    "route": "/privacy-policy",
+    "finalUrl": "http://127.0.0.1:4173/privacy-policy",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 360,
+    "route": "/terms-of-service",
+    "finalUrl": "http://127.0.0.1:4173/terms-of-service",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 360,
+    "route": "/course/level2",
+    "finalUrl": "http://127.0.0.1:4173/auth?redirect=/course/level2",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 360,
+    "route": "/course/level3",
+    "finalUrl": "http://127.0.0.1:4173/auth?redirect=/course/level3",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 360,
+    "route": "/course/level4",
+    "finalUrl": "http://127.0.0.1:4173/course/level4",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 360,
+    "route": "/course/pepper-spray",
+    "finalUrl": "http://127.0.0.1:4173/course/pepper-spray",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 360,
+    "route": "/profile",
+    "finalUrl": "http://127.0.0.1:4173/auth",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 360,
+    "route": "/settings",
+    "finalUrl": "http://127.0.0.1:4173/auth",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 360,
+    "hashNavigation": true
+  }
+]

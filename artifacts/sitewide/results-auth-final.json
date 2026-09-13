@@ -1,0 +1,134 @@
+[
+  {
+    "width": 1440,
+    "route": "/auth",
+    "finalUrl": "http://127.0.0.1:4173/auth",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 1440,
+    "route": "/course/level2",
+    "finalUrl": "http://127.0.0.1:4173/auth?redirect=/course/level2",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 1440,
+    "route": "/course/level3",
+    "finalUrl": "http://127.0.0.1:4173/auth?redirect=/course/level3",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 1440,
+    "route": "/profile",
+    "finalUrl": "http://127.0.0.1:4173/auth",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 1440,
+    "route": "/settings",
+    "finalUrl": "http://127.0.0.1:4173/auth",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 1440,
+    "hashNavigation": true
+  },
+  {
+    "width": 390,
+    "route": "/auth",
+    "finalUrl": "http://127.0.0.1:4173/auth",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 390,
+    "route": "/course/level2",
+    "finalUrl": "http://127.0.0.1:4173/auth?redirect=/course/level2",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 390,
+    "route": "/course/level3",
+    "finalUrl": "http://127.0.0.1:4173/auth?redirect=/course/level3",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 390,
+    "route": "/profile",
+    "finalUrl": "http://127.0.0.1:4173/auth",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 390,
+    "route": "/settings",
+    "finalUrl": "http://127.0.0.1:4173/auth",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 390,
+    "hashNavigation": true
+  },
+  {
+    "width": 360,
+    "route": "/auth",
+    "finalUrl": "http://127.0.0.1:4173/auth",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 360,
+    "route": "/course/level2",
+    "finalUrl": "http://127.0.0.1:4173/auth?redirect=/course/level2",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 360,
+    "route": "/course/level3",
+    "finalUrl": "http://127.0.0.1:4173/auth?redirect=/course/level3",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 360,
+    "route": "/profile",
+    "finalUrl": "http://127.0.0.1:4173/auth",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 360,
+    "route": "/settings",
+    "finalUrl": "http://127.0.0.1:4173/auth",
+    "errors": [],
+    "overflow": false,
+    "brokenImages": []
+  },
+  {
+    "width": 360,
+    "hashNavigation": true
+  }
+]

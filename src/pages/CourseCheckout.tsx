@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { Shield, Clock, BookOpen, CheckCircle, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { toast } from "sonner";
+import { Footer } from "@/components/Footer";
 import CourseHeader from "@/components/CourseHeader";
 import { trackViewContent, trackInitiateCheckout, getCoursePriceMap } from "@/lib/tracking";
 import level3SecurityImage from "@/assets/level3-security-professional.jpg";
@@ -21,7 +21,7 @@ const CourseCheckout = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [processingPayment, setProcessingPayment] = useState(false);
-  const [enrollments, setEnrollments] = useState<any[]>([]);
+  const [enrollments, setEnrollments] = useState<Awaited<ReturnType<typeof fetchMyCourseEntitlements>>>([]);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -59,7 +59,12 @@ const CourseCheckout = () => {
     }
   };
 
-  const courseData: Record<string, any> = {
+  const courseData: Record<string, {
+    title: string; subtitle: string; description: string; duration: string;
+    sections: number; level: string; color: string; features: string[];
+    priceId: string; price: string; requirements?: string[];
+    isLevel2?: boolean; isLevel3?: boolean; isLevel4?: boolean; isPepperSpray?: boolean;
+  }> = {
     level2: {
       title: "Level 2 Security Officer Certification",
       subtitle: "Unarmed Security Professional",
@@ -153,7 +158,7 @@ const CourseCheckout = () => {
 
   if (!course) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="academy-page min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4">Course not found</h2>
           <Button asChild>
@@ -222,72 +227,20 @@ const CourseCheckout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="academy-page academy-checkout min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <CourseHeader isLoggedIn={!!user} />
 
       {/* Main Content */}
-      <main className="container mx-auto px-6 py-12">
-        <div className="max-w-4xl mx-auto">
-          <Card className="overflow-hidden">
-            <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5 border-b">
-              <div className="flex items-start justify-between mb-3">
-                <Badge className={course.color}>{course.level}</Badge>
-                {isEnrolled && (
-                  <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-green-500/20">
-                    ✓ Already Purchased
-                  </Badge>
-                )}
-              </div>
-              <CardTitle className="text-3xl md:text-4xl mb-2">{course.title}</CardTitle>
-              <CardDescription className="text-lg">{course.subtitle}</CardDescription>
-            </CardHeader>
+      <main className="academy-detail-main">
+        <Link className="academy-back" to="/courses"><ArrowLeft size={16} /> All training paths</Link>
+        <section className="academy-detail-hero">
+          <div><p className="academy-kicker">KAIROS SECURITY ACADEMY / {courseType === 'pepper-spray' ? 'SPECIALTY' : courseType?.replace('level', 'LEVEL ')}</p><h1>{course.title}</h1><p className="academy-detail-subtitle">{course.subtitle}</p><div className="academy-hero-facts"><span><Clock size={16} /> {course.duration}</span><span><BookOpen size={16} /> {course.sections} modules</span></div><a className="academy-primary-link" href="#enrollment">{isEnrolled ? 'Continue your training' : 'View enrollment'} <span>↗</span></a></div>
+          <figure><img src={course.isLevel2 ? level2SecurityImage : course.isLevel3 ? level3SecurityImage : course.isLevel4 ? level4BodyguardImage : pepperSprayHeroImage} alt={course.subtitle} width="1200" height="800" fetchPriority="high" /></figure>
+        </section>
+        <div className="academy-detail-grid">
+          <Card className="academy-detail-content overflow-hidden">
+            <CardContent className="academy-course-copy p-8 space-y-8">
 
-            <CardContent className="p-8 space-y-8">
-              {/* Level 2 Hero Image */}
-              {course.isLevel2 && (
-                <div className="rounded-lg overflow-hidden -mt-8 -mx-8 mb-6">
-                  <img 
-                    src={level2SecurityImage} 
-                    alt="Professional Security Officer" 
-                    className="w-full h-64 object-cover"
-                  />
-                </div>
-              )}
-
-              {/* Level 3 Hero Image */}
-              {course.isLevel3 && (
-                <div className="rounded-lg overflow-hidden -mt-8 -mx-8 mb-6">
-                  <img 
-                    src={level3SecurityImage} 
-                    alt="Professional Security Officer" 
-                    className="w-full h-64 object-cover"
-                  />
-                </div>
-              )}
-
-              {/* Level 4 Hero Image */}
-              {course.isLevel4 && (
-                <div className="rounded-lg overflow-hidden -mt-8 -mx-8 mb-6">
-                  <img 
-                    src={level4BodyguardImage} 
-                    alt="Professional bodyguard on duty with visible earpiece" 
-                    loading="lazy"
-                    className="w-full h-64 object-cover object-left"
-                  />
-                </div>
-              )}
-
-              {/* Pepper Spray Hero Image */}
-              {course.isPepperSpray && (
-                <div className="rounded-lg overflow-hidden -mt-8 -mx-8 mb-6">
-                  <img 
-                    src={pepperSprayHeroImage}
-                    alt="Pepper Spray Training Course"
-                    loading="lazy"
-                    className="w-full h-64 object-cover"
-                  />
-                </div>
-              )}
 
               {/* Level 2 Important Information */}
               {course.isLevel2 && (
@@ -674,7 +627,7 @@ const CourseCheckout = () => {
               )}
 
               {/* Course Details */}
-              <div className="flex gap-8 py-6 border-y">
+              <div className="flex flex-wrap gap-8 py-6 border-y">
                 <div className="flex items-center gap-3">
                   <Clock className="h-5 w-5 text-primary" />
                   <div>
@@ -711,8 +664,13 @@ const CourseCheckout = () => {
                 </ul>
               </div>
 
+            </CardContent>
+          </Card>
+          <aside className="academy-enrollment">
               {/* Pricing and CTA */}
-              <div className="bg-muted/30 rounded-lg p-6 space-y-4">
+              <div className="academy-purchase space-y-4" id="enrollment">
+                <h2 className="academy-purchase-title">Your next step</h2>
+                {(course.isLevel3 || course.isLevel4) && <p className="academy-part-note">Part 1 online theory only. Required in-person training with Kairos in Houston is priced separately.</p>}
                 <div className="text-center">
                   <div className="flex items-center justify-center gap-3 mb-2">
                     <span className="text-4xl font-bold text-primary">{course.price}</span>
@@ -752,13 +710,14 @@ const CourseCheckout = () => {
                 <div className="pt-4 border-t border-border/50 space-y-2 text-sm text-center text-muted-foreground">
                   <p>✓ Secure payment via Stripe</p>
                   <p>✓ Create account after purchase</p>
-                  <p>✓ Certificate upon completion</p>
+                  <p>✓ {course.isLevel3 || course.isLevel4 ? "Online theory completion report" : "Certificate upon completion"}</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+
+          </aside>
         </div>
       </main>
+      <Footer />
     </div>
   );
 };
